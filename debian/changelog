@@ -1,3 +1,52 @@
+desmume-trunk (svnr3261-0ronmi1) karmic; urgency=low
+
+  * r3261: Update desmume.pot, sorry translators. (riccardom)
+  * r3260: Move _NOSSE_MatrixMultVec4x4 declaration in matrix.h
+           instead of inside a function in gfx3d.cpp. The _ suggests
+           it was meant to be in someway private but it's already
+           used outside matrix.cpp. (riccardom)
+  * r3259: Remove unused variable in gbagame addon and sort
+           initialization order in firmware class to shut up
+           gcc warnings. (riccardom)
+  * r3258: Shut up declaration vs initialization order gcc warnings.
+           (riccardom)
+  * r3257: Correct EXPERIMENTAL_WIFI_COMM ifdef position to avoid
+           compiling unused stuff. (riccardom)
+  * r3256: Remove unused vars. (riccardom)
+  * r3255: Check fgets return code and shut up signed vs unsigned
+           integer comparison gcc warning. (riccardom)
+  * r3254: Make logo_dataconst and shut up gcc warning about signed
+           vs unsigned integer comparison. (riccardom)
+  * r3253: Add missing parens. (riccardom)
+  * r3252: extern is not needed in this declarations. (riccardom)
+  * r3251: Remove duplicated NDS_CreateDummyFirmware declaration,
+           already available in firmware.h (riccardom)
+  * r3250: Add default case to switch to shut up gcc warnings about
+           missing handling of possible enum values. (riccardom)
+  * r3249: Remove unused vars. (riccardom)
+  * r3248: Make some functions static. (riccardom)
+  * r3247: Fix includes for version.cpp (riccardom)
+  * r3246: Move class members initialization so that gcc stops bitching
+           about their order. (riccardom)
+  * r3245: The declaration should be under ifdef too. (riccardom)
+  * r3244: Move wx specific code inside proper ifdef and fixup wx
+           related menu code indentation. (riccardom)
+  * r3243: Remove some commented code and fixup a comment indentation while
+           at it. (riccardom)
+  * r3242: Remove unused but computed baseaddr variable. (riccardom)
+  * r3241: Add a simple auto frameskip to the gtk frontend
+           
+           Add a simple auto frameskip method based on effective fps
+           ratio (fps / 60). If the ratio is too low add more frameskip,
+           if the ratio is too high or we are skipping too much do
+           the opposite. The proposed patch that led to this one is
+           available in bug #2862131.
+           While at it shorten the number of frameskip values
+           available since they skip too much to be playable. (riccardom)
+  * r3240: Shut up signed vs unsigned integer comparison warning by gcc.
+           (riccardom)
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 29 Dec 2009 20:14:07 +0800
 desmume-trunk (svnr3239-0ronmi1) karmic; urgency=low
 
   * r3239: Add zh_TW localization from Ronmi Ren. (riccardom) #2921906

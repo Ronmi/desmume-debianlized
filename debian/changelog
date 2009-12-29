@@ -1,0 +1,13 @@
+desmume-trunk (svnr3239-0ronmi1) karmic; urgency=low
+
+  * r3239: Add zh_TW localization from Ronmi Ren. (riccardom) #2921906
+  * r3237: fix crash/freeze when adding internal cheats. (zeromus) [2921845]
+  * r3234: add saving a status of cheats (disabled/enabled). (mtabachenko)
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 29 Dec 2009 12:23:54 +0800
+desmume-trunk (svnr3233-0ronmi1) karmic; urgency=low
+
+  * Forks debian/ structure from desmume_0.9.4-2 in karmic official repository.
+  * more screwing around with languages. 
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 25 Dec 2009 13:56:27 +0800

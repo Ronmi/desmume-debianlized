@@ -1,0 +1,28 @@
+Source: desmume-trunk
+Section: games
+Priority: extra
+Maintainer: Ronmi Ren <ronmi@rmi.twbbs.org>
+Uploaders: Ronmi Ren <ronmi@rmi.twbbs.org>
+Build-Depends: debhelper (>= 5), libglade2-dev, libgtk2.0-dev, libsdl1.2-dev,
+ libosmesa6-dev, libgtkglext1-dev, libagg-dev, intltool, quilt, 
+ libasound2-dev, desktop-file-utils
+Standards-Version: 3.8.3
+Homepage: http://desmume.org/
+Vcs-Svn: https://desmume.svn.sourceforge.net/svnroot/desmume
+Vcs-Browser: https://desmume.svn.sourceforge.net/svnroot/desmume
+
+Package: desmume-trunk
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, desktop-file-utils
+Conflicts: desmume
+Description: Nintendo DS emulator
+ DeSmuME is a Nintendo DS emulator running homebrew demos and commercial games.
+ .
+ This package includes all three binaries:
+   * desmume: gtk user interface;
+   * desmume-glade: gtk-glade user interface;
+   * desmume-cli: command line user interface.
+ .
+ SVN trunk version is built with libosmesa. You may use gtkglext 3d engine with
+ --3d-engine=2.
+

@@ -152,8 +152,6 @@ public:
 decode:
 			//printf("[%05d] gxf: decoding %08X\n",currFrameCounter,val);
 			
-			bool valid = true;
-			bool gimpyCommand = false;
 			const u8 commands[] = { val&0xFF, (val>>8)&0xFF, (val>>16)&0xFF, (val>>24)&0xFF };
 			const u8 commandTypes[] = { gfx3d_commandTypes[commands[0]], gfx3d_commandTypes[commands[1]],gfx3d_commandTypes[commands[2]], gfx3d_commandTypes[commands[3]] };
 
@@ -1480,7 +1478,6 @@ static BOOL gfx3d_glBoxTest(u32 v)
 		//yuck.. cant use the sse2 accelerated ones because vert.coords is not cache aligned or something
 		//i dunno
 		
-		void _NOSSE_MatrixMultVec4x4 (const float *matrix, float *vecPtr);
 		_NOSSE_MatrixMultVec4x4(mtxCurrent[1],verts[i].coord);
 		_NOSSE_MatrixMultVec4x4(mtxCurrent[0],verts[i].coord);
 	}

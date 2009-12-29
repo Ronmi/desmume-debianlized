@@ -382,7 +382,6 @@ void nds_savestate(EMUFILE* os);
 bool nds_loadstate(EMUFILE* is, int size);
 
 int NDS_WriteBMP(const char *filename);
-int NDS_CreateDummyFirmware( struct NDS_fw_config_data *user_settings);
 
 void NDS_Sleep();
 void NDS_ToggleCardEject();
@@ -456,11 +455,11 @@ extern struct TCommonSettings {
 		, BootFromFirmware(false)
 		, DebugConsole(false)
 		, EnsataEmulation(false)
+		, cheatsDisable(false)
 		, num_cores(1)
 		, micMode(InternalNoise)
 		, spuInterpolationMode(SPUInterpolation_Linear)
 		, manualBackupType(0)
-		, cheatsDisable(false)
 	{
 		strcpy(ARM9BIOS, "biosnds9.bin");
 		strcpy(ARM7BIOS, "biosnds7.bin");

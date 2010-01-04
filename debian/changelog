@@ -1,3 +1,10 @@
+desmume-trunk (svnr3266-0ronmi1) karmic; urgency=low
+
+  *r3266: fix some warnings, move alignment masks ahead of other logic in the
+          main mmu routines (fixes potential crashes when accessing totally
+          terrible addresses), crudely emulate OP_BKPT (zeromus)
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 29 Dec 2009 20:14:07 +0800
 desmume-trunk (svnr3261-0ronmi1) karmic; urgency=low
 
   * r3261: Update desmume.pot, sorry translators. (riccardom)

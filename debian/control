@@ -19,9 +19,9 @@ Description: Nintendo DS emulator
  DeSmuME is a Nintendo DS emulator running homebrew demos and commercial games.
  .
  This package includes all three binaries:
-   * desmume: gtk user interface;
-   * desmume-glade: gtk-glade user interface;
-   * desmume-cli: command line user interface.
+ * desmume: gtk user interface;
+ * desmume-glade: gtk-glade user interface;
+ * desmume-cli: command line user interface.
  .
  SVN trunk version is built with libosmesa. You may use gtkglext 3d engine with
  --3d-engine=2.

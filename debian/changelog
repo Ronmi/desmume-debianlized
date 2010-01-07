@@ -1,0 +1,10 @@
+desmume-trunk-pgo (svnr3267-0ronmi1) karmic; urgency=low
+
+  * r3267: Updated Traditional Chinese translation from Ronmi Ren
+           (riccardom) #2922635.
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 08 Jan 2010 07:36:51 +0800
+desmume-trunk-pgo (svnr3266-0ronmi1) karmic; urgency=low
+
+  * First release. Detailed upstream changelog is placed in ChangeLog.SVN
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 07 Jan 2010 10:39:42 +0800

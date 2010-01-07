@@ -1,4 +1,11 @@
 ------------------------------------------------------------------------
+r3267 | riccardom | 2010-01-07 22:35:00 +0800 (四, 07  1月 2010) | 2 lines
+Changed paths:
+   M po/zh_TW.po
+
+Updated Traditional Chinese translation from Ronmi Ren #2922635.
+
+------------------------------------------------------------------------
 r3266 | zeromus | 2010-01-01 17:03:00 +0800 (五, 01  1月 2010) | 2 lines
 Changed paths:
    M src/MMU.cpp

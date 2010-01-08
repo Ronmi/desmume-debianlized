@@ -11,7 +11,7 @@ CFLAGS=-O6 -march=core2 -mtune=core2 -fomit-frame-pointer -mfpmath=sse \
 	-floop-block -ftree-loop-distribution -ftree-loop-im -fivopts \
 	-ftree-loop-ivcanon -fvect-cost-model -ftracer -fprofile-correction \
 	-fprofile-values -fvpt -fbranch-target-load-optimize2 -fweb -pipe \
-	-fprofile-generate=$(PGODIR)
+	-fprofile-use=$(PGODIR)
 CPPFLAGS=$(CFLAGS)
 CXXFLAGS=$(CFLAGS)
 

@@ -5,7 +5,7 @@ include /usr/share/quilt/quilt.make
 PGODIR=$(shell pwd)/pgo_data
 
 OPTTARGET=-march=core2 -mtune=core2 -fomit-frame-pointer -mfpmath=sse -mssse3
-OPTPGO=-fprofile-correction -fvpt -fbranch-probabilities -fprofile-values \
+OPTPGO=-fprofile-correction -fvpt -fbranch-probabilities -fprofile-values
 OPTSCHED=-fmodulo-sched -fmodulo-sched-allow-regmoves
 OPTGCSE=-fgcse-sm -fgcse-las -fgcse-after-reload
 OPTLOOP=-ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block \

@@ -1,3 +1,8 @@
+desmume-trunk-pgo (svnr3267-0ronmi2) karmic; urgency=low
+
+  Change compiling flags.
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 08 Jan 2010 12:20:43 +0800
 desmume-trunk-pgo (svnr3267-0ronmi1) karmic; urgency=low
 
   * r3267: Updated Traditional Chinese translation from Ronmi Ren

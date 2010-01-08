@@ -19,7 +19,7 @@ OPTFLAGS=-O6 $(OPTTARGET) $(OPTPGO) $(OPTGCSE) $(OPTMISC)
 PGOGEN=-fprofile-arcs -fprofile-generate=$(PGODIR)
 PGOUSE=-fbranch-probabilities -fprofile-use=$(PGODIR)
 
-CFLAGS=$(OPTFLAGS) $(PGOGEN) -pipe
+CFLAGS=$(OPTFLAGS) $(PGOUSE) -pipe
 CPPFLAGS=$(CFLAGS)
 CXXFLAGS=$(CFLAGS)
 

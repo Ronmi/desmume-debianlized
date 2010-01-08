@@ -37,8 +37,7 @@ DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
 configure_flags = --prefix=/usr --mandir=\$${prefix}/share/man \
 			--bindir=/usr/games --datadir=/usr/share/games \
-			--localedir=/usr/share/locale \
-			--enable-osmesa 
+			--localedir=/usr/share/locale 
 
 ifeq ($(DEB_BUILD_GNU_TYPE), $(DEB_HOST_GNU_TYPE))
   configure_flags += --build $(DEB_HOST_GNU_TYPE)

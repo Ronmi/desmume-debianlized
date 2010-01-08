@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Ronmi Ren <ronmi@rmi.twbbs.org>
 Uploaders: Ronmi Ren <ronmi@rmi.twbbs.org>
 Build-Depends: debhelper (>= 5), libglade2-dev, libgtk2.0-dev, libsdl1.2-dev,
- libosmesa6-dev, libgtkglext1-dev, libagg-dev, intltool, quilt, 
+ libgtkglext1-dev, libagg-dev, intltool, quilt, 
  libasound2-dev, desktop-file-utils, libcloog-ppl0
 Standards-Version: 3.8.3
 Homepage: http://desmume.org/
@@ -23,6 +23,5 @@ Description: Nintendo DS emulator
  * desmume-glade: gtk-glade user interface;
  * desmume-cli: command line user interface.
  .
- This package is profiling guilded optimized, and built with libosmesa. You may
- use gtkglext 3d engine with --3d-engine=2 param in command line. 
+ This package is profiling guilded optimized.
 

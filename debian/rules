@@ -5,8 +5,7 @@ include /usr/share/quilt/quilt.make
 PGODIR=$(shell pwd)/pgo_data
 
 OPTTARGET=-march=core2 -mtune=core2 -fomit-frame-pointer -mfpmath=sse -mssse3
-OPTPGO=-fbranch-target-load-optimize -fbranch-probabilities -fprofile-values \
-	-fprofile-correction -fvpt
+OPTPGO=-fprofile-correction -fvpt -fbranch-probabilities -fprofile-values \
 OPTSCHED=-fmodulo-sched -fmodulo-sched-allow-regmoves
 OPTGCSE=-fgcse-sm -fgcse-las -fgcse-after-reload
 OPTLOOP=-ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block \
@@ -15,15 +14,11 @@ OPTLOOP=-ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block \
 #OPTFLAGS=-O6 -fvect-cost-model -fvpt -fweb -static \
 #	$(OPTTARGET) $(OPTPGO) $(OPTSCHED) $(OPTGCSE) $(OPTLOOP)
 
-OPTFLAGS=-O6 -fvect-cost-model -fweb -static \
-	$(OPTTARGET) $(OPTPGO) $(OPTSCHED) $(OPTGCSE) $(OPTLOOP)
-
-
+OPTFLAGS=-O6 -fweb $(OPTTARGET) $(OPTPGO) $(OPTGCSE) 
 PGOGEN=-fprofile-arcs -fprofile-generate=$(PGODIR)
+PGOUSE=-fbranch-target-load-optimize -fprofile-use=$(PGODIR)
 
-PGOUSE=-fprofile-use=$(PGODIR)
-
-CFLAGS=$(OPTFLAGS) $(PGOUSE) -pipe
+CFLAGS=$(OPTFLAGS) $(PGOGEN) -pipe
 CPPFLAGS=$(CFLAGS)
 CXXFLAGS=$(CFLAGS)
 

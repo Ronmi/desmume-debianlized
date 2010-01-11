@@ -1,3 +1,28 @@
+desmume-trunk (svnr3275-0ronmi1) karmic; urgency=low
+
+  [ mtabachenko ]
+  * winport: - fix VS2008 x64 builds; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    68 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * gfx3d: fix a bug in vectest? git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add a note about how to execute ideas printf git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: apply patch [2925555] to stop emu from crashing when no sound
+    device is available git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to svn r3275
+  * add git-buildpackage config file
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Mon, 11 Jan 2010 20:35:21 +0800
+
 desmume-trunk (svnr3267-0ronmi1) karmic; urgency=low
 
   * r3267: Updated Traditional Chinese translation from Ronmi Ren

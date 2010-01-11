@@ -1,0 +1,7 @@
+#!/bin/sh
+PGO_IS_GEN=1 debian/rules build
+src/gtk/desmume
+git clean -fd
+
+dpkg-buildpackage $*
+git clean -fdx

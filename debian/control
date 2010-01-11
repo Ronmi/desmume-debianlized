@@ -12,7 +12,7 @@ Vcs-Svn: https://desmume.svn.sourceforge.net/svnroot/desmume
 Vcs-Browser: https://desmume.svn.sourceforge.net/svnroot/desmume
 
 Package: desmume-trunk-pgo
-Architecture: amd64
+Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, desktop-file-utils
 Conflicts: desmume
 Description: Nintendo DS emulator

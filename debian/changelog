@@ -1,3 +1,15 @@
+desmume-trunk (svnr3276-0ronmi1) karmic; urgency=low
+
+  [ riccardom ]
+  * Whitespace cleanup. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3276
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 12 Jan 2010 09:03:04 +0800
+
 desmume-trunk (svnr3275-0ronmi1) karmic; urgency=low
 
   [ mtabachenko ]

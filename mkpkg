@@ -1,7 +1,9 @@
 #!/bin/sh
-PGO_IS_GEN=1 debian/rules build
+
+export PGO_IS_GEN=1
+debian/rules build
 src/gtk/desmume
 git clean -fd
-
+unset PGO_IN_GEN
 git-buildpackage $*
 git clean -fdx

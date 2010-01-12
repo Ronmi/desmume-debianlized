@@ -3,6 +3,7 @@
 export PGO_IS_GEN=1
 debian/rules build
 src/gtk/desmume
+find ./ -name
 git clean -fd
 unset PGO_IN_GEN
 git-buildpackage $*

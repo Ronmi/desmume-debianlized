@@ -1,3 +1,36 @@
+desmume-trunk-pgo (svnr3276-0ronmi1) karmic; urgency=low
+
+  [ mtabachenko ]
+  * winport: - fix VS2008 x64 builds; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    68 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * gfx3d: fix a bug in vectest? git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add a note about how to execute ideas printf git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: apply patch [2925555] to stop emu from crashing when no sound
+    device is available git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * add a make script; change flags
+  * change arch set
+
+  [ riccardom ]
+  * Whitespace cleanup. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3276
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 12 Jan 2010 09:16:37 +0800
+
 desmume-trunk-pgo (svnr3267-0ronmi2) karmic; urgency=low
 
   Change compiling flags.

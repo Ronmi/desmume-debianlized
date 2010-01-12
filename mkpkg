@@ -6,5 +6,5 @@ src/gtk/desmume
 find ./ -name
 git clean -fd
 unset PGO_IN_GEN
-git-buildpackage $*
+dpkg-buildpackage -b
 git clean -fdx

@@ -1852,6 +1852,7 @@ void NDS_exec(s32 nb)
 	}
 
 	//DEBUG_statistics.printSequencerExecutionCounters();
+	//DEBUG_statistics.print();
 
 	//end of frame emulation housekeeping
 	if(LagFrameFlag)
@@ -1941,13 +1942,21 @@ void NDS_Reset()
 	else
 		inf = NULL;
 
-	if(inf) {
+	if(inf) 
+	{
 		fread(MMU.ARM7_BIOS,1,16384,inf);
 		fclose(inf);
+
 		if(CommonSettings.SWIFromBIOS == true) NDS_ARM7.swi_tab = 0;
 		else NDS_ARM7.swi_tab = ARM7_swi_tab;
+
+		if (CommonSettings.PatchSWI3)
+			_MMU_write16<ARMCPU_ARM7>(0x00002F08, 0x4770);
+
 		INFO("ARM7 BIOS is loaded.\n");
-	} else {
+	} 
+	else 
+	{
 		NDS_ARM7.swi_tab = ARM7_swi_tab;
 
 		for (int t = 0; t < 16384; t++)
@@ -1971,13 +1980,21 @@ void NDS_Reset()
 		inf = NULL;
 	//memcpy(MMU.ARM9_BIOS + 0x20, gba_header_data_0x04, 156);
 
-	if(inf) {
+	if(inf) 
+	{
 		fread(MMU.ARM9_BIOS,1,4096,inf);
 		fclose(inf);
+
 		if(CommonSettings.SWIFromBIOS == true) NDS_ARM9.swi_tab = 0;
 		else NDS_ARM9.swi_tab = ARM9_swi_tab;
+
+		if (CommonSettings.PatchSWI3)
+			_MMU_write16<ARMCPU_ARM9>(0xFFFF07CC, 0x4770);
+
 		INFO("ARM9 BIOS is loaded.\n");
-	} else {
+	} 
+	else 
+	{
 		NDS_ARM9.swi_tab = ARM9_swi_tab;
 
 		for (int t = 0; t < 4096; t++)
@@ -2062,7 +2079,23 @@ void NDS_Reset()
 
 		armcpu_init(&NDS_ARM7, header->ARM7exe);
 		armcpu_init(&NDS_ARM9, header->ARM9exe);
+	
+		//bitbox 4k demo is so stripped down it relies on default stack values
+		//otherwise the arm7 will crash before making a sound
+		//(these according to gbatek softreset bios docs)
+		NDS_ARM7.R13_svc = 0x0380FFDC;
+		NDS_ARM7.R13_irq = 0x0380FFB0;
+		NDS_ARM7.R13_usr = 0x0380FF00;
+		NDS_ARM7.R[13] = NDS_ARM7.R13_usr;
+		//and let's set these for the arm9 while we're at it, though we have no proof
+		NDS_ARM9.R13_svc = 0x00803FC0;
+		NDS_ARM9.R13_irq = 0x00803FA0;
+		NDS_ARM9.R13_usr = 0x00803EC0;
+		NDS_ARM9.R[13] = NDS_ARM9.R13_usr;
+		//n.b.: im not sure about all these, I dont know enough about arm9 svc/irq/etc modes
+		//and how theyre named in desmume to match them up correctly. i just guessed.
 	}
+
 
 	nds.wifiCycle = 0;
 	memset(nds.timerCycle, 0, sizeof(u64) * 2 * 4);

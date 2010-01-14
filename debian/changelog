@@ -1,3 +1,27 @@
+desmume-trunk (svnr3283-0ronmi1) karmic; urgency=low
+
+  [ riccardom ]
+  * Fix OpenAL on Mac OS X (hopefully) Unfortunately we are not able to
+    check if OpenAL is available or not on mac os x so add it as
+    requirement. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Add an option to patch the DelayLoop SWI when loading BIOS images
+    (speed hack). Will work ONLY with Nintendo BIOS dumps! (the
+    addresses that are overwritten are hardcoded). git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * ARM: fix execution time for MUL/MLA opcodes. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3283
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 15 Jan 2010 07:02:57 +0800
+
 desmume-trunk (svnr3278-0ronmi1) karmic; urgency=low
 
   [ zeromus ]

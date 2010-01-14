@@ -11,7 +11,7 @@ OPTFLAGS = -O3 -pipe $(OPTTARGET) $(OPTMISC)
 PGOGEN = -fprofile-generate
 PGOUSE = -fprofile-use
 
-CFLAGS = $(OPTFLAGS)
+CFLAGS += $(OPTFLAGS)
 ifeq ($(PGO_IS_GEN),1)
   CFLAGS += $(PGOGEN)
 else

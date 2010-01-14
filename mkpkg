@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/usr/bin/make -f
 
-export PGO_IS_GEN=1
-debian/rules build
-src/gtk/desmume
-find ./ -name
-git clean -fd
-unset PGO_IN_GEN
-dpkg-buildpackage -b
-git clean -fdx
+
+all:
+	debian/rules build PGO_IS_GEN=1
+	src/gtk/desmume
+	git clean -fd
+	dpkg-buildpackage -b $(DBPFLAGS)
+	git clean -fdx
+

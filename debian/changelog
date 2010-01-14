@@ -1,3 +1,21 @@
+desmume-trunk (svnr3278-0ronmi1) karmic; urgency=low
+
+  [ zeromus ]
+  * core: properly emulate POWCNT1 and POWCNT2 (fix picross bootup) git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Cleanup the openal microphone code a bit. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * Update to r3278
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 14 Jan 2010 11:03:10 +0800
+
 desmume-trunk (svnr3276-0ronmi1) karmic; urgency=low
 
   [ riccardom ]

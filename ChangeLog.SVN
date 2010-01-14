@@ -1,4 +1,62 @@
 ------------------------------------------------------------------------
+r3278 | riccardom | 2010-01-13 18:48:18 +0800 (三, 13  1月 2010) | 2 lines
+Changed paths:
+   M src/mic_openal.cpp
+
+Cleanup the openal microphone code a bit.
+
+------------------------------------------------------------------------
+r3277 | zeromus | 2010-01-13 13:15:21 +0800 (三, 13  1月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/NDSSystem.cpp
+   M src/NDSSystem.h
+   M src/rasterize.cpp
+   M src/saves.cpp
+   M src/windows/DeSmuME_2005.vcproj
+
+core: properly emulate POWCNT1 and POWCNT2 (fix picross bootup)
+
+------------------------------------------------------------------------
+r3276 | riccardom | 2010-01-12 00:11:11 +0800 (二, 12  1月 2010) | 2 lines
+Changed paths:
+   M src/gtk/main.cpp
+
+Whitespace cleanup.
+
+------------------------------------------------------------------------
+r3275 | zeromus | 2010-01-10 15:41:14 +0800 (日, 10  1月 2010) | 2 lines
+Changed paths:
+   M src/windows/main.cpp
+
+win32: apply patch [2925555] to stop emu from crashing when no sound device is available
+
+------------------------------------------------------------------------
+r3274 | zeromus | 2010-01-10 04:41:23 +0800 (日, 10  1月 2010) | 2 lines
+Changed paths:
+   M src/arm_instructions.cpp
+   M src/thumb_instructions.cpp
+
+add a note about how to execute ideas printf
+
+------------------------------------------------------------------------
+r3273 | zeromus | 2010-01-09 16:40:57 +0800 (六, 09  1月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/gfx3d.cpp
+
+gfx3d: fix a bug in vectest?
+
+------------------------------------------------------------------------
+r3268 | mtabachenko | 2010-01-08 21:07:30 +0800 (五, 08  1月 2010) | 3 lines
+Changed paths:
+   M src/windows/DeSmuME_2008.sln
+   M src/windows/DeSmuME_2008.vcproj
+
+winport:
+- fix VS2008 x64 builds;
+
+------------------------------------------------------------------------
 r3267 | riccardom | 2010-01-07 22:35:00 +0800 (四, 07  1月 2010) | 2 lines
 Changed paths:
    M po/zh_TW.po

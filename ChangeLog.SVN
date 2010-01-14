@@ -1,4 +1,33 @@
 ------------------------------------------------------------------------
+r3283 | luigi__ | 2010-01-15 05:35:14 +0800 (五, 15  1月 2010) | 2 lines
+Changed paths:
+   M src/arm_instructions.cpp
+
+ARM: fix execution time for MUL/MLA opcodes.
+
+------------------------------------------------------------------------
+r3282 | luigi__ | 2010-01-15 02:55:45 +0800 (五, 15  1月 2010) | 3 lines
+Changed paths:
+   M src/NDSSystem.cpp
+   M src/NDSSystem.h
+   M src/windows/main.cpp
+   M src/windows/resource.h
+   M src/windows/resources.rc
+
+Add an option to patch the DelayLoop SWI when loading BIOS images (speed hack).
+Will work ONLY with Nintendo BIOS dumps! (the addresses that are overwritten are hardcoded).
+
+------------------------------------------------------------------------
+r3279 | riccardom | 2010-01-13 19:21:48 +0800 (三, 13  1月 2010) | 5 lines
+Changed paths:
+   M configure.ac
+
+Fix OpenAL on Mac OS X (hopefully)
+
+Unfortunately we are not able to check if OpenAL is
+available or not on mac os x so add it as requirement.
+
+------------------------------------------------------------------------
 r3278 | riccardom | 2010-01-13 18:48:18 +0800 (三, 13  1月 2010) | 2 lines
 Changed paths:
    M src/mic_openal.cpp

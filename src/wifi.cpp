@@ -156,7 +156,7 @@ const u8 FW_BBChannel[14]		= { 0xb3, 0xb3, 0xb3, 0xb3, 0xb3,	/* channel  1- 6 */
 						  } ;
 
 /* Note : the values are inspired from what I found in a firmware image from my DS */
-
+/*
 FW_WFCProfile FW_WFCProfile1 = {"",
 								"",
 								"",
@@ -172,6 +172,26 @@ FW_WFCProfile FW_WFCProfile1 = {"",
 								0,
 								0,
 								0xFF,
+								{0, 0, 0, 0, 0, 0, 0},
+								0,
+								{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+								{0, 0}
+							   } ;*/
+FW_WFCProfile FW_WFCProfile1 = {"SoftAP",
+								"",
+								"",
+								"",
+								"",
+								"",
+								{0, 0, 0, 0},
+								{0, 0, 0, 0},
+								{0, 0, 0, 0},
+								{0, 0, 0, 0},
+								0,
+								"",
+								0,
+								0,
+								0,
 								{0, 0, 0, 0, 0, 0, 0},
 								0,
 								{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -1038,7 +1058,7 @@ static void WIFI_BeaconTXStart()
 void WIFI_write16(u32 address, u16 val)
 {
 	BOOL action = FALSE ;
-	if (!(MMU_read32(ARMCPU_ARM7,REG_PWRCNT) & 0x0002)) return ;		/* access to wifi hardware was disabled */
+	if (!nds.power2.wifi) return;
 
 	WIFI_LOG(5, "Write at address %08X, %04X\n", address, val);
 	//printf("WIFI: Write at address %08X, %04X, pc=%08X\n", address, val, NDS_ARM7.instruct_adr);
@@ -1413,7 +1433,7 @@ u16 WIFI_read16(u32 address)
 {
 	BOOL action = FALSE ;
 	u16 temp ;
-	if (!(MMU_read32(ARMCPU_ARM7,REG_PWRCNT) & 0x0002)) return 0 ;		/* access to wifi hardware was disabled */
+	if (!nds.power2.wifi) return 0;
 
 	//if (address != 0x0480819C)
 	//	printf("WIFI: Read at address %08X, pc=%08X, r1=%08X\n", address, NDS_ARM7.instruct_adr, NDS_ARM7.R[1]);
@@ -2178,7 +2198,7 @@ void SoftAP_usTrigger()
 			//if((wifiMac.SoftAP.usecCounter % (100 * 1024)) == 0)
 			if((wifiMac.SoftAP.usecCounter & 131071) == 0)
 			{
-			//	printf("send beacon, store to %04X (readcsr=%04X), size=%x\n", 
+				//printf("send beacon, store to %04X (readcsr=%04X), size=%x\n", 
 				//	wifiMac.RXHWWriteCursor<<1, wifiMac.RXReadCursor<<1, sizeof(SoftAP_Beacon)+12);
 				SoftAP_SendBeacon();
 			}
@@ -2229,6 +2249,7 @@ void SoftAP_usTrigger()
 
 	// EXTREMELY EXPERIMENTAL packet receiving code
 	// slow >.<
+	// should be in a separate thread, but let's make things work first
 	if (!(wifiMac.SoftAP.usecCounter & 1023))
 	{
 		pcap_pkthdr hdr;
@@ -2239,8 +2260,8 @@ void SoftAP_usTrigger()
 		if (memcmp(&frame[6], &wifiMac.mac.bytes[0], 6))
 		{
 			if ((!memcmp(&frame[0], &BroadcastMAC[0], 6)) ||
-				(!memcmp(&frame[0], &wifiMac.bss.bytes[0], 6)) ||
-				(!memcmp(&wifiMac.bss.bytes[0], &BroadcastMAC[0], 6)))
+				(!memcmp(&frame[0], &wifiMac.mac.bytes[0], 6)) ||
+				(!memcmp(&wifiMac.mac.bytes[0], &BroadcastMAC[0], 6)))
 			{
 				WIFI_triggerIRQ(WIFI_IRQ_RXSTART);
 
@@ -2249,9 +2270,10 @@ void SoftAP_usTrigger()
 				u8 packet[2048];
 
 				//if (hdr.len >= 0x11D)
-				//printf("RECEIVED DATA FRAME: len=%i, src=%02X:%02X:%02X:%02X:%02X:%02X, dst=%02X:%02X:%02X:%02X:%02X:%02X, ethertype=%04X, dhcptype=%02X\n",
-				//	24 + (hdr.len-12), frame[6], frame[7], frame[8], frame[9], frame[10], frame[11],
-				//	frame[0], frame[1], frame[2], frame[3], frame[4], frame[5], *(u16*)&frame[12], frame[0x11C]);
+				if ((!memcmp(&frame[0], &wifiMac.mac.bytes[0], 6)))
+				printf("RECEIVED DATA FRAME: len=%i, src=%02X:%02X:%02X:%02X:%02X:%02X, dst=%02X:%02X:%02X:%02X:%02X:%02X, ethertype=%04X\n",
+					24 + (hdr.len-12), frame[6], frame[7], frame[8], frame[9], frame[10], frame[11],
+					frame[0], frame[1], frame[2], frame[3], frame[4], frame[5], *(u16*)&frame[12]);
 
 				WIFI_MakeRXHeader(packet, 0x0018, 20, packetLen, 0, 0);
 				*(u16*)&packet[12+0] = 0x0208;

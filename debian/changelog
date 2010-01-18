@@ -1,3 +1,23 @@
+desmume-trunk-pgo (svnr3285-0ronmi1) karmic; urgency=low
+
+  [ luigi__ ]
+  * Wifi: fix a bug due to the new POWCNT1/2 implementation. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Wifi: some bugxifing. After that I've been able to use ClIRC (IRC
+    client for DS) and chat on #dolphin-emu! But I couldn't connect to
+    freenode.net for some reason. Also, I readded the WFC profile for
+    SoftAP, which would be needed by some homebrew. But I made the
+    connection ID field empty. Anyway WFC doesn't work, remember. git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3285
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 19 Jan 2010 07:51:48 +0800
+
 desmume-trunk-pgo (svnr3283-0ronmi1) karmic; urgency=low
 
   [ riccardom ]

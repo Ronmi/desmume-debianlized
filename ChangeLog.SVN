@@ -1,4 +1,81 @@
 ------------------------------------------------------------------------
+r3296 | luigi__ | 2010-01-21 05:04:33 +0800 (四, 21  1月 2010) | 3 lines
+Changed paths:
+   M src/wifi.cpp
+
+Luigi__ is stupid stupid stupid stupid stupid stupid
+pcap_open without the promiscuous flag!!!
+
+------------------------------------------------------------------------
+r3295 | luigi__ | 2010-01-21 01:58:44 +0800 (四, 21  1月 2010) | 2 lines
+Changed paths:
+   M src/wifi.cpp
+
+Wifi: a few optimizations.
+
+------------------------------------------------------------------------
+r3294 | luigi__ | 2010-01-21 01:40:24 +0800 (四, 21  1月 2010) | 2 lines
+Changed paths:
+   M src/windows/main.cpp
+
+Oops.
+
+------------------------------------------------------------------------
+r3293 | luigi__ | 2010-01-21 01:31:51 +0800 (四, 21  1月 2010) | 3 lines
+Changed paths:
+   M src/driver.h
+   M src/wifi.cpp
+   M src/wifi.h
+   M src/windows/DeSmuME_2008.vcproj
+   M src/windows/main.cpp
+   M src/windows/windriver.h
+   A src/windows/winpcap.h
+
+Wifi: put PCap functions in the platform driver.
+Load WinPCap symbols through GetProcAddress(), remove linking against WinPCap, more graceful failing at GUI side when PCap is missing.
+
+------------------------------------------------------------------------
+r3292 | luigi__ | 2010-01-20 23:48:19 +0800 (三, 20  1月 2010) | 4 lines
+Changed paths:
+   M src/wifi.cpp
+   M src/windows/windriver.h
+
+Wifi: rewrite SoftAP's packet receiver so that it can now receive up to 64 packets per millisecond. Use nonblocking mode (speedup).
+
+Connections to the internet are still wonky. Are packets still being missed? Dunno.
+
+------------------------------------------------------------------------
+r3291 | zeromus | 2010-01-20 14:54:57 +0800 (三, 20  1月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/ctrlssdl.cpp
+
+sdlports: fix bizarre occasional touchpad failure
+
+------------------------------------------------------------------------
+r3290 | zeromus | 2010-01-20 14:22:42 +0800 (三, 20  1月 2010) | 2 lines
+Changed paths:
+   M src/NDSSystem.cpp
+
+fix some valground bugs
+
+------------------------------------------------------------------------
+r3285 | luigi__ | 2010-01-19 05:19:41 +0800 (二, 19  1月 2010) | 4 lines
+Changed paths:
+   M src/wifi.cpp
+
+Wifi: some bugxifing. After that I've been able to use ClIRC (IRC client for DS) and chat on #dolphin-emu! But I couldn't connect to freenode.net for some reason.
+
+Also, I readded the WFC profile for SoftAP, which would be needed by some homebrew. But I made the connection ID field empty. Anyway WFC doesn't work, remember.
+
+------------------------------------------------------------------------
+r3284 | luigi__ | 2010-01-16 09:10:28 +0800 (六, 16  1月 2010) | 2 lines
+Changed paths:
+   M src/wifi.cpp
+
+Wifi: fix a bug due to the new POWCNT1/2 implementation.
+
+------------------------------------------------------------------------
 r3283 | luigi__ | 2010-01-15 05:35:14 +0800 (五, 15  1月 2010) | 2 lines
 Changed paths:
    M src/arm_instructions.cpp

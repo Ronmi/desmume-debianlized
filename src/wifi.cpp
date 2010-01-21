@@ -50,7 +50,6 @@
 
 #define BASEPORT 7000
 
-bool wifi_netEnabled = false;
 socket_t wifi_socket = INVALID_SOCKET;
 sockaddr_t sendAddr;
 
@@ -156,27 +155,7 @@ const u8 FW_BBChannel[14]		= { 0xb3, 0xb3, 0xb3, 0xb3, 0xb3,	/* channel  1- 6 */
 						  } ;
 
 /* Note : the values are inspired from what I found in a firmware image from my DS */
-/*
-FW_WFCProfile FW_WFCProfile1 = {"",
-								"",
-								"",
-								"",
-								"",
-								"",
-								{0, 0, 0, 0},
-								{0, 0, 0, 0},
-								{0, 0, 0, 0},
-								{0, 0, 0, 0},
-								0,
-								"",
-								0,
-								0,
-								0xFF,
-								{0, 0, 0, 0, 0, 0, 0},
-								0,
-								{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-								{0, 0}
-							   } ;*/
+
 FW_WFCProfile FW_WFCProfile1 = {"SoftAP",
 								"",
 								"",
@@ -331,62 +310,17 @@ INLINE u32 WIFI_alignedLen(u32 len)
 	return ((len + 3) & ~3);
 }
 
-#ifdef EXPERIMENTAL_WIFI_COMM
-#ifdef WIN32
-static pcap_t *desmume_pcap_open(const char *source, int snaplen, int flags,
-		int read_timeout, char *errbuf)
+// Fast MAC compares
+
+INLINE bool WIFI_compareMAC(u8* a, u8* b)
 {
-	return PCAP::pcap_open(source, snaplen, flags, read_timeout, NULL, errbuf);
+	return ((*(u32*)&a[0]) == (*(u32*)&b[0])) && ((*(u16*)&a[4]) == (*(u16*)&b[4]));
 }
 
-static int desmume_pcap_findalldevs(pcap_if_t **alldevs, char *errbuf)
+INLINE bool WIFI_isBroadcastMAC(u8* a)
 {
-	return PCAP::pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, alldevs, errbuf);
+	return ((*(u32*)&a[0]) == 0xFFFFFFFF) && ((*(u16*)&a[4]) == 0xFFFF);
 }
-
-static void desmume_pcap_freealldevs(pcap_if_t *alldevs)
-{
-	return PCAP::pcap_freealldevs(alldevs);
-}
-
-static void desmume_pcap_close(pcap_t *p)
-{
-	return PCAP::pcap_close(p);
-}
-
-static int desmume_pcap_sendpacket(pcap_t *p, u_char *buf, int size)
-{
-	return PCAP::pcap_sendpacket(p, buf, size);
-}
-
-#else
-static pcap_t *desmume_pcap_open(const char *device, int snaplen, int promisc,
-		int to_ms, char *errbuf)
-{
-	return pcap_open_live(device, snaplen, promisc, to_ms, errbuf);
-}
-
-static int desmume_pcap_findalldevs(pcap_if_t **alldevs, char *errbuf)
-{
-	return pcap_findalldevs(alldevs, errbuf);
-}
-
-static void desmume_pcap_freealldevs(pcap_if_t *alldevs)
-{
-	return pcap_freealldevs(alldevs);
-}
-
-static void desmume_pcap_close(pcap_t *p)
-{
-	return pcap_close(p);
-}
-
-static int desmume_pcap_sendpacket(pcap_t *p, u_char *buf, int size)
-{
-	return pcap_sendpacket(p, buf, size);
-}
-#endif
-#endif
 
 /*******************************************************************************
 
@@ -700,13 +634,7 @@ bool WIFI_Init()
 	WIFI_initCRC32Table();
 
 	WIFI_resetRF(&wifiMac.RF) ;
-	wifi_netEnabled = false;
-#ifdef EXPERIMENTAL_WIFI_COMM
-	if(driver->WIFI_Host_InitSystem())
-	{
-		wifi_netEnabled = true;
-	}
-#endif
+
 	wifiMac.powerOn = FALSE;
 	wifiMac.powerOnPending = FALSE;
 	
@@ -733,13 +661,7 @@ void WIFI_Reset()
 	memset(&wifiMac, 0, sizeof(wifimac_t));
 
 	WIFI_resetRF(&wifiMac.RF) ;
-	wifi_netEnabled = false;
-#ifdef EXPERIMENTAL_WIFI_COMM
-	if(driver->WIFI_Host_InitSystem())
-	{
-		wifi_netEnabled = true;
-	}
-#endif
+
 	wifiMac.powerOn = FALSE;
 	wifiMac.powerOnPending = FALSE;
 	
@@ -1752,6 +1674,13 @@ bool Adhoc_Init()
 
 	wifiMac.Adhoc.usecCounter = 0;
 
+	if (!driver->WIFI_SocketsAvailable())
+	{
+		WIFI_LOG(1, "Ad-hoc: failed to initialize sockets.\n");
+		wifi_socket = INVALID_SOCKET;
+		return false;
+	}
+
 	// Create an UDP socket
 	wifi_socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if (wifi_socket < 0)
@@ -1807,6 +1736,9 @@ void Adhoc_Reset()
 
 void Adhoc_SendPacket(u8* packet, u32 len)
 {
+	if (wifi_socket < 0)
+		return;
+
 	WIFI_LOG(2, "Ad-hoc: sending a packet of %i bytes, frame control: %04X\n", len, *(u16*)&packet[0]);
 
 	u32 frameLen = sizeof(Adhoc_FrameHeader) + len;
@@ -1833,6 +1765,9 @@ void Adhoc_SendPacket(u8* packet, u32 len)
 void Adhoc_usTrigger()
 {
 	wifiMac.Adhoc.usecCounter++;
+
+	if (wifi_socket < 0)
+		return;
 
 	// Check every millisecond if we received a packet
 	if (!(wifiMac.Adhoc.usecCounter & 1023))
@@ -1874,11 +1809,11 @@ void Adhoc_usTrigger()
 			ptr += sizeof(Adhoc_FrameHeader);
 
 			// If the packet is for us, send it to the wifi core
-			if (memcmp(&ptr[10], &wifiMac.mac.bytes[0], 6))
+			if (!WIFI_compareMAC(&ptr[10], &wifiMac.mac.bytes[0]))
 			{
-				if ((!memcmp(&ptr[16], &BroadcastMAC[0], 6)) ||
-					(!memcmp(&ptr[16], &wifiMac.bss.bytes[0], 6)) ||
-					(!memcmp(&wifiMac.bss.bytes[0], &BroadcastMAC[0], 6)))
+				if (WIFI_isBroadcastMAC(&ptr[16]) ||
+					WIFI_compareMAC(&ptr[16], &wifiMac.bss.bytes[0]) ||
+					WIFI_isBroadcastMAC(&wifiMac.bss.bytes[0]))
 				{
 				/*	printf("packet was for us: mac=%02X:%02X.%02X.%02X.%02X.%02X, bssid=%02X:%02X.%02X.%02X.%02X.%02X\n",
 						wifiMac.mac.bytes[0], wifiMac.mac.bytes[1], wifiMac.mac.bytes[2], wifiMac.mac.bytes[3], wifiMac.mac.bytes[4], wifiMac.mac.bytes[5],
@@ -1992,41 +1927,56 @@ const u8 SoftAP_AssocResponse[] = {
 
 //todo - make a class to wrap this
 //todo - zeromus - inspect memory leak safety of all this
-static pcap_if_t * WIFI_index_device(pcap_if_t *alldevs, int index) {
+static pcap_if_t * WIFI_index_device(pcap_if_t *alldevs, int index)
+{
 	pcap_if_t *curr = alldevs;
-	for(int i=0;i<index;i++)
+
+	for(int i = 0; i < index; i++)
 		curr = curr->next;
+
 	return curr;
 }
 
 bool SoftAP_Init()
 {
-
 	wifiMac.SoftAP.usecCounter = 0;
 
 	wifiMac.SoftAP.curPacketSize = 0;
 	wifiMac.SoftAP.curPacketPos = 0;
 	wifiMac.SoftAP.curPacketSending = FALSE;
+
+	if (!driver->WIFI_PCapAvailable())
+	{
+		WIFI_LOG(1, "SoftAP: failed to initialize PCap.\n");
+		wifi_bridge = NULL;
+		return false;
+	}
 	
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_if_t *alldevs;
 
-	if(wifi_netEnabled)
+	if(driver->PCAP_findalldevs(&alldevs, errbuf) == -1)
 	{
-		if(desmume_pcap_findalldevs(&alldevs, errbuf) == -1)
-		{
-			printf("SoftAP: PCAP error with pcap_findalldevs_ex(): %s\n", errbuf);
-			return false;
-		}
+		WIFI_LOG(1, "SoftAP: PCap: failed to find any network adapter: %s\n", errbuf);
+		return false;
+	}
 
-		wifi_bridge = desmume_pcap_open(WIFI_index_device(alldevs,CommonSettings.wifi.infraBridgeAdapter)->name, PACKET_SIZE, 0, 1, errbuf);
-		if(wifi_bridge == NULL)
-		{
-			printf("SoftAP: PCAP error with pcap_open(): %s\n", errbuf);
-			return false;
-		}
+	pcap_if_t* dev = WIFI_index_device(alldevs,CommonSettings.wifi.infraBridgeAdapter);
+	wifi_bridge = driver->PCAP_open(dev->name, PACKET_SIZE, PCAP_OPENFLAG_PROMISCUOUS, 1, errbuf);
+	if(wifi_bridge == NULL)
+	{
+		WIFI_LOG(1, "SoftAP: PCap: failed to open %s: %s\n", (dev->description ? dev->description : "the network adapter"), errbuf);
+		return false;
+	}
 
-		desmume_pcap_freealldevs(alldevs);
+	driver->PCAP_freealldevs(alldevs);
+
+	// Set non-blocking mode
+	if (driver->PCAP_setnonblock(wifi_bridge, 1, errbuf) == -1)
+	{
+		WIFI_LOG(1, "SoftAP: PCap: failed to set non-blocking mode: %s\n", errbuf);
+		driver->PCAP_close(wifi_bridge); wifi_bridge = NULL;
+		return false;
 	}
 
 	return true;
@@ -2034,11 +1984,8 @@ bool SoftAP_Init()
 
 void SoftAP_DeInit()
 {
-	if(wifi_netEnabled)
-	{
-		if(wifi_bridge != NULL)
-			desmume_pcap_close(wifi_bridge);
-	}
+	if(wifi_bridge != NULL)
+		driver->PCAP_close(wifi_bridge);
 }
 
 void SoftAP_Reset()
@@ -2123,8 +2070,8 @@ void SoftAP_SendPacket(u8 *packet, u32 len)
 			u32 eflen = (len - 4 - 30 + 14);
 			u8 *ethernetframe = new u8[eflen];
 
-			printf("----- SENDING DATA FRAME: len=%i, ethertype=%04X, dhcptype=%02X -----\n",
-				len, *(u16*)&packet[30], packet[0x11C]);
+			printf("----- SENDING DATA FRAME: len=%i, ethertype=%04X -----\n",
+				len, *(u16*)&packet[30]);
 
 			// Destination address
 			ethernetframe[0] = packet[16];
@@ -2152,8 +2099,8 @@ void SoftAP_SendPacket(u8 *packet, u32 len)
 			// Checksum 
 			// TODO ?
 
-			if(wifi_netEnabled) //dont try to pcap out the packet unless network is enabled
-				desmume_pcap_sendpacket(wifi_bridge, ethernetframe, eflen);
+			if(wifi_bridge != NULL)
+				driver->PCAP_sendpacket(wifi_bridge, ethernetframe, eflen);
 
 			delete ethernetframe;
 		}
@@ -2184,6 +2131,59 @@ INLINE void SoftAP_SendBeacon()
 	wifiMac.SoftAP.curPacketSize = WIFI_alignedLen(totalLen);
 	wifiMac.SoftAP.curPacketPos = 0;
 	wifiMac.SoftAP.curPacketSending = TRUE;
+}
+
+void SoftAP_RXHandler(u_char* user, const struct pcap_pkthdr* h, const u_char* _data)
+{
+	// safety checks
+	if ((_data == NULL) || (h == NULL))
+		return;
+
+	u8* data = (u8*)_data;
+
+	// reject the packet if it wasn't for us
+	if (!(WIFI_isBroadcastMAC(&data[0]) || WIFI_compareMAC(&data[0], wifiMac.mac.bytes)))
+		return;
+
+	// reject the packet if we just sent it
+	if (WIFI_compareMAC(&data[6], wifiMac.mac.bytes))
+		return;
+
+	// The packet was for us. Let's process it then.
+	WIFI_triggerIRQ(WIFI_IRQ_RXSTART);
+
+	int wpacketLen = WIFI_alignedLen(26 + 6 + 2 + (h->len-14));
+	u8 wpacket[2048];
+
+	//printf("RECEIVED DATA FRAME: len=%i/%i, src=%02X:%02X:%02X:%02X:%02X:%02X, dst=%02X:%02X:%02X:%02X:%02X:%02X, ethertype=%04X\n",
+	//	24+ (h->caplen-12), 24 + (h->len-12), data[6], data[7], data[8], data[9], data[10], data[11],
+	//	data[0], data[1], data[2], data[3], data[4], data[5], *(u16*)&data[12]);
+
+	// Make a valid 802.11 frame
+	WIFI_MakeRXHeader(wpacket, 0x0018, 20, wpacketLen, 0, 0);
+	*(u16*)&wpacket[12+0] = 0x0208;
+	*(u16*)&wpacket[12+2] = 0x0000;
+	memcpy(&wpacket[12+4], &data[0], 6);
+	memcpy(&wpacket[12+10], &SoftAP_MACAddr[0], 6);
+	memcpy(&wpacket[12+16], &data[6], 6);
+	*(u16*)&wpacket[12+22] = 0x0000;
+	*(u16*)&wpacket[12+24] = 0xAAAA;
+	*(u16*)&wpacket[12+26] = 0x0003;
+	*(u16*)&wpacket[12+28] = 0x0000;
+	*(u16*)&wpacket[12+30] = *(u16*)&data[12];
+	memcpy(&wpacket[12+32], &data[14], wpacketLen);
+
+	// put it in the RX buffer
+	for (int i = 0; i < (12 + wpacketLen); i += 2)
+	{
+		u16 word = *(u16*)&wpacket[i];
+		WIFI_RXPutWord(word);
+	}
+
+	// Done!
+	wifiMac.RXHWWriteCursorReg = ((wifiMac.RXHWWriteCursor + 1) & (~1));
+	wifiMac.RXNum++;
+	WIFI_triggerIRQ(WIFI_IRQ_RXEND);
 }
 
 void SoftAP_usTrigger()
@@ -2248,62 +2248,11 @@ void SoftAP_usTrigger()
 	}
 
 	// EXTREMELY EXPERIMENTAL packet receiving code
-	// slow >.<
-	// should be in a separate thread, but let's make things work first
-	if (!(wifiMac.SoftAP.usecCounter & 1023))
-	{
-		pcap_pkthdr hdr;
-		u8* frame = (u8*)pcap_next(wifi_bridge, &hdr);
-		if (frame == NULL)
-			return;
-
-		if (memcmp(&frame[6], &wifiMac.mac.bytes[0], 6))
-		{
-			if ((!memcmp(&frame[0], &BroadcastMAC[0], 6)) ||
-				(!memcmp(&frame[0], &wifiMac.mac.bytes[0], 6)) ||
-				(!memcmp(&wifiMac.mac.bytes[0], &BroadcastMAC[0], 6)))
-			{
-				WIFI_triggerIRQ(WIFI_IRQ_RXSTART);
-
-				int packetLen = WIFI_alignedLen(26 + 6 + 2 + (hdr.len-14));
-			//	u8* packet = new u8[12 + packetLen];
-				u8 packet[2048];
-
-				//if (hdr.len >= 0x11D)
-				if ((!memcmp(&frame[0], &wifiMac.mac.bytes[0], 6)))
-				printf("RECEIVED DATA FRAME: len=%i, src=%02X:%02X:%02X:%02X:%02X:%02X, dst=%02X:%02X:%02X:%02X:%02X:%02X, ethertype=%04X\n",
-					24 + (hdr.len-12), frame[6], frame[7], frame[8], frame[9], frame[10], frame[11],
-					frame[0], frame[1], frame[2], frame[3], frame[4], frame[5], *(u16*)&frame[12]);
-
-				WIFI_MakeRXHeader(packet, 0x0018, 20, packetLen, 0, 0);
-				*(u16*)&packet[12+0] = 0x0208;
-				*(u16*)&packet[12+2] = 0x0000;
-				memcpy(&packet[12+4], &frame[0], 6);
-				memcpy(&packet[12+10], &SoftAP_MACAddr[0], 6);
-				memcpy(&packet[12+16], &frame[6], 6);
-				*(u16*)&packet[12+22] = 0x0000;
-				*(u16*)&packet[12+24] = 0xAAAA;
-				*(u16*)&packet[12+26] = 0x0003;
-				*(u16*)&packet[12+28] = 0x0000;
-				*(u16*)&packet[12+30] = *(u16*)&frame[12];
-				memcpy(&packet[12+32], &frame[14], packetLen);
-
-				//printf("new dhcptype = %02X\n", packet[12+24+(0x11C-12)]);
-
-				for (int i = 0; i < (12 + packetLen); i += 2)
-				{
-					u16 word = *(u16*)&packet[i];
-					WIFI_RXPutWord(word);
-				}
-
-				wifiMac.RXHWWriteCursorReg = ((wifiMac.RXHWWriteCursor + 1) & (~1));
-				wifiMac.RXNum++;
-				WIFI_triggerIRQ(WIFI_IRQ_RXEND);
-
-				//delete packet;
-			}
-		}
-	}
+	// Can now receive 64 packets per millisecond. Completely arbitrary limit. Todo: tweak if needed.
+	// But due to using non-blocking mode, this shouldn't be as slow as it used to be.
+	if ((wifiMac.SoftAP.usecCounter & 1023) == 0)
+		if(wifi_bridge != NULL)
+			driver->PCAP_dispatch(wifi_bridge, 64, SoftAP_RXHandler, NULL);
 }
 
 #endif

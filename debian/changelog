@@ -1,3 +1,16 @@
+desmume-trunk-pgo (svnr3297) karmic; urgency=low
+
+  [ mtabachenko ]
+  * core: - add PU for ARM7 BIOS region (fixed #2598209, #2596062); git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    97 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3297
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 22 Jan 2010 07:06:56 +0800
+
 desmume-trunk-pgo (svnr3296-0ronmi1) karmic; urgency=low
 
   [ zeromus ]

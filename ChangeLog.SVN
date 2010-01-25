@@ -1,4 +1,71 @@
 ------------------------------------------------------------------------
+r3304 | zeromus | 2010-01-25 15:23:54 +0800 (一, 25  1月 2010) | 2 lines
+Changed paths:
+   M ChangeLog
+   M src/NDSSystem.h
+   M src/SPU.cpp
+   M src/SPU.h
+   M src/commandline.cpp
+   M src/commandline.h
+   M src/windows/main.cpp
+   M src/windows/resource.h
+   M src/windows/resources.rc
+   M src/windows/soundView.cpp
+
+add capture registers to soundview; emulate remainder of spu mixing functionality; add "advanced spu" sound configuration and --spu-advanced=1 to unlock new features, since they are running a little slow right now.
+
+------------------------------------------------------------------------
+r3303 | zeromus | 2010-01-24 02:13:28 +0800 (日, 24  1月 2010) | 2 lines
+Changed paths:
+   M src/mc.cpp
+
+core: change uninitialized save data to be 0xFF like it is supposed to be
+
+------------------------------------------------------------------------
+r3302 | zeromus | 2010-01-24 01:33:10 +0800 (日, 24  1月 2010) | 2 lines
+Changed paths:
+   M src/SPU.cpp
+
+spu: fix new bug in some sequenced music
+
+------------------------------------------------------------------------
+r3301 | zeromus | 2010-01-23 18:21:46 +0800 (六, 23  1月 2010) | 2 lines
+Changed paths:
+   M src/SPU.cpp
+   M src/SPU.h
+   M src/readwrite.h
+
+spu: proof of concept of sound capture. works in starfy and maxmod; not yet in nsmb.
+
+------------------------------------------------------------------------
+r3300 |  | 2010-01-23 03:52:50 +0800 (六, 23  1月 2010) | 2 lines
+Changed paths:
+   M src/saves.cpp
+   M src/wifi.cpp
+   M src/wifi.h
+
+Wifi: some cleanup/code refactoring. Nothing exciting.
+
+------------------------------------------------------------------------
+r3299 |  | 2010-01-22 16:59:09 +0800 (五, 22  1月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/SPU.cpp
+   M src/SPU.h
+   M src/windows/main.cpp
+
+spu: overhaul register emulation; fixes a bunch of maxmod bugs
+
+------------------------------------------------------------------------
+r3298 |  | 2010-01-22 07:29:00 +0800 (五, 22  1月 2010) | 3 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/NDSSystem.cpp
+
+core:
+- some fixes in PU and cleanup MMU;
+
+------------------------------------------------------------------------
 r3297 | mtabachenko | 2010-01-21 23:00:50 +0800 (四, 21  1月 2010) | 3 lines
 Changed paths:
    M src/MMU.cpp

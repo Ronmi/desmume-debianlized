@@ -1,3 +1,46 @@
+desmume-trunk-pgo (svnr3304) karmic; urgency=low
+
+  [ mtabachenko ]
+  * core: - some fixes in PU and cleanup MMU; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * spu: overhaul register emulation; fixes a bunch of maxmod bugs git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Wifi: some cleanup/code refactoring. Nothing exciting. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * spu: proof of concept of sound capture. works in starfy and maxmod;
+    not yet in nsmb. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    01 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * spu: fix new bug in some sequenced music git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * core: change uninitialized save data to be 0xFF like it is supposed
+    to be git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add capture registers to soundview; emulate remainder of spu mixing
+    functionality; add "advanced spu" sound configuration and --spu-
+    advanced=1 to unlock new features, since they are running a little
+    slow right now. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3304
+  * change git-buildpackage config
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 26 Jan 2010 05:28:07 +0800
+
 desmume-trunk-pgo (svnr3297) karmic; urgency=low
 
   [ mtabachenko ]

@@ -1,3 +1,86 @@
+desmume-trunk (svnrivisionr3304-r3320) karmic; urgency=low
+
+  [ zeromus ]
+  * win32: fix default command in pathconfig dialog to be OK instead of
+    Cancel git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    05 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * wifi: fix bugs in winpcap init; gdb: don't emulate hardware while
+    stalled git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    06 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Init glib threads We actually does not use them but there's a plan
+    to do so. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    07 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Make desmume_config.* frontend agnostic Remvoe references to gdk and
+    gtk frontend specific configurations. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    08 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Read configuration from ini file Use gtk frontend desmume_config.*
+    machinery to read the ini file. This should fixup joystick not
+    working correctly as reported in #2897620. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    09 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Remove path for local includes We have src/ in our path so no need
+    all these ../ git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    10 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Whitespace fixup. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    11 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * win32: fix occasional race condition crash in subsequent rom loads
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    12 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: fix background pause menuitem git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    13 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Cleanup ALSA mic initialization ALSA microphone code still suck but
+    now a little bit less. Cleanup the initialization: - use default
+    device - don't force a buffer size and a period which some drivers
+    can't support, instead query the driver for them The next step would
+    be to add use interrupt driven capturing on a separathe thread but
+    ALSA is a bitch... git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    14 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * gpu: fix sprite rendering order to be front to back git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    15 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Implement set_get_joy_key(), set_get_joy_axis() as wrapper around a
+    get only version of the same. These will be used in the gtk frontend
+    where we want to have the luxury of discarding changes. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    16 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add joystick configuration gui for the gtk frontend There's no
+    reason why we can't have one too :) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    17 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * gtk / cli frontends update. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    18 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Use DoQuit() when exiting. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    19 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add an entry about the OpenAL microphone support git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    20 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * Update to r3320
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 29 Jan 2010 16:26:25 +0800
+
 desmume-trunk (svnrivisionr3285-r3304) karmic; urgency=low
 
   [ mtabachenko ]

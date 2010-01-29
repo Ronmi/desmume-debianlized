@@ -22,7 +22,7 @@
 #include <SDL_thread.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <glib.h>
 
 #ifndef VERSION
 #define VERSION "Unknown version"
@@ -44,19 +44,20 @@
 #define CLI_UI
 #endif
 
-#include "../MMU.h"
-#include "../NDSSystem.h"
-#include "../debug.h"
-#include "../sndsdl.h"
-#include "../ctrlssdl.h"
-#include "../render3D.h"
-#include "../rasterize.h"
-#include "../saves.h"
-#include "../mic.h"
-#include "../firmware.h"
-#include "../GPU_osd.h"
+#include "MMU.h"
+#include "NDSSystem.h"
+#include "debug.h"
+#include "sndsdl.h"
+#include "ctrlssdl.h"
+#include "render3D.h"
+#include "rasterize.h"
+#include "saves.h"
+#include "mic.h"
+#include "firmware.h"
+#include "GPU_osd.h"
+#include "gtk/desmume_config.h"
 #ifdef GDB_STUB
-#include "../gdbstub.h"
+#include "gdbstub.h"
 #endif
 
 volatile bool execute = false;
@@ -748,6 +749,8 @@ int main(int argc, char ** argv) {
   int boost = 0;
   int error;
 
+  GKeyFile *keyfile;
+
 #ifdef DISPLAY_FPS
   u32 fps_timing = 0;
   u32 fps_frame_counter = 0;
@@ -776,6 +779,10 @@ int main(int argc, char ** argv) {
   /* use any language set on the command line */
   if ( my_config.firmware_language != -1) {
     fw_config.language = my_config.firmware_language;
+  }
+
+  if ( !g_thread_supported()) {
+    g_thread_init( NULL);
   }
 
 #ifdef GDB_STUB
@@ -918,8 +925,9 @@ int main(int argc, char ** argv) {
 
   /* Initialize joysticks */
   if(!init_joy()) return 1;
-  /* Load our own keyboard configuration */
-  set_kb_keys(cli_kb_cfg);
+  /* Load keyboard and joystick configuration */
+  keyfile = desmume_config_read_file(cli_kb_cfg);
+  desmume_config_dispose(keyfile);
 
   if ( !my_config.disable_limiter) {
     /* create the semaphore used for fps limiting */
@@ -1000,8 +1008,6 @@ int main(int argc, char ** argv) {
     }
 #endif
   }
-
-
 
   /* Unload joystick */
   uninit_joy();

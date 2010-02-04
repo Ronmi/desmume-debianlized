@@ -659,10 +659,10 @@ int NDS_WritePNG(const char *fname)
 
 	if(!(pp=fopen(fname, "wb")))
 	{
-		return 0;
+		goto PNGerr;
 	}
 	{
-		static uint8 header[8]={137,80,78,71,13,10,26,10};
+		const uint8 header[8]={137,80,78,71,13,10,26,10};
 		if(fwrite(header,8,1,pp)!=1)
 			goto PNGerr;
 	}
@@ -2044,7 +2044,7 @@ void NDS_Reset()
 			dst = header->ARM9cpy;
 
 			u32 size = (0x8000 - src) >> 2;
-			INFO("Copy secure area from 0x%08X to 0x%08X (size %i/0x%08X)\n", src, dst, size, size);
+			//INFO("Copy secure area from 0x%08X to 0x%08X (size %i/0x%08X)\n", src, dst, size, size);
 			for (u32 i = 0; i < size; i++)
 			{
 				_MMU_write32<ARMCPU_ARM9>(dst, T1ReadLong(MMU.CART_ROM, src));

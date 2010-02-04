@@ -1,28 +1,73 @@
 #ifdef WIN32
 #pragma comment(lib,"wxmsw28_core.lib")
 #pragma comment(lib,"wxbase28.lib")
+#else
+#define lstrlen(a) strlen((a))
 #endif
 
-#undef WIN32
 #include "NDSSystem.h"
 #include "GPU_osd.h"
-#include "wx/wxprec.h"
+#include <wx/wxprec.h>
 #include "gfx3d.h"
 #include "version.h"
 #include "addons.h"
 #include "saves.h"
 #include "movie.h"
+#include "sndsdl.h"
+#include "render3D.h"
+#include "rasterize.h"
+#include "OGLRender.h"
 
-#include "wx/stdpaths.h"
+#ifdef WIN32
+#include "snddx.h"
+#endif
+
+#include <wx/stdpaths.h>
 
 #include "LuaWindow.h"
 #include "PadSimple/GUI/ConfigDlg.h"
 #include "PadSimple/pluginspecs_pad.h"
 
 #ifndef WX_PRECOMP
-#include "wx/wx.h"
+#include <wx/wx.h>
 #endif
 
+SoundInterface_struct *SNDCoreList[] = {
+        &SNDDummy,
+#ifdef WIN32
+//        &SNDDIRECTX,
+#else
+        &SNDSDL,
+#endif
+        NULL
+};
+
+GPU3DInterface *core3DList[] = {
+        &gpu3DRasterize,
+#ifndef WIN32
+        &gpu3Dgl,
+#endif
+        &gpu3DNull,
+		NULL
+};
+
+/* lua stuff stubs */
+#ifndef WIN32
+void OpenLuaContext(int, void (*)(int, char const*), void (*)(int), void (*)(int, bool))
+{
+}
+void RunLuaScriptFile(int, char const*)
+{
+}
+void StopLuaScript(int)
+{
+}
+void CloseLuaContext(int)
+{
+}
+#endif
+
+volatile bool execute = false;
 std::string executableDirectory;
 
 class Desmume: public wxApp
@@ -39,12 +84,9 @@ public:
 	void OnQuit(wxCommandEvent& WXUNUSED(event)){Close(true);}
 	void OnAbout(wxCommandEvent& WXUNUSED(event))
 	{
-		wxMessageBox(wxString::Format
-			(
-			"Desmume on %s",
-			wxGetOsDescription()
-			),
-			"About Desmume",
+		wxMessageBox(
+			wxString::Format(wxT("Desmume on %s"),wxGetOsDescription().c_str()),
+			wxT("About Desmume"),
 			wxOK | wxICON_INFORMATION,
 			this);
 	}
@@ -57,7 +99,11 @@ public:
 
 		SPADStatus s;
 		memset(&s,0,sizeof(s));
+
+		//TODO !!!!!!!!!!!!!!!!!!!!!! FIXME!!!!!!!!!!1
+#ifndef _MSC_VER
 		PAD_GetStatus(0, &s);
+#endif
 
 		if(s.button & PAD_BUTTON_LEFT)
 			left = true;
@@ -112,11 +158,11 @@ public:
 
 	//TODO integrate paths system?
 	void LoadRom(wxCommandEvent& event){
-		wxFileDialog dialog(this,"Load Rom",wxGetHomeDir(),"","*.nds",wxFD_OPEN, wxDefaultPosition, wxDefaultSize);
+		wxFileDialog dialog(this,_T("Load Rom"),wxGetHomeDir(),_T(""),_T("*.nds"),wxFD_OPEN, wxDefaultPosition, wxDefaultSize);
 		if(dialog.ShowModal() == wxID_OK) {
 			NDS_Init ();
 			execute = true;
-			NDS_LoadROM(dialog.GetPath(), dialog.GetPath());
+			NDS_LoadROM(dialog.GetPath().mb_str(), dialog.GetPath().mb_str());
 		}
 	}
 
@@ -212,9 +258,9 @@ public:
 	void subBG2(wxCommandEvent& event){subG(2);}
 	void subBG3(wxCommandEvent& event){subG(3);}
 
-	void website(wxCommandEvent& event) {wxLaunchDefaultBrowser("http://desmume.org/");}
-	void forums(wxCommandEvent& event) {wxLaunchDefaultBrowser("http://forums.desmume.org/index.php");}
-	void submitABugReport(wxCommandEvent& event) {wxLaunchDefaultBrowser("http://sourceforge.net/tracker/?func=add&group_id=164579&atid=832291");}
+	void website(wxCommandEvent& event) {wxLaunchDefaultBrowser(_T("http://desmume.org/"));}
+	void forums(wxCommandEvent& event) {wxLaunchDefaultBrowser(_T("http://forums.desmume.org/index.php"));}
+	void submitABugReport(wxCommandEvent& event) {wxLaunchDefaultBrowser(_T("http://sourceforge.net/tracker/?func=add&group_id=164579&atid=832291"));}
 
 	void _3dView(wxCommandEvent& event) {
 		driver->VIEW3D_Init();
@@ -222,14 +268,14 @@ public:
 	}
 
 	void saveStateAs(wxCommandEvent& event) {
-		wxFileDialog dialog(this,"Save State As",wxGetHomeDir(),"","*.dst",wxFD_SAVE, wxDefaultPosition, wxDefaultSize);
+		wxFileDialog dialog(this,_T("Save State As"),wxGetHomeDir(),_T(""),_T("*.dst"),wxFD_SAVE, wxDefaultPosition, wxDefaultSize);
 		if(dialog.ShowModal() == wxID_OK)
-			savestate_save (dialog.GetPath());
+			savestate_save (dialog.GetPath().mb_str());
 	}
 	void loadStateFrom(wxCommandEvent& event) {
-		wxFileDialog dialog(this,"Load State From",wxGetHomeDir(),"","*.dst",wxFD_OPEN, wxDefaultPosition, wxDefaultSize);
+		wxFileDialog dialog(this,_T("Load State From"),wxGetHomeDir(),_T(""),_T("*.dst"),wxFD_OPEN, wxDefaultPosition, wxDefaultSize);
 		if(dialog.ShowModal() == wxID_OK)
-			savestate_load (dialog.GetPath());
+			savestate_load (dialog.GetPath().mb_str());
 	}
 
 	void closeRom(wxCommandEvent& event) {
@@ -240,25 +286,25 @@ public:
 	}
 
 	void importBackupMemory(wxCommandEvent& event) {
-		wxFileDialog dialog(this,"Import Backup Memory",wxGetHomeDir(),"","*.duc, *.sav",wxFD_OPEN, wxDefaultPosition, wxDefaultSize);
+		wxFileDialog dialog(this,_T("Import Backup Memory"),wxGetHomeDir(),_T(""),_T("*.duc, *.sav"),wxFD_OPEN, wxDefaultPosition, wxDefaultSize);
 		if(dialog.ShowModal() == wxID_OK)
-			if (!NDS_ImportSave(dialog.GetPath()))
-				wxMessageBox(wxString::Format("Save was not successfully imported"),"Error",wxOK | wxICON_ERROR,this);
+			if (!NDS_ImportSave(dialog.GetPath().mb_str()))
+				wxMessageBox(wxString::Format(_T("Save was not successfully imported")),_T("Error"),wxOK | wxICON_ERROR,this);
 	}
 
 	void exportBackupMemory(wxCommandEvent& event) {
-		wxFileDialog dialog(this,"Export Backup Memory",wxGetHomeDir(),"","*.duc, *.sav",wxFD_SAVE, wxDefaultPosition, wxDefaultSize);
+		wxFileDialog dialog(this,_T("Export Backup Memory"),wxGetHomeDir(),_T(""),_T("*.duc, *.sav"),wxFD_SAVE, wxDefaultPosition, wxDefaultSize);
 		if(dialog.ShowModal() == wxID_OK)
-			if (!NDS_ExportSave(dialog.GetPath()))
-				wxMessageBox(wxString::Format("Save was not successfully exported"),"Error",wxOK | wxICON_ERROR,this);
+			if (!NDS_ExportSave(dialog.GetPath().mb_str()))
+				wxMessageBox(wxString::Format(_T("Save was not successfully exported")),_T("Error"),wxOK | wxICON_ERROR,this);
 	}
 	void saveScreenshotAs(wxCommandEvent& event) {
-		wxFileDialog dialog(this,"Save Screenshot As",wxGetHomeDir(),"","*.png",wxFD_SAVE, wxDefaultPosition, wxDefaultSize);
+		wxFileDialog dialog(this,_T("Save Screenshot As"),wxGetHomeDir(),_T(""),_T("*.png"),wxFD_SAVE, wxDefaultPosition, wxDefaultSize);
 		if(dialog.ShowModal() == wxID_OK)
-			NDS_WritePNG(dialog.GetPath());
+			NDS_WritePNG(dialog.GetPath().mb_str());
 	}
 	void quickScreenshot(wxCommandEvent& event) {
-			NDS_WritePNG(wxStandardPaths::Get().GetExecutablePath());//TODO GetExecutablePath is wrong
+			NDS_WritePNG(wxStandardPaths::Get().GetExecutablePath().mb_str());//TODO GetExecutablePath is wrong
 	}
 
 	//TODO
@@ -273,7 +319,9 @@ public:
 
 	void OnOpenControllerConfiguration(wxCommandEvent& WXUNUSED (event))
 	{
+#ifndef _MSC_VER
 		new PADConfigDialogSimple(this);
+#endif
 	}
 
 	wxMenu* MakeStatesSubMenu( int baseid ) const
@@ -282,7 +330,7 @@ public:
 
 		for (int i = 0; i < 10; i++)
 		{
-			mnuSubstates->Append( baseid+i+1, wxString::Format("Slot %d", i) );
+			mnuSubstates->Append( baseid+i+1, wxString::Format(_T("Slot %d"), i) );
 		}
 		return mnuSubstates;
 	}
@@ -402,17 +450,19 @@ bool Desmume::OnInit()
 
 	Desmume_InitOnce();
 	aggDraw.hud->attach((u8*)GPU_screen, 256, 384, 1024);//TODO
+	NDS_3D_ChangeCore(0);
 
 #ifdef __WIN32__
 	extern void OpenConsole();
 	OpenConsole();
 #endif
 
-	DesmumeFrame *frame = new DesmumeFrame((char*)EMU_DESMUME_NAME_AND_VERSION());
+        wxString emu_version(EMU_DESMUME_NAME_AND_VERSION(), wxConvUTF8);
+	DesmumeFrame *frame = new DesmumeFrame(emu_version);
 	frame->Show(true);
 
 	char *p, *a;
-	std::string b = wxStandardPaths::Get().GetExecutablePath();
+	std::string b = std::string(wxStandardPaths::Get().GetExecutablePath().mb_str());
 	a = const_cast<char*>(b.c_str());
 	p = a + lstrlen(a);
 	while (p >= a && *p != '\\') p--;
@@ -422,7 +472,9 @@ bool Desmume::OnInit()
 	SPADInitialize PADInitialize;
 	PADInitialize.padNumber = 1;
 	extern void Initialize(void *init);
+#ifndef _WIN32
 	Initialize(&PADInitialize);
+#endif
 
 	//TODO
 	addon_type = NDS_ADDON_NONE;
@@ -444,16 +496,16 @@ DesmumeFrame::DesmumeFrame(const wxString& title)
 	wxMenu *toolsMenu = new wxMenu;
 	wxMenu *helpMenu = new wxMenu;
 
-	fileMenu->Append(wRom, "Load R&om\tAlt-R");
-	fileMenu->Append(wCloseRom, "Close Rom");
+	fileMenu->Append(wRom, _T("Load R&om\tAlt-R"));
+	fileMenu->Append(wCloseRom, _T("Close Rom"));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wSaveStateAs, "Save State As...");
-	fileMenu->Append(wLoadStateFrom, "Load State From...");
+	fileMenu->Append(wSaveStateAs, _T("Save State As..."));
+	fileMenu->Append(wLoadStateFrom, _T("Load State From..."));
 	{
 		wxMenu* saves(DesmumeFrame::MakeStatesSubMenu(wSaveState01));
 		wxMenu* loads(DesmumeFrame::MakeStatesSubMenu(wLoadState01));
-		fileMenu->AppendSubMenu(saves,"Save State");
-		fileMenu->AppendSubMenu(loads,"Load State");
+		fileMenu->AppendSubMenu(saves, _T("Save State"));
+		fileMenu->AppendSubMenu(loads, _T("Load State"));
 #define ConnectMenuRange( id_start, inc, handler ) \
 	Connect( id_start, id_start + inc, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(DesmumeFrame::handler) )
 		//TODO something is wrong here
@@ -461,66 +513,85 @@ DesmumeFrame::DesmumeFrame(const wxString& title)
 //		ConnectMenuRange(wSaveState01+1, 10, Menu_SaveStates);
 	}
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wImportBackupMemory, "Import Backup Memory...");
-	fileMenu->Append(wExportBackupMemory, "Export Backup Memory...");
+	fileMenu->Append(wImportBackupMemory, _T("Import Backup Memory..."));
+	fileMenu->Append(wExportBackupMemory, _T("Export Backup Memory..."));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wSaveScreenshotAs, "Save Screenshot As");
-	fileMenu->Append(wQuickScreenshot, "Quick Screenshot");
+	fileMenu->Append(wSaveScreenshotAs, _T("Save Screenshot As"));
+	fileMenu->Append(wQuickScreenshot, _T("Quick Screenshot"));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wPlayMovie, "Play Movie");
-	fileMenu->Append(wRecordMovie, "Record Movie");
-	fileMenu->Append(wStopMovie, "Stop Movie");
+	fileMenu->Append(wPlayMovie, _T("Play Movie"));
+	fileMenu->Append(wRecordMovie, _T("Record Movie"));
+	fileMenu->Append(wStopMovie, _T("Stop Movie"));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wLuaWindow, "New Lua Script Window...");
+	fileMenu->Append(wLuaWindow, _T("New Lua Script Window..."));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wExit, "E&xit\tAlt-X", "Quit this program");
+	fileMenu->Append(wExit, _T("E&xit\tAlt-X"), _T("Quit this program"));
 
-	emulationMenu->Append(wPause, "&Pause\tAlt-P", "Pause Emulation");
-	emulationMenu->Append(wReset, "&Reset\tAlt-R", "Reset Emulation");
+	emulationMenu->Append(wPause, _T("&Pause\tAlt-P"), _T("Pause Emulation"));
+	emulationMenu->Append(wReset, _T("&Reset\tAlt-R"), _T("Reset Emulation"));
 
 	viewMenu->AppendSeparator();
-	viewMenu->Append(wFrameCounter, "&Display Frame Counter");
-	viewMenu->Append(wFPS, "&Display FPS");
-	viewMenu->Append(wDisplayInput, "&Display Input");
-	viewMenu->Append(wDisplayGraphicalInput, "&Display Graphical Input");
-	viewMenu->Append(wDisplayLagCounter, "&Display Lag Counter");
-	viewMenu->Append(wDisplayMicrophone, "&Display Microphone");
+	viewMenu->Append(wFrameCounter, _T("&Display Frame Counter"));
+	viewMenu->Append(wFPS, _T("&Display FPS"));
+	viewMenu->Append(wDisplayInput, _T("&Display Input"));
+	viewMenu->Append(wDisplayGraphicalInput, _T("&Display Graphical Input"));
+	viewMenu->Append(wDisplayLagCounter, _T("&Display Lag Counter"));
+	viewMenu->Append(wDisplayMicrophone, _T("&Display Microphone"));
 
-	toolsMenu->Append(w3dView, "&3d Viewer");
+	toolsMenu->Append(w3dView, _T("&3d Viewer"));
 	wxMenu *layersMenu = new wxMenu;
 	{
-		layersMenu->AppendCheckItem(wMainGPU,"Main GPU");
-		layersMenu->Append(wMainBG0,"Main BG 0");
-		layersMenu->Append(wMainBG1,"Main BG 1");
-		layersMenu->Append(wMainBG2,"Main BG 2");
-		layersMenu->Append(wMainBG3,"Main BG 3");
+		layersMenu->AppendCheckItem(wMainGPU, _T("Main GPU"));
+		layersMenu->Append(wMainBG0, _T("Main BG 0"));
+		layersMenu->Append(wMainBG1, _T("Main BG 1"));
+		layersMenu->Append(wMainBG2, _T("Main BG 2"));
+		layersMenu->Append(wMainBG3, _T("Main BG 3"));
 		layersMenu->AppendSeparator();
-		layersMenu->Append(wSubGPU,"Sub GPU");
-		layersMenu->Append(wSubBG0,"Sub BG 0");
-		layersMenu->Append(wSubBG1,"Sub BG 1");
-		layersMenu->Append(wSubBG2,"Sub BG 2");
-		layersMenu->Append(wSubBG3,"Sub BG 3");
+		layersMenu->Append(wSubGPU, _T("Sub GPU"));
+		layersMenu->Append(wSubBG0, _T("Sub BG 0"));
+		layersMenu->Append(wSubBG1, _T("Sub BG 1"));
+		layersMenu->Append(wSubBG2, _T("Sub BG 2"));
+		layersMenu->Append(wSubBG3, _T("Sub BG 3"));
 	}
 
-	configMenu->Append(wConfigureControls,"Controls");
+	configMenu->Append(wConfigureControls, _T("Controls"));
 
 	toolsMenu->AppendSeparator();
-	toolsMenu->AppendSubMenu(layersMenu,"View Layers");
+	toolsMenu->AppendSubMenu(layersMenu, _T("View Layers"));
 
-	helpMenu->Append(wWebsite, "&Website");
-	helpMenu->Append(wForums, "&Forums");
-	helpMenu->Append(wSubmitABugReport, "&Submit A Bug Report");
-	helpMenu->Append(wAbout, "&About", "Show about dialog");
+	helpMenu->Append(wWebsite, _T("&Website"));
+	helpMenu->Append(wForums, _T("&Forums"));
+	helpMenu->Append(wSubmitABugReport, _T("&Submit A Bug Report"));
+	helpMenu->Append(wAbout, _T("&About"), _T("Show about dialog"));
 
 	wxMenuBar *menuBar = new wxMenuBar();
-	menuBar->Append(fileMenu, "&File");
-	menuBar->Append(emulationMenu, "&Emulation");
-	menuBar->Append(viewMenu, "&View");
-	menuBar->Append(configMenu, "&Config");
-	menuBar->Append(toolsMenu, "&Tools");
-	menuBar->Append(helpMenu, "&Help");
+	menuBar->Append(fileMenu, _T("&File"));
+	menuBar->Append(emulationMenu, _T("&Emulation"));
+	menuBar->Append(viewMenu, _T("&View"));
+	menuBar->Append(configMenu, _T("&Config"));
+	menuBar->Append(toolsMenu, _T("&Tools"));
+	menuBar->Append(helpMenu, _T("&Help"));
 	SetMenuBar(menuBar);
 
 	//	CreateStatusBar(2);
 	//	SetStatusText("Welcome to Desmume!");
 }
+
+#ifdef _WIN32
+/*
+* The thread handling functions needed by the GDB stub code.
+*/
+void *
+createThread_gdb( void (APIENTRY *thread_function)( void *data),
+				 void *thread_data) {
+					 void *new_thread = CreateThread( NULL, 0,
+						 (LPTHREAD_START_ROUTINE)thread_function, thread_data,
+						 0, NULL);
+
+					 return new_thread;
+}
+
+void
+joinThread_gdb( void *thread_handle) {
+}
+#endif

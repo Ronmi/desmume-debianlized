@@ -1,6 +1,6 @@
 include $(top_srcdir)/src/desmume.mk
 
-AM_CPPFLAGS += $(SDL_CFLAGS) $(GTK_CFLAGS) $(GTHREAD_CFLAGS) $(X_CFLAGS) $(LUA_CFLAGS) $(ALSA_CFLAGS) $(LIBAGG_CFLAGS) 
+AM_CPPFLAGS += $(SDL_CFLAGS) $(GTHREAD_CFLAGS) $(X_CFLAGS) $(LUA_CFLAGS) $(ALSA_CFLAGS) $(LIBAGG_CFLAGS) 
 
 EXTRA_DIST = build.bat instruction_tabdef.inc thumb_tabdef.inc fs-linux.cpp fs-windows.cpp
 if HAVE_GDB_STUB
@@ -18,7 +18,7 @@ libdesmume_a_SOURCES = \
 	bios.cpp bios.h bits.h cp15.cpp cp15.h \
 	commandline.h commandline.cpp \
 	common.cpp common.h \
-	debug.cpp debug.h driver.cpp driver.h \
+	debug.cpp debug.h \
 	Disassembler.cpp Disassembler.h \
 	emufile.h emufile.cpp fat.h FIFO.cpp FIFO.h \
 	firmware.cpp firmware.h GPU.cpp GPU.h \
@@ -52,11 +52,8 @@ libdesmume_a_SOURCES = \
 	cheatSystem.cpp cheatSystem.h \
 	texcache.cpp texcache.h rasterize.cpp rasterize.h \
 	metaspu/metaspu.cpp metaspu/metaspu.h \
-	version.cpp version.h
-
-if HAVE_WX
-libdesmume_a_SOURCES += wxdlg/wxdlg3dViewer.cpp
-endif
+	version.cpp version.h \
+	desmume_config.cpp desmume_config.h
 
 if HAVE_OPENAL
 libdesmume_a_SOURCES += mic_openal.cpp

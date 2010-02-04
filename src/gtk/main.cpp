@@ -261,6 +261,9 @@ static const char *ui_description =
 "    </menu>"
 "    <menu action='ToolsMenu'>"
 "      <menuitem action='ioregs'/>"
+#ifdef HAVE_WX
+"      <menuitem action='view3d'/>"
+#endif
 "    </menu>"
 "    <menu action='HelpMenu'>"
 "      <menuitem action='about'/>"
@@ -297,10 +300,6 @@ static const GtkActionEntry action_entries[] = {
       { "run",        "gtk-media-play",   "_Run",          "<Ctrl>r",  NULL,   Launch },
       { "pause",      "gtk-media-pause",  "_Pause",        "<Ctrl>p",  NULL,   Pause },
       { "reset",      "gtk-refresh",      "Re_set",        NULL,       NULL,   Reset },
-#ifdef HAVE_WX
-      //for some reason the menu item doesnt show up....
-      { "view3d",      NULL,      "View 3d",        NULL,       NULL,   View3d },
-#endif
       { "FrameskipMenu", NULL, "_Frameskip" },
       { "LayersMenu", NULL, "_Layers" },
       { "CheatMenu", NULL, "_Cheat" },
@@ -320,6 +319,9 @@ static const GtkActionEntry action_entries[] = {
       { "ViewMenu", NULL, "_View" },
 
     { "ToolsMenu", NULL, "_Tools" },
+#ifdef HAVE_WX
+      { "view3d",      NULL,      "View 3d",        NULL,       NULL,   View3d },
+#endif
 
     { "HelpMenu", NULL, "_Help" },
       { "about",      "gtk-about",        "_About",        NULL,       NULL,   About }
@@ -414,14 +416,11 @@ u16 Keypad_Temp[NB_KEYS];
 class configured_features : public CommandLine
 {
 public:
-  int disable_sound;
   int engine_3d;
-  int disable_limiter;
   int savetype;
 
   int firmware_language;
 
-  const char *cflash_disk_image_file;
 #ifdef HAVE_TIMEOUT
   int timeout;
 #endif
@@ -430,15 +429,9 @@ public:
 static void
 init_configured_features( struct configured_features *config)
 {
-  config->disable_sound = 0;
-
   config->engine_3d = 1;
 
-  config->disable_limiter = 0;
-
   config->savetype = 0;
-
-  config->cflash_disk_image_file = NULL;
 
 #ifdef HAVE_TIMEOUT
   config->timeout = 0;
@@ -453,8 +446,6 @@ fill_configured_features( struct configured_features *config,
                           int argc, char ** argv)
 {
   GOptionEntry options[] = {
-    { "disable-sound", 0, 0, G_OPTION_ARG_NONE, &config->disable_sound, "Disables the sound emulation", NULL},
-    { "disable-limiter", 0, 0, G_OPTION_ARG_NONE, &config->disable_limiter, "Disables the 60fps limiter", NULL},
     { "3d-engine", 0, 0, G_OPTION_ARG_INT, &config->engine_3d, "Select 3d rendering engine. Available engines:\n"
         "\t\t\t\t  0 = 3d disabled\n"
         "\t\t\t\t  1 = internal rasterizer (default)\n"
@@ -486,23 +477,22 @@ fill_configured_features( struct configured_features *config,
   };
 
   config->loadCommonOptions();
-	g_option_context_add_main_entries (config->ctx, options, "options");
-	g_option_context_add_group (config->ctx, gtk_get_option_group (TRUE));
-	config->parse(argc,argv);
+  g_option_context_add_main_entries (config->ctx, options, "options");
+  g_option_context_add_group (config->ctx, gtk_get_option_group (TRUE));
+  config->parse(argc,argv);
 
-	if(!config->validate())
-		goto error;
+  if(!config->validate())
+    goto error;
 
-	if (config->savetype < 0 || config->savetype > 6) {
-		g_printerr("Accepted savetypes are from 0 to 6.\n");
-		return false;
-	}
+  if (config->savetype < 0 || config->savetype > 6) {
+    g_printerr("Accepted savetypes are from 0 to 6.\n");
+    return false;
+  }
 
   if (config->firmware_language < -1 || config->firmware_language > 5) {
     g_printerr("Firmware language must be set to a value from 0 to 5.\n");
     goto error;
   }
-
 
   if (config->engine_3d != 0 && config->engine_3d != 1
 #if defined(HAVE_LIBOSMESA)
@@ -534,7 +524,7 @@ fill_configured_features( struct configured_features *config,
 error:
   config->errorHelp(argv[0]);
 
-    return 0;
+  return 0;
 }
 
 

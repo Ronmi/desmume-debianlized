@@ -1,6 +1,6 @@
 #include <string>
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(WXPORT)
 #include "resource.h"
 #else
 #include <glib.h>
@@ -84,7 +84,8 @@ public:
 		while (p >= pathToModule && *p != '\\') p--;
 		if (++p >= pathToModule) *p = 0;
 #else
-		char *cwd = g_get_current_dir();
+		char *cwd = g_build_filename(g_get_user_config_dir(), "desmume", NULL);
+		g_mkdir_with_parents(cwd, 0755);
 		strncpy(pathToModule, cwd, MAX_PATH);
 		g_free(cwd);
 #endif
@@ -311,7 +312,7 @@ public:
 
 	enum ImageFormat
 	{
-#ifdef WIN32
+#if defined(WIN32) && !defined(WXPORT)
 		PNG = IDC_PNG,
 		BMP = IDC_BMP
 #else

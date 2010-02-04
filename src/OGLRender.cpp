@@ -44,13 +44,13 @@ static void ENDGL() {
 		oglrender_endOpenGL();
 }
 
-#ifdef _WIN32
+#ifdef _WIN32 && !defined(WXPORT)
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#include <GL/gl.h>
 	#include <GL/glext.h>
 #else
-#ifdef DESMUME_COCOA
+#ifdef __APPLE__
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
 #else
@@ -100,12 +100,12 @@ static u32 textureFormat=0, texturePalette=0;
 
 #ifdef _WIN32
 #define INITOGLEXT(x,y) y = (x)wglGetProcAddress(#y);
-#elif !defined(DESMUME_COCOA)
+#elif !defined(__APPLE__)
 #include <GL/glx.h>
 #define INITOGLEXT(x,y) y = (x)glXGetProcAddress((const GLubyte *) #y);
 #endif
 
-#ifndef DESMUME_COCOA
+#ifndef __APPLE__
 OGLEXT(PFNGLCREATESHADERPROC,glCreateShader)
 //zero: i dont understand this at all. my glext.h has the wrong thing declared here... so I have to do it myself
 typedef void (APIENTRYP X_PFNGLGETSHADERSOURCEPROC) (GLuint shader, GLsizei bufSize, const GLchar **source, GLsizei *length);
@@ -227,7 +227,7 @@ GLenum			oglToonTableTextureID;
 		log = new GLchar[logSize]; \
 		glGetShaderInfoLog(s, logSize, &logSize, log); \
 		INFO("SEVERE : FAILED TO COMPILE GL SHADER : %s\n", log); \
-		delete log; \
+		delete[] log; \
 		if(s)glDeleteShader(s); \
 		NOSHADERS("Failed to compile the "t" shader."); \
 	} \
@@ -244,7 +244,7 @@ GLenum			oglToonTableTextureID;
 		log = new GLchar[logSize]; \
 		glGetProgramInfoLog(p, logSize, &logSize, log); \
 		INFO("SEVERE : FAILED TO LINK GL SHADER PROGRAM : %s\n", log); \
-		delete log; \
+		delete[] log; \
 		if(s1)glDeleteShader(s1); \
 		if(s2)glDeleteShader(s2); \
 		NOSHADERS("Failed to link the shader program."); \
@@ -415,7 +415,7 @@ static char OGLInit(void)
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#ifndef DESMUME_COCOA
+#ifndef __APPLE__
 	INITOGLEXT(PFNGLCREATESHADERPROC,glCreateShader)
 	INITOGLEXT(X_PFNGLGETSHADERSOURCEPROC,glShaderSource)
 	INITOGLEXT(PFNGLCOMPILESHADERPROC,glCompileShader)

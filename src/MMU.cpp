@@ -2309,7 +2309,11 @@ void FASTCALL _MMU_ARM9_write08(u32 adr, u8 val)
 			case REG_AUXSPICNT+1:
 				write_auxspicnt(9,8,1,val);
 				return;
-
+			
+			case REG_AUXSPIDATA:
+				if(val!=0) MMU.AUX_SPI_CMD = val & 0xFF;
+				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM9][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM9));
+				return;
 
 			case 0x4000247:	
 				/* Update WRAMSTAT at the ARM7 side */
@@ -2642,7 +2646,7 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 				   MMU.AUX_SPI_CMD = val & 0xFF;
 
 				//T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, bm_transfer(&MMU.bupmem, val));
-				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM9));
+				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM9][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM9));
 				return;
 
 			case REG_DISPA_BG0CNT :
@@ -3541,15 +3545,6 @@ void FASTCALL _MMU_ARM7_write08(u32 adr, u8 val)
 		return;
     }
 
-	if(adr == REG_HALTCNT)
-	{
-		switch(val)
-		{
-		case 0xC0: NDS_Sleep(); break;
-		default: break;
-		}
-	}
-
 	if ((adr & 0xFF800000) == 0x04800000)
 	{
 		/* is wifi hardware, dont intermix with regular hardware registers */
@@ -3564,6 +3559,17 @@ void FASTCALL _MMU_ARM7_write08(u32 adr, u8 val)
 
 		switch(adr)
 		{
+			case REG_POSTFLG:
+				// hack for patched firmwares
+				if (val == 1)
+				{
+					if (_MMU_ARM7_read08(REG_POSTFLG) != 0)
+						break;
+					_MMU_write32<ARMCPU_ARM9>(0x27FFE24, gameInfo.header.ARM9exe);
+					_MMU_write32<ARMCPU_ARM7>(0x27FFE34, gameInfo.header.ARM7exe);
+				}
+				break;
+
 			case REG_HALTCNT:
 				//printf("halt 0x%02X\n", val);
 				switch(val)
@@ -3584,6 +3590,10 @@ void FASTCALL _MMU_ARM7_write08(u32 adr, u8 val)
 				return;
 			case REG_AUXSPICNT+1:
 				write_auxspicnt(9,8,1,val);
+				return;
+			case REG_AUXSPIDATA:
+				if(val!=0) MMU.AUX_SPI_CMD = val & 0xFF;
+				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM7));
 				return;
 		}
 		MMU.MMU_MEM[ARMCPU_ARM7][adr>>20][adr&MMU.MMU_MASK[ARMCPU_ARM7][adr>>20]]=val;

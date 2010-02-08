@@ -32,7 +32,9 @@
 	#include <ws2tcpip.h>
 	#define socket_t    SOCKET 	 
 	#define sockaddr_t  SOCKADDR
-	#include "windriver.h"
+	#ifndef WXPORT
+		#include "windriver.h"
+	#endif
 #else
 	#include <unistd.h> 	 
 	#include <stdlib.h> 	 
@@ -1717,7 +1719,7 @@ void Adhoc_SendPacket(u8* packet, u32 len)
 	
 	WIFI_LOG(4, "Ad-hoc: sent %i/%i bytes of packet.\n", nbytes, frameLen);
 
-	delete frame;
+	delete[] frame;
 }
 
 void Adhoc_usTrigger()
@@ -2133,7 +2135,7 @@ INLINE void SoftAP_SendBeacon()
 	SoftAP.curPacketSending = TRUE;
 }
 
-void SoftAP_RXHandler(u_char* user, const struct pcap_pkthdr* h, const u_char* _data)
+static void SoftAP_RXHandler(u_char* user, const struct pcap_pkthdr* h, const u_char* _data)
 {
 	// safety checks
 	if ((_data == NULL) || (h == NULL))

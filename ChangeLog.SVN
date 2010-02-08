@@ -1,4 +1,460 @@
 ------------------------------------------------------------------------
+r3371 | zeromus | 2010-02-04 14:22:54 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/GPU_osd.cpp
+   M src/NDSSystem.h
+   M src/OGLRender.cpp
+   M src/lua-engine.cpp
+   M src/path.h
+   M src/version.cpp
+   M src/wifi.cpp
+   M src/windows/DeSmuME_2005.vcproj
+   M src/windows/config.h
+   A src/wx/7z.dll
+   A src/wx/7z.exe
+   A src/wx/DeSmuME_x64.manifest
+   A src/wx/DeSmuME_x86.manifest
+   M src/wx/IniFile.cpp
+   M src/wx/InputCommon/DirectInputBase.h
+   M src/wx/InputCommon/EventHandler.cpp
+   M src/wx/InputCommon/EventHandler.h
+   M src/wx/PadSimple/PadSimple.cpp
+   A src/wx/touch.exe
+   A src/wx/un7z_and_touch.bat
+   A src/wx/wxDeSmuME_2008.sln
+   A src/wx/wxDeSmuME_2008.vcproj
+   M src/wx/wxMain.cpp
+
+wx port vcproj
+
+------------------------------------------------------------------------
+r3370 | wntrmute | 2010-02-04 11:11:08 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/wx/wxMain.cpp
+
+fix about dialog
+
+------------------------------------------------------------------------
+r3369 | wntrmute | 2010-02-04 09:16:08 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+
+emulate 8bit REG_AUXSPIDATA writes
+
+------------------------------------------------------------------------
+r3368 | wntrmute | 2010-02-04 06:30:00 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/driver.cpp
+
+fix type error on OSX
+
+------------------------------------------------------------------------
+r3367 | wntrmute | 2010-02-04 06:14:09 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M configure.ac
+
+use --enable-wxwidgets for wx build as per help text
+
+------------------------------------------------------------------------
+r3366 | wntrmute | 2010-02-04 05:55:22 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/OGLRender.cpp
+
+use __APPLE__ for OSX specifics
+
+------------------------------------------------------------------------
+r3365 | riccardom | 2010-02-04 05:29:51 +0800 (四, 04  2月 2010) | 3 lines
+Changed paths:
+   M configure.ac
+
+Now that it build we can add the wx frontend, beware it
+will hurt your kittens if you try to run it.
+
+------------------------------------------------------------------------
+r3364 | riccardom | 2010-02-04 05:28:09 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   A src/wx/DeSmuME.xpm
+   A src/wx/wxdesmume.desktop
+
+Oops, missed icon and desktop file.
+
+------------------------------------------------------------------------
+r3363 | riccardom | 2010-02-04 05:27:00 +0800 (四, 04  2月 2010) | 3 lines
+Changed paths:
+   M src/wx/Makefile.am
+
+Rename binary to wxdesume to avoid name clash with gtk
+frontend. Add icon and desktop file.
+
+------------------------------------------------------------------------
+r3362 | riccardom | 2010-02-04 04:58:41 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/wx/PadSimple/GUI/ConfigDlg.cpp
+   M src/wx/wxMain.cpp
+
+Fixup includes and add missing pieces needed for linkage.
+
+------------------------------------------------------------------------
+r3361 | riccardom | 2010-02-04 04:57:56 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/wx/Makefile.am
+
+Add missing files to wx build.
+
+------------------------------------------------------------------------
+r3360 | riccardom | 2010-02-04 04:28:52 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/wx/wxMain.cpp
+
+More string fixup.
+
+------------------------------------------------------------------------
+r3359 | riccardom | 2010-02-04 04:16:32 +0800 (四, 04  2月 2010) | 3 lines
+Changed paths:
+   M src/wx/wxMain.cpp
+
+Correctly use _T() to convert const char * to wxString
+instead of a simple cast.
+
+------------------------------------------------------------------------
+r3358 | riccardom | 2010-02-04 03:49:33 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M src/wx/wxMain.cpp
+
+A few more const char * to wxChar * cast.
+
+------------------------------------------------------------------------
+r3357 | riccardom | 2010-02-04 00:03:43 +0800 (四, 04  2月 2010) | 2 lines
+Changed paths:
+   M configure.ac
+
+Rename switch and description for wxwidgets.
+
+------------------------------------------------------------------------
+r3356 | riccardom | 2010-02-03 23:35:46 +0800 (三, 03  2月 2010) | 6 lines
+Changed paths:
+   M configure.ac
+   A src/wx/Makefile.am
+
+Add a makefile for wx frontend
+
+The frontend will not build automatically from top dir,
+you have to type make inside wx until it starts to compile
+fine.
+
+------------------------------------------------------------------------
+r3355 | riccardom | 2010-02-03 23:32:39 +0800 (三, 03  2月 2010) | 6 lines
+Changed paths:
+   M src/wx/wxMain.cpp
+
+Tentative fix for "conversion from const char *  to const Wstring ambiguos" error, please review.
+
+While at it define lstrlen as strlen which is not available
+on !WIN32. Pretty sure it will not handle unicode chars
+correctly but we can fix that issue later.
+
+------------------------------------------------------------------------
+r3354 | riccardom | 2010-02-03 22:19:10 +0800 (三, 03  2月 2010) | 6 lines
+Changed paths:
+   M src/wx/IniFile.cpp
+   M src/wx/InputCommon/EventHandler.h
+   M src/wx/InputCommon/SDL.cpp
+   M src/wx/InputCommon/SDL.h
+   M src/wx/InputCommon/X11InputBase.h
+   M src/wx/PadSimple/GUI/ConfigDlg.h
+   M src/wx/PadSimple/PadSimple.cpp
+   M src/wx/PadSimple/PadSimple.h
+   M src/wx/PadSimple/pluginspecs_pad.h
+   M src/wx/StringUtil.cpp
+   M src/wx/StringUtil.h
+
+First batch to have wx stuff compiling
+
+This is mostyle missing includes, includes with the wrong
+case and wrong path, also there is that PanicAlert
+function that is not defined.
+
+------------------------------------------------------------------------
+r3353 | riccardom | 2010-02-03 21:43:42 +0800 (三, 03  2月 2010) | 2 lines
+Changed paths:
+   M src/gtk/main.cpp
+
+Show the view3d stuff and move it under tools.
+
+------------------------------------------------------------------------
+r3352 | riccardom | 2010-02-03 21:21:23 +0800 (三, 03  2月 2010) | 7 lines
+Changed paths:
+   M configure.ac
+   M src/Makefile.am
+   M src/cli/Makefile.am
+   M src/gtk-glade/Makefile.am
+   M src/gtk/Makefile.am
+
+Avoid to link wxlibs with frontends that does not use them
+
+The only frontend that may use wxwidgets library is the
+gtk one so there is no need to link the others against
+a tons of wxwidgets libs when calling configure with
+--enable-wxwidgets.
+
+------------------------------------------------------------------------
+r3351 | riccardom | 2010-02-03 01:06:55 +0800 (三, 03  2月 2010) | 2 lines
+Changed paths:
+   M src/mc.cpp
+
+Use memset to initialize data instead of a loop.
+
+------------------------------------------------------------------------
+r3350 | riccardom | 2010-02-03 00:58:32 +0800 (三, 03  2月 2010) | 2 lines
+Changed paths:
+   M src/mc.cpp
+
+Plug file pointer leak, spotted by cppcheck.
+
+------------------------------------------------------------------------
+r3349 | riccardom | 2010-02-03 00:46:44 +0800 (三, 03  2月 2010) | 3 lines
+Changed paths:
+   M src/NDSSystem.cpp
+
+Fix a memory leak on error path, spottend by cppcheck.
+While at it cleanup a static vs const misuse.
+
+------------------------------------------------------------------------
+r3348 | riccardom | 2010-02-02 23:52:15 +0800 (二, 02  2月 2010) | 2 lines
+Changed paths:
+   M src/wifi.cpp
+
+Fix allocation / deallocation mismatch, found by cppcheck.
+
+------------------------------------------------------------------------
+r3347 | riccardom | 2010-02-02 23:47:42 +0800 (二, 02  2月 2010) | 2 lines
+Changed paths:
+   M src/OGLRender.cpp
+
+Fix allocator / deallocator mismatch, found by cppcheck.
+
+------------------------------------------------------------------------
+r3346 | riccardom | 2010-02-02 21:53:36 +0800 (二, 02  2月 2010) | 3 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Remove some missing bits of disable limiter and sound in
+cli frontend.
+
+------------------------------------------------------------------------
+r3345 | riccardom | 2010-02-02 17:14:41 +0800 (二, 02  2月 2010) | 3 lines
+Changed paths:
+   M src/cli/main.cpp
+   M src/commandline.cpp
+   M src/commandline.h
+   M src/gtk/main.cpp
+
+Move disable sound and disable limiter switches to common
+code.
+
+------------------------------------------------------------------------
+r3344 | zeromus | 2010-02-02 13:38:35 +0800 (二, 02  2月 2010) | 2 lines
+Changed paths:
+   M src/windows/zlib123/zlib-vc8-x64.lib
+
+win32: fix x64 zlib link error
+
+------------------------------------------------------------------------
+r3343 | riccardom | 2010-02-02 04:46:04 +0800 (二, 02  2月 2010) | 2 lines
+Changed paths:
+   M src/Makefile.am
+
+Does not need GTK_CFLAGS here.
+
+------------------------------------------------------------------------
+r3342 | riccardom | 2010-02-02 04:22:30 +0800 (二, 02  2月 2010) | 4 lines
+Changed paths:
+   M configure.ac
+   M src/gtk/Makefile.am
+
+Don't link unconditionally against libosmesa
+
+fix cli frontend --opengl-2d when libosmesa is available.
+
+------------------------------------------------------------------------
+r3341 | zeromus | 2010-02-02 02:47:35 +0800 (二, 02  2月 2010) | 2 lines
+Changed paths:
+   M src/GPU.cpp
+
+gpu: fix broken bg regression
+
+------------------------------------------------------------------------
+r3340 | riccardom | 2010-02-02 01:05:23 +0800 (二, 02  2月 2010) | 2 lines
+Changed paths:
+   M src/cli/main.cpp
+
+SDL_GL_DOUBLEBUFFER is not a valid SDL_SetVideoMode flag.
+
+------------------------------------------------------------------------
+r3339 | riccardom | 2010-02-01 23:57:03 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Whitespace cleanup.
+
+------------------------------------------------------------------------
+r3338 | riccardom | 2010-02-01 23:55:15 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Convert cli frontend to common command line handling.
+
+------------------------------------------------------------------------
+r3337 | riccardom | 2010-02-01 23:03:58 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/gtk/main.cpp
+
+Cflash image file is handled by common code, remove unused variables.
+
+------------------------------------------------------------------------
+r3336 | riccardom | 2010-02-01 22:51:46 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/gtk/main.cpp
+
+Fix indentation.
+
+------------------------------------------------------------------------
+r3335 | mtabachenko | 2010-02-01 22:47:01 +0800 (一, 01  2月 2010) | 3 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/NDSSystem.cpp
+   M src/cheatSystem.cpp
+   M src/firmware.cpp
+
+core:
+- add support for patched firmwares;
+
+------------------------------------------------------------------------
+r3334 | zeromus | 2010-02-01 14:37:47 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/windows/zlib123/zlib-vc8-Win32.lib
+   M src/windows/zlib123/zlib-vc8-x64.lib
+
+win32: use faster zlib with asm optimizations
+
+------------------------------------------------------------------------
+r3333 | zeromus | 2010-02-01 13:34:43 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/GPU.cpp
+   M src/cp15.cpp
+
+forgot to checkin a file. also, add some little gpu speedups
+
+------------------------------------------------------------------------
+r3332 | zeromus | 2010-02-01 13:23:20 +0800 (一, 01  2月 2010) | 2 lines
+Changed paths:
+   M src/arm_instructions.cpp
+   M src/thumb_instructions.cpp
+
+core: don't execute builtin SWI when intvec is relocated to an abnormal location
+
+------------------------------------------------------------------------
+r3331 | gocha | 2010-01-31 19:18:27 +0800 (日, 31  1月 2010) | 2 lines
+Changed paths:
+   M src/windows/lua/lua.7z
+
+add lua51.dll and lib
+
+------------------------------------------------------------------------
+r3330 | riccardom | 2010-01-31 03:59:47 +0800 (日, 31  1月 2010) | 2 lines
+Changed paths:
+   M src/ctrlssdl.cpp
+
+Handle the B button again, fix bug #2942776.
+
+------------------------------------------------------------------------
+r3329 | riccardom | 2010-01-31 02:07:01 +0800 (日, 31  1月 2010) | 5 lines
+Changed paths:
+   M src/Makefile.am
+   M src/cli/Makefile.am
+   M src/cli/main.cpp
+   A src/desmume_config.cpp
+   A src/desmume_config.h
+   M src/gtk-glade/Makefile.am
+   M src/gtk-glade/main.cpp
+   M src/gtk/Makefile.am
+   D src/gtk/desmume_config.cpp
+   D src/gtk/desmume_config.h
+
+Mode desmume_config.* in common dir
+
+Move desmume_config.* in src/ since we are now using it
+in three frontends.
+
+------------------------------------------------------------------------
+r3328 | riccardom | 2010-01-31 02:03:33 +0800 (日, 31  1月 2010) | 2 lines
+Changed paths:
+   M src/gtk-glade/main.cpp
+
+Revert previous commit, should take a rest indeed.
+
+------------------------------------------------------------------------
+r3327 | riccardom | 2010-01-31 01:22:09 +0800 (日, 31  1月 2010) | 3 lines
+Changed paths:
+   M src/gtk-glade/main.cpp
+
+Oops, write config file in gtk-glade frontend instead of
+reading it again.
+
+------------------------------------------------------------------------
+r3326 | zeromus | 2010-01-30 04:04:38 +0800 (六, 30  1月 2010) | 2 lines
+Changed paths:
+   M src/GPU.cpp
+
+gpu: fix some (all?) sprite priority regressions
+
+------------------------------------------------------------------------
+r3325 | riccardom | 2010-01-29 21:43:14 +0800 (五, 29  1月 2010) | 2 lines
+Changed paths:
+   M src/wifi.cpp
+
+SoftAP_RXHandler may be static.
+
+------------------------------------------------------------------------
+r3324 | riccardom | 2010-01-29 19:14:35 +0800 (五, 29  1月 2010) | 3 lines
+Changed paths:
+   M src/commandline.cpp
+
+Iniatilize _spu_advanced othwerise we read uninitialized
+memory as reported by valgrind.
+
+------------------------------------------------------------------------
+r3323 | riccardom | 2010-01-29 18:59:41 +0800 (五, 29  1月 2010) | 3 lines
+Changed paths:
+   M ChangeLog
+
+Add a note about using a common place for config and
+saves. While at it give credits to OpenAL patch author.
+
+------------------------------------------------------------------------
+r3322 | riccardom | 2010-01-29 18:52:53 +0800 (五, 29  1月 2010) | 9 lines
+Changed paths:
+   M src/gtk/desmume_config.cpp
+   M src/path.h
+
+Store config and save*s in user specific config directory
+
+Apply patch #2936906 from Jan Steffens to save config,
+saves and savestates in a common dir instead of having
+them in the current dir.
+
+The config file is moved automagically but you need to move
+the saves and savestates inside ~/.config/desmume/ by hand.
+
+------------------------------------------------------------------------
+r3321 | riccardom | 2010-01-29 18:45:38 +0800 (五, 29  1月 2010) | 2 lines
+Changed paths:
+   M src/gtk-glade/Makefile.am
+   M src/gtk-glade/main.cpp
+
+Convert gtk-glade frontend to gtk config machinery
+
+------------------------------------------------------------------------
 r3320 | riccardom | 2010-01-29 00:45:56 +0800 (五, 29  1月 2010) | 2 lines
 Changed paths:
    M ChangeLog

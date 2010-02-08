@@ -1,3 +1,43 @@
+desmume-trunk (svnrivisionr3376-1) karmic; urgency=low
+
+  [ wntrmute ]
+  * build with gdb stub git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    72 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Dont include lua cflags unconditionally especially since we don't
+    compile lua stuff. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * OpenGL: - rewrite shaders, optimized & fixed some bugs (fixed dark
+    donuts in Garfield, bosses in Nanostray 2); git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * fix powcnt1 better (fixes manicminer homebrew) note that 90% of all
+    remaining desmume bugs can probably be fixed by more correct
+    register emulation in a way done like this checkin. however I have
+    not yet established a code pattern that I like for it so I am not
+    sweeping through and changing them all at once yet. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix typo in powcnt1 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix another typo. this is why i said I dont have a code pattern i
+    like yet git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3376
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Mon, 08 Feb 2010 11:23:57 +0800
+
 desmume-trunk (svnrivisionr3371) karmic; urgency=low
 
   [ riccardom ]

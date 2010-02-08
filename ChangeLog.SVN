@@ -1,4 +1,53 @@
 ------------------------------------------------------------------------
+r3377 | zeromus | 2010-02-06 23:51:04 +0800 (六, 06  2月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+
+fix another typo. this is why i said I dont have a code pattern i like yet
+
+------------------------------------------------------------------------
+r3376 | zeromus | 2010-02-06 23:37:30 +0800 (六, 06  2月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+
+fix typo in powcnt1
+
+------------------------------------------------------------------------
+r3375 | zeromus | 2010-02-06 02:48:44 +0800 (六, 06  2月 2010) | 3 lines
+Changed paths:
+   M src/MMU.cpp
+
+fix powcnt1 better (fixes manicminer homebrew)
+note that 90% of all remaining desmume bugs can probably be fixed by more correct register emulation in a way done like this checkin. however I have not yet established a code pattern that I like for it so I am not sweeping through and changing them all at once yet.
+
+------------------------------------------------------------------------
+r3374 | mtabachenko | 2010-02-06 00:41:15 +0800 (六, 06  2月 2010) | 3 lines
+Changed paths:
+   M src/OGLRender.cpp
+   M src/gfx3d.cpp
+   M src/gfx3d.h
+   M src/rasterize.cpp
+   M src/shaders.h
+
+OpenGL:
+- rewrite shaders, optimized & fixed some bugs (fixed dark donuts in Garfield, bosses in Nanostray 2);
+
+------------------------------------------------------------------------
+r3373 | riccardom | 2010-02-05 22:24:07 +0800 (五, 05  2月 2010) | 3 lines
+Changed paths:
+   M src/Makefile.am
+
+Dont include lua cflags unconditionally especially since
+we don't compile lua stuff.
+
+------------------------------------------------------------------------
+r3372 | wntrmute | 2010-02-05 09:52:20 +0800 (五, 05  2月 2010) | 2 lines
+Changed paths:
+   M src/wx/wxMain.cpp
+
+build with gdb stub
+
+------------------------------------------------------------------------
 r3371 | zeromus | 2010-02-04 14:22:54 +0800 (四, 04  2月 2010) | 2 lines
 Changed paths:
    M src/GPU_osd.cpp

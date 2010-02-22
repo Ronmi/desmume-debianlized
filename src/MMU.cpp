@@ -36,7 +36,6 @@
 #include "render3D.h"
 #include "gfx3d.h"
 #include "rtc.h"
-#include "GPU_osd.h"
 #include "mc.h"
 #include "addons.h"
 #include "mic.h"
@@ -1333,7 +1332,6 @@ u32 MMU_readFromGC()
 		case 0x00:
 		case 0xB7:
 			{
-				// TODO: prevent read if the address is out of range
 				// Make sure any reads below 0x8000 redirect to 0x8000+(adr&0x1FF) as on real cart
 				if((card.command[0] == 0xB7) && (card.address < 0x8000))
 				{
@@ -1342,6 +1340,13 @@ u32 MMU_readFromGC()
 
 					card.address = (0x8000 + (card.address&0x1FF));
 				}
+
+				if(card.address >= gameInfo.romsize)
+				{
+					INFO("Reading beyond end of cart! ... %08X > %08X\n",card.address, gameInfo.romsize);
+				}
+				//but, this is actually handled by the cart rom buffer being oversized and full of 0xFF.
+				//is this a good idea? We think so.
 				val = T1ReadLong(MMU.CART_ROM, card.address & MMU.CART_ROM_MASK);
 			}
 			break;
@@ -3162,6 +3167,14 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 				SubScreen.gpu->setBLDALPHA(val>>16);
 				break;
 			}
+
+			case REG_DISPA_BLDY:
+				GPU_setBLDY_EVY(MainScreen.gpu,val) ; 	 
+				break ; 	 
+			case REG_DISPB_BLDY: 	 
+				GPU_setBLDY_EVY(SubScreen.gpu,val) ; 	 
+				break;
+
 			case REG_DISPA_DISPCNT :
 				GPU_setVideoProp(MainScreen.gpu, val);
 				//GPULOG("MAIN INIT 32B %08X\r\n", val);

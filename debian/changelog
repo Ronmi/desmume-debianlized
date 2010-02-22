@@ -1,4 +1,4 @@
-desmume-trunk (svnrivisionr3376-1) karmic; urgency=low
+desmume-trunk (svnrivisionr3376-r3387) karmic; urgency=low
 
   [ wntrmute ]
   * build with gdb stub git-svn-id:
@@ -36,7 +36,61 @@ desmume-trunk (svnrivisionr3376-1) karmic; urgency=low
   [ Ronmi Ren ]
   * update to r3376
 
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Mon, 08 Feb 2010 11:23:57 +0800
+  [ mtabachenko ]
+  * winport: - removed EXPERIMENTAL_WIFI_COMM definition from VS2008 x86
+    project (use userconfig.h for definitions); git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * don't print mandatory \n in ideaslog git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * We can make CLZ_TAB const. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    80 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * stop letting roms read off the end of the cart and crash the
+    emulator. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    81 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * GPU_osd.h is not needed here. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Let desmume build without libagg libagg is used only by the HUD but
+    the usage of it outside windows is pretty small. So just in case it
+    is not available we can live without it. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Don't build the wx frontend if antigrain is not available I don't
+    want to clutter the source code with ifdef :) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Whitespace cleanup. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - add 32bits BLDY register write (fix fading in GTA); git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    86 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Add a note about the libagg now optional for linux frontends. git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    87 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3387
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Mon, 22 Feb 2010 18:08:46 +0800
 
 desmume-trunk (svnrivisionr3371) karmic; urgency=low
 

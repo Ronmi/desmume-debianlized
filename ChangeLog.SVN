@@ -1,4 +1,92 @@
 ------------------------------------------------------------------------
+r3387 | riccardom | 2010-02-20 21:57:06 +0800 (六, 20  2月 2010) | 3 lines
+Changed paths:
+   M ChangeLog
+
+Add a note about the libagg now optional for linux
+frontends.
+
+------------------------------------------------------------------------
+r3386 | mtabachenko | 2010-02-20 03:25:07 +0800 (六, 20  2月 2010) | 3 lines
+Changed paths:
+   M src/MMU.cpp
+
+core:
+- add 32bits BLDY register write (fix fading in GTA);
+
+------------------------------------------------------------------------
+r3385 | riccardom | 2010-02-18 05:40:30 +0800 (四, 18  2月 2010) | 2 lines
+Changed paths:
+   M src/arm_instructions.cpp
+
+Whitespace cleanup.
+
+------------------------------------------------------------------------
+r3384 | riccardom | 2010-02-17 22:36:51 +0800 (三, 17  2月 2010) | 4 lines
+Changed paths:
+   M configure.ac
+
+Don't build the wx frontend if antigrain is not available
+
+I don't want to clutter the source code with ifdef :)
+
+------------------------------------------------------------------------
+r3383 | riccardom | 2010-02-17 22:06:00 +0800 (三, 17  2月 2010) | 6 lines
+Changed paths:
+   M configure.ac
+   M src/GPU_osd.h
+   A src/GPU_osd_stub.cpp
+   M src/Makefile.am
+   M src/NDSSystem.cpp
+   M src/cli/main.cpp
+   M src/gtk/main.cpp
+   M src/types.h
+
+Let desmume build without libagg
+
+libagg is used only by the HUD but the usage of it
+outside windows is pretty small. So just in case it is
+not available we can live without it.
+
+------------------------------------------------------------------------
+r3382 | riccardom | 2010-02-17 18:49:02 +0800 (三, 17  2月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+
+GPU_osd.h is not needed here.
+
+------------------------------------------------------------------------
+r3381 | zeromus | 2010-02-15 19:02:49 +0800 (一, 15  2月 2010) | 2 lines
+Changed paths:
+   M src/MMU.cpp
+   M src/NDSSystem.cpp
+   M src/NDSSystem.h
+
+stop letting roms read off the end of the cart and crash the emulator.
+
+------------------------------------------------------------------------
+r3380 | riccardom | 2010-02-13 00:57:39 +0800 (六, 13  2月 2010) | 2 lines
+Changed paths:
+   M src/arm_instructions.cpp
+
+We can make CLZ_TAB const.
+
+------------------------------------------------------------------------
+r3379 | zeromus | 2010-02-10 03:33:03 +0800 (三, 10  2月 2010) | 2 lines
+Changed paths:
+   M src/debug.cpp
+
+don't print mandatory \n in ideaslog
+
+------------------------------------------------------------------------
+r3378 | mtabachenko | 2010-02-08 20:27:12 +0800 (一, 08  2月 2010) | 3 lines
+Changed paths:
+   M src/windows/DeSmuME_2008.vcproj
+
+winport:
+- removed EXPERIMENTAL_WIFI_COMM definition from VS2008 x86 project (use userconfig.h for definitions);
+
+------------------------------------------------------------------------
 r3377 | zeromus | 2010-02-06 23:51:04 +0800 (六, 06  2月 2010) | 2 lines
 Changed paths:
    M src/MMU.cpp

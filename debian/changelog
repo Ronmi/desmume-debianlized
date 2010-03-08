@@ -1,3 +1,44 @@
+desmume-trunk (svnrivisionr3376-r3394) karmic; urgency=low
+
+  [ zeromus ]
+  * screw around with some debugging features and the win32 disassembler
+    windows git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    88 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Temporary workaround for forcing the cli keyboard mapping instead of
+    the gtk one. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    89 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Simply fps calculation. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Whitespace fixup. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fixup cflash handling in cli frontend, bug #2955684 The code is c&p
+    from gtk frontend to handle some addons stuff properly. Should fix
+    #2955684. [insert a rant here on patches without reporter feeedback]
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    92 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Cleanup resize code with opengl 2d Based on a patch submitted at
+    #2839785 by ramarren simplifies a lot the code. It removes so much
+    lines it can't be wrong :) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    93 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ wntrmute ]
+  * use correct address for argv git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    94 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3394
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Mon, 08 Mar 2010 09:17:40 +0800
+
 desmume-trunk (svnrivisionr3376-r3387) karmic; urgency=low
 
   [ wntrmute ]

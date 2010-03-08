@@ -1,4 +1,82 @@
 ------------------------------------------------------------------------
+r3394 | wntrmute | 2010-03-06 04:42:35 +0800 (六, 06  3月 2010) | 2 lines
+Changed paths:
+   M src/NDSSystem.cpp
+
+use correct address for argv
+
+------------------------------------------------------------------------
+r3393 | riccardom | 2010-03-05 22:13:43 +0800 (五, 05  3月 2010) | 6 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Cleanup resize code with opengl 2d
+
+Based on a patch submitted at #2839785 by ramarren
+simplifies a lot the code. It removes so much lines it
+can't be wrong :)
+
+------------------------------------------------------------------------
+r3392 | riccardom | 2010-03-05 21:43:41 +0800 (五, 05  3月 2010) | 7 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Fixup cflash handling in cli frontend, bug #2955684
+
+The code is c&p from gtk frontend to handle some addons
+stuff properly. Should fix #2955684.
+
+[insert a rant here on patches without reporter feeedback]
+
+------------------------------------------------------------------------
+r3391 | riccardom | 2010-03-05 21:31:56 +0800 (五, 05  3月 2010) | 2 lines
+Changed paths:
+   M src/gtk/main.cpp
+
+Whitespace fixup.
+
+------------------------------------------------------------------------
+r3390 | riccardom | 2010-03-03 00:47:49 +0800 (三, 03  3月 2010) | 2 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Simply fps calculation.
+
+------------------------------------------------------------------------
+r3389 | riccardom | 2010-03-03 00:46:28 +0800 (三, 03  3月 2010) | 3 lines
+Changed paths:
+   M src/cli/main.cpp
+
+Temporary workaround for forcing the cli keyboard mapping
+instead of the gtk one.
+
+------------------------------------------------------------------------
+r3388 | zeromus | 2010-02-28 08:07:11 +0800 (日, 28  2月 2010) | 2 lines
+Changed paths:
+   M src/GPU.cpp
+   M src/GPU_osd.cpp
+   M src/MMU.cpp
+   M src/MMU.h
+   M src/NDSSystem.cpp
+   M src/armcpu.cpp
+   M src/armcpu.h
+   M src/cp15.cpp
+   M src/cp15.h
+   M src/debug.cpp
+   M src/debug.h
+   M src/mem.h
+   M src/windows/CWindow.cpp
+   M src/windows/CWindow.h
+   M src/windows/DeSmuME_2005.vcproj
+   M src/windows/disView.cpp
+   M src/windows/inputdx.cpp
+   M src/windows/main.cpp
+   M src/windows/resource.h
+   M src/windows/resources.rc
+
+screw around with some debugging features and the win32 disassembler windows
+
+------------------------------------------------------------------------
 r3387 | riccardom | 2010-02-20 21:57:06 +0800 (六, 20  2月 2010) | 3 lines
 Changed paths:
    M ChangeLog

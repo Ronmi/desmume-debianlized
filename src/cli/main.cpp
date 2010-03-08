@@ -57,6 +57,7 @@
 #include "GPU_osd.h"
 #include "desmume_config.h"
 #include "commandline.h"
+#include "addons.h"
 #ifdef GDB_STUB
 #include "gdbstub.h"
 #endif
@@ -358,23 +359,13 @@ static void
 resizeWindow( u16 width, u16 height) {
   int comp_width = 3 * width;
   int comp_height = 2 * height;
-  int use_width = 1;
   GLenum errCode;
 
-  /* Height / width ration */
-  GLfloat ratio;
-
   if ( comp_width > comp_height) {
-    use_width = 0;
+    width = 2*height/3;
   }
- 
-  /* Protect against a divide by zero */
-  if ( height == 0 )
-    height = 1;
-  if ( width == 0)
-    width = 1;
-
-  ratio = ( GLfloat )width / ( GLfloat )height;
+  height = 3*width/2;
+  nds_screen_size_ratio = 256.0 / (double)width;
 
   /* Setup our viewport. */
   glViewport( 0, 0, ( GLint )width, ( GLint )height );
@@ -386,39 +377,7 @@ resizeWindow( u16 width, u16 height) {
   glMatrixMode( GL_PROJECTION );
   glLoadIdentity( );
 
-  {
-    double left;
-    double right;
-    double bottom;
-    double top;
-    double other_dimen;
-
-    if ( use_width) {
-      left = 0.0;
-      right = 256.0;
-
-      nds_screen_size_ratio = 256.0 / (double)width;
-
-      other_dimen = (double)width * 3.0 / 2.0;
-
-      top = 0.0;
-      bottom = 384.0 * ((double)height / other_dimen);
-    }
-    else {
-      top = 0.0;
-      bottom = 384.0;
-
-      nds_screen_size_ratio = 384.0 / (double)height;
-
-      other_dimen = (double)height * 2.0 / 3.0;
-
-      left = 0.0;
-      right = 256.0 * ((double)width / other_dimen);
-    }
-
-    /* get the area (0,0) to (256,384) into the middle of the viewport */
-    gluOrtho2D( left, right, bottom, top);
-  }
+  gluOrtho2D( 0.0, 256.0, 384.0, 0.0);
 
   /* Make sure we're chaning the model view and not the projection */
   glMatrixMode( GL_MODELVIEW );
@@ -653,6 +612,29 @@ int main(int argc, char ** argv) {
     fw_config.language = my_config.firmware_language;
   }
 
+  /* addons */
+  my_config.process_addonCommands();
+  addon_type = NDS_ADDON_NONE;
+  if (my_config.is_cflash_configured)
+    addon_type = NDS_ADDON_CFLASH;
+
+  if(my_config.gbaslot_rom != "") {
+    addon_type = NDS_ADDON_GBAGAME;
+    strncpy(GBAgameName, my_config.gbaslot_rom.c_str(), MAX_PATH);
+  }
+
+  switch (addon_type) {
+  case NDS_ADDON_CFLASH:
+  case NDS_ADDON_RUMBLEPAK:
+  case NDS_ADDON_NONE:
+  case NDS_ADDON_GBAGAME:
+    break;
+  default:
+    addon_type = NDS_ADDON_NONE;
+    break;
+  }
+  addonsChangePak (addon_type);
+
   if ( !g_thread_supported()) {
     g_thread_init( NULL);
   }
@@ -799,6 +781,8 @@ int main(int argc, char ** argv) {
   /* Load keyboard and joystick configuration */
   keyfile = desmume_config_read_file(cli_kb_cfg);
   desmume_config_dispose(keyfile);
+  /* Since gtk has a different mapping the keys stop to work with the saved configuration :| */
+  load_default_config(cli_kb_cfg);
 
   if ( !my_config.disable_limiter) {
     /* create the semaphore used for fps limiting */
@@ -868,9 +852,7 @@ int main(int argc, char ** argv) {
 
     if ( fps_frame_counter == NUM_FRAMES_TO_TIME) {
       char win_title[20];
-      float fps = (float)fps_timing;
-      fps /= NUM_FRAMES_TO_TIME * 1000.f;
-      fps = 1.0f / fps;
+      float fps = NUM_FRAMES_TO_TIME * 1000.f / fps_timing;
 
       fps_frame_counter = 0;
       fps_timing = 0;

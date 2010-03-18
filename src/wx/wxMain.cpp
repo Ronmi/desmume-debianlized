@@ -36,6 +36,12 @@
 #include "gdbstub.h"
 #endif
 
+#define SCREEN_SIZE (256*192*3)
+#define GAP_DEFAULT 64
+#define GAP_MAX	90
+static int nds_gap_size;
+static int nds_screen_rotation_angle;
+
 SoundInterface_struct *SNDCoreList[] = {
         &SNDDummy,
 #ifdef WIN32
@@ -169,38 +175,94 @@ public:
 			NDS_LoadROM(dialog.GetPath().mb_str(), dialog.GetPath().mb_str());
 		}
 	}
+	void gpu_screen_to_rgb(u8 *rgb1, u8 *rgb2)
+	{
+		u16 gpu_pixel;
+		u8 pixel[3];
+		u8 *rgb = rgb1;
+		const int rot = nds_screen_rotation_angle;
+		int done = false;
+		int offset = 0;
+
+loop:
+		for (int i = 0; i < 256; i++) {
+			for (int j = 0; j < 192; j++) {
+				gpu_pixel = *((u16 *) & GPU_screen[(i + (j + offset) * 256) << 1]);
+				pixel[0] = ((gpu_pixel >> 0) & 0x1f) << 3;
+				pixel[1] = ((gpu_pixel >> 5) & 0x1f) << 3;
+				pixel[2] = ((gpu_pixel >> 10) & 0x1f) << 3;
+				switch (rot) {
+				case 0:
+					memcpy(rgb+((i+j*256)*3),pixel,3);
+					break;
+				case 90:
+					memcpy(rgb+SCREEN_SIZE-((j+(255-i)*192)*3)-3,pixel,3);
+					break;
+				case 180:
+					memcpy(rgb+SCREEN_SIZE-((i+j*256)*3)-3,pixel,3);
+					break;
+				case 270:
+					memcpy(rgb+((j+(255-i)*192)*3),pixel,3);
+					break;
+				}
+			}
+
+		}
+
+		if (done == false) {
+			offset = 192;
+			rgb = rgb2;
+			done = true;
+			goto loop;
+		}
+	}
 
 	//TODO should integrate filter system
 	void onPaint(wxPaintEvent &event)
 	{
+		u8 rgb1[SCREEN_SIZE], rgb2[SCREEN_SIZE];
 		wxPaintDC dc(this);
+		int w, h;
 
-		int width = 256;
-		int height = 384;
-
-		u16 gpu_pixel;
-		u32 offset;
-		u8 rgb[256*384*3];
-		for (int i = 0; i < 256; i++) {
-			for (int j = 0; j < 384; j++) {
-				gpu_pixel = *((u16 *) & GPU_screen[(i + j * 256) << 1]);
-				offset = i * 3 + j * 3 * 256;
-				*(rgb + offset + 0) = ((gpu_pixel >> 0) & 0x1f) << 3;
-				*(rgb + offset + 1) = ((gpu_pixel >> 5) & 0x1f) << 3;
-				*(rgb + offset + 2) = ((gpu_pixel >> 10) & 0x1f) << 3;
-			}
+		if (nds_screen_rotation_angle == 90 || nds_screen_rotation_angle == 270) {
+			w = 192;
+			h = 256;
+		} else {
+			w = 256;
+			h = 192;
 		}
 
-		wxBitmap m_bitmap(wxImage(width, height, rgb, true));
-		dc.DrawBitmap(m_bitmap, 0, 0, true);
+		gpu_screen_to_rgb(rgb1, rgb2);
+		wxBitmap m_bitmap1(wxImage(w, h, rgb1, true));
+		wxBitmap m_bitmap2(wxImage(w, h, rgb2, true));
+		switch (nds_screen_rotation_angle) {
+		case 0:
+			dc.DrawBitmap(m_bitmap1, 0, 0, true);
+			dc.DrawBitmap(m_bitmap2, 0, 192+nds_gap_size, true);
+			break;
+		case 90:
+			dc.DrawBitmap(m_bitmap2, 0, 0, true);
+			dc.DrawBitmap(m_bitmap1, 192+nds_gap_size, 0, true);
+			break;
+		case 180:
+			dc.DrawBitmap(m_bitmap2, 0, 0, true);
+			dc.DrawBitmap(m_bitmap1, 0, 192+nds_gap_size, true);
+			break;
+		case 270:
+			dc.DrawBitmap(m_bitmap1, 0, 0, true);
+			dc.DrawBitmap(m_bitmap2, 192+nds_gap_size, 0, true);
+			break;
+		}
 	}
 
 	void onIdle(wxIdleEvent &event){
 		Refresh(false);
 		event.RequestMore();
 		applyInput();
-		if(execute) 
+		if(execute) { 
 			NDS_exec<false>();
+			SPU_Emulate_user();
+		};
 		osd->update();
 		DrawHUD();
 		osd->clear();
@@ -208,7 +270,13 @@ public:
 	}
 
 	void pause(wxCommandEvent& event){
-		execute ? execute=false : execute=true;
+		if (execute) {
+			execute=false;
+			SPU_Pause(1);
+		} else {
+			execute=true;
+			SPU_Pause(0);
+		}
 	}
 	void reset(wxCommandEvent& event){NDS_Reset();}
 
@@ -285,7 +353,9 @@ public:
 	void closeRom(wxCommandEvent& event) {
 		NDS_FreeROM();
 		execute = false;
+#ifdef HAVE_LIBAGG
 		Hud.resetTransient();
+#endif
 		NDS_Reset();
 	}
 
@@ -334,13 +404,15 @@ public:
 
 		for (int i = 0; i < 10; i++)
 		{
-			mnuSubstates->Append( baseid+i+1, wxString::Format(_T("Slot %d"), i) );
+			mnuSubstates->Append( baseid+i, wxString::Format(_T("Slot %d"), i) );
 		}
 		return mnuSubstates;
 	}
 	void Menu_SaveStates(wxCommandEvent &event);
 	void Menu_LoadStates(wxCommandEvent &event);
 	void NDSInitialize();
+	void changeRotation(wxCommandEvent &event);
+	void onResize(wxSizeEvent &event);
 
 private:
 #ifdef GDB_STUB
@@ -356,9 +428,6 @@ private:
 
 enum
 {
-	wExit = wxID_EXIT,
-	wAbout = wxID_ABOUT,
-	wRom,
 	wPause,
 	wReset,
 	wFrameCounter,
@@ -392,20 +461,64 @@ enum
 	wSaveScreenshotAs,
 	wQuickScreenshot,
 	wLuaWindow,
+	wConfigureControls,
+	wRot0,
+	wRot90,
+	wRot180,
+	wRot270,
+	/* stupid enums: these two should be the at the end */
 	wLoadState01,
-	wSaveState01 = wLoadState01+20,
-	wConfigureControls
+	wSaveState01 = wLoadState01+20
 };
 
-void DesmumeFrame::Menu_SaveStates(wxCommandEvent &event){savestate_slot(event.GetId() - wSaveState01 - 1);}
-void DesmumeFrame::Menu_LoadStates(wxCommandEvent &event){loadstate_slot(event.GetId() - wLoadState01 - 1);}
+void DesmumeFrame::Menu_SaveStates(wxCommandEvent &event){savestate_slot(event.GetId() - wSaveState01);}
+void DesmumeFrame::Menu_LoadStates(wxCommandEvent &event){loadstate_slot(event.GetId() - wLoadState01);}
+
+void DesmumeFrame::changeRotation(wxCommandEvent &event){
+	int rot = (event.GetId() - wRot0)*90;
+	wxSize sizeMin, sizeMax;
+
+	if (rot == nds_screen_rotation_angle)
+		return;
+
+	SetMinSize(wxSize(-1,-1));
+	SetMaxSize(wxSize(-1,-1));
+
+	if (rot == 90 || rot == 270) {
+		SetClientSize(384 + nds_gap_size, 256);
+		sizeMax = sizeMin = ClientToWindowSize(wxSize(384,256));
+		sizeMax.IncBy(GAP_MAX,0);
+	} else {
+		SetClientSize(256, 384 + nds_gap_size);
+		sizeMax = sizeMin = ClientToWindowSize(wxSize(256,384));
+		sizeMax.IncBy(0,GAP_MAX);
+	}
+	SetMinSize(sizeMin);
+	SetMaxSize(sizeMax);
+	nds_screen_rotation_angle = rot;
+}
+
+void DesmumeFrame::onResize(wxSizeEvent &event) {
+	int w, h;
+
+	GetClientSize(&w,&h);
+	if (nds_screen_rotation_angle == 90 || nds_screen_rotation_angle == 270) {
+		if (w>=384)
+			nds_gap_size = w-384;
+	} else {
+		if (h>=384)
+			nds_gap_size = h-384;
+	}
+	event.Skip();
+}
 
 BEGIN_EVENT_TABLE(DesmumeFrame, wxFrame)
 EVT_PAINT(DesmumeFrame::onPaint)
 EVT_IDLE(DesmumeFrame::onIdle)
-EVT_MENU(wExit, DesmumeFrame::OnQuit)
-EVT_MENU(wRom, DesmumeFrame::LoadRom)
-EVT_MENU(wAbout,DesmumeFrame::OnAbout)
+EVT_SIZE(DesmumeFrame::onResize)
+EVT_MENU(wxID_EXIT, DesmumeFrame::OnQuit)
+EVT_MENU(wxID_OPEN, DesmumeFrame::LoadRom)
+EVT_MENU(wxID_ABOUT,DesmumeFrame::OnAbout)
 EVT_MENU(wPause,DesmumeFrame::pause)
 EVT_MENU(wReset,DesmumeFrame::reset)
 EVT_MENU(wFrameCounter,DesmumeFrame::frameCounter)
@@ -433,9 +546,14 @@ EVT_MENU(wSubmitABugReport,DesmumeFrame::submitABugReport)
 EVT_MENU(wSaveStateAs,DesmumeFrame::saveStateAs)
 EVT_MENU(wLoadStateFrom,DesmumeFrame::loadStateFrom)
 
+EVT_MENU_RANGE(wSaveState01,wSaveState01+9,DesmumeFrame::Menu_SaveStates)
+EVT_MENU_RANGE(wLoadState01,wLoadState01+9,DesmumeFrame::Menu_LoadStates)
+
 EVT_MENU(wCloseRom,DesmumeFrame::closeRom)
 EVT_MENU(wImportBackupMemory,DesmumeFrame::importBackupMemory)
 EVT_MENU(wExportBackupMemory,DesmumeFrame::exportBackupMemory)
+
+EVT_MENU_RANGE(wRot0,wRot270,DesmumeFrame::changeRotation)
 
 EVT_MENU(wSaveScreenshotAs,DesmumeFrame::saveScreenshotAs)
 EVT_MENU(wQuickScreenshot,DesmumeFrame::quickScreenshot)
@@ -465,6 +583,9 @@ void DesmumeFrame::NDSInitialize() {
 #else
 	NDS_Init();
 #endif
+#ifndef WIN32
+	SPU_ChangeSoundCore(SNDCORE_SDL, 735 * 4);
+#endif
 }
 
 bool Desmume::OnInit()
@@ -483,8 +604,10 @@ bool Desmume::OnInit()
 	DesmumeFrame *frame = new DesmumeFrame(emu_version);
 	frame->NDSInitialize();
 
+#ifdef HAVE_LIBAGG
 	Desmume_InitOnce();
 	aggDraw.hud->attach((u8*)GPU_screen, 256, 384, 1024);//TODO
+#endif
 	NDS_3D_ChangeCore(0);
 
 
@@ -517,31 +640,22 @@ DesmumeFrame::DesmumeFrame(const wxString& title)
 : wxFrame(NULL, wxID_ANY, title)
 {
 
-	this->SetClientSize(256,384);
-
 	wxMenu *fileMenu = new wxMenu;
 	wxMenu *emulationMenu = new wxMenu;
 	wxMenu *viewMenu = new wxMenu;
 	wxMenu *configMenu = new wxMenu;
 	wxMenu *toolsMenu = new wxMenu;
 	wxMenu *helpMenu = new wxMenu;
+	wxMenu *saves(MakeStatesSubMenu(wSaveState01));
+	wxMenu *loads(MakeStatesSubMenu(wLoadState01));
 
-	fileMenu->Append(wRom, _T("Load R&om\tAlt-R"));
+	fileMenu->Append(wxID_OPEN, _T("Load R&om\tAlt-R"));
 	fileMenu->Append(wCloseRom, _T("Close Rom"));
 	fileMenu->AppendSeparator();
 	fileMenu->Append(wSaveStateAs, _T("Save State As..."));
 	fileMenu->Append(wLoadStateFrom, _T("Load State From..."));
-	{
-		wxMenu* saves(DesmumeFrame::MakeStatesSubMenu(wSaveState01));
-		wxMenu* loads(DesmumeFrame::MakeStatesSubMenu(wLoadState01));
-		fileMenu->AppendSubMenu(saves, _T("Save State"));
-		fileMenu->AppendSubMenu(loads, _T("Load State"));
-#define ConnectMenuRange( id_start, inc, handler ) \
-	Connect( id_start, id_start + inc, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler(DesmumeFrame::handler) )
-		//TODO something is wrong here
-//		ConnectMenuRange(wLoadState01+1, 10, Menu_LoadStates);
-//		ConnectMenuRange(wSaveState01+1, 10, Menu_SaveStates);
-	}
+	fileMenu->AppendSubMenu(saves, _T("Save State"));
+	fileMenu->AppendSubMenu(loads, _T("Load State"));
 	fileMenu->AppendSeparator();
 	fileMenu->Append(wImportBackupMemory, _T("Import Backup Memory..."));
 	fileMenu->Append(wExportBackupMemory, _T("Export Backup Memory..."));
@@ -555,11 +669,19 @@ DesmumeFrame::DesmumeFrame(const wxString& title)
 	fileMenu->AppendSeparator();
 	fileMenu->Append(wLuaWindow, _T("New Lua Script Window..."));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(wExit, _T("E&xit\tAlt-X"), _T("Quit this program"));
+	fileMenu->Append(wxID_EXIT, _T("E&xit\tAlt-X"), _T("Quit this program"));
 
 	emulationMenu->Append(wPause, _T("&Pause\tAlt-P"), _T("Pause Emulation"));
 	emulationMenu->Append(wReset, _T("&Reset\tAlt-R"), _T("Reset Emulation"));
 
+	wxMenu *rotateMenu = new wxMenu;
+	{
+		rotateMenu->AppendRadioItem(wRot0, _T("0"));
+		rotateMenu->AppendRadioItem(wRot90, _T("90"));
+		rotateMenu->AppendRadioItem(wRot180, _T("180"));
+		rotateMenu->AppendRadioItem(wRot270, _T("270"));
+	}
+	viewMenu->AppendSubMenu(rotateMenu, _T("Rotate"));
 	viewMenu->AppendSeparator();
 	viewMenu->Append(wFrameCounter, _T("&Display Frame Counter"));
 	viewMenu->Append(wFPS, _T("&Display FPS"));
@@ -592,7 +714,7 @@ DesmumeFrame::DesmumeFrame(const wxString& title)
 	helpMenu->Append(wWebsite, _T("&Website"));
 	helpMenu->Append(wForums, _T("&Forums"));
 	helpMenu->Append(wSubmitABugReport, _T("&Submit A Bug Report"));
-	helpMenu->Append(wAbout, _T("&About"), _T("Show about dialog"));
+	helpMenu->Append(wxID_ABOUT);
 
 	wxMenuBar *menuBar = new wxMenuBar();
 	menuBar->Append(fileMenu, _T("&File"));
@@ -605,6 +727,12 @@ DesmumeFrame::DesmumeFrame(const wxString& title)
 
 	//	CreateStatusBar(2);
 	//	SetStatusText("Welcome to Desmume!");
+	SetClientSize(256,384);
+	wxSize sizeMin = ClientToWindowSize(wxSize(256,384));
+	wxSize sizeMax = sizeMin;
+	sizeMax.IncBy(0,GAP_MAX);
+	SetMinSize(sizeMin);
+	SetMaxSize(sizeMax);
 }
 
 #ifdef _WIN32

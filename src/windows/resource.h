@@ -55,6 +55,7 @@
 #define IDM_SUBMITBUGREPORT             134
 #define IDM_STATE_LOAD                  135
 #define IDM_STATE_SAVE                  136
+#define IDM_STATE_SAVE_F10              139
 #define IDM_STATE_SAVE_F1               140
 #define IDM_STATE_SAVE_F2               141
 #define IDM_STATE_SAVE_F3               142
@@ -64,7 +65,7 @@
 #define IDM_STATE_SAVE_F7               146
 #define IDM_STATE_SAVE_F8               147
 #define IDM_STATE_SAVE_F9               148
-#define IDM_STATE_SAVE_F10              149
+#define IDM_STATE_LOAD_F10              149
 #define IDM_STATE_LOAD_F1               150
 #define IDM_STATE_LOAD_F2               151
 #define IDM_STATE_LOAD_F3               152
@@ -74,7 +75,6 @@
 #define IDM_STATE_LOAD_F7               156
 #define IDM_STATE_LOAD_F8               157
 #define IDM_STATE_LOAD_F9               158
-#define IDM_STATE_LOAD_F10              159
 #define IDC_COMBO1                      160
 #define IDC_COMBO2                      161
 #define IDC_COMBO3                      162
@@ -366,6 +366,7 @@
 #define IDC_SNDCTRL_CH3NOMIX            1030
 #define IDC_ADDONS_LIST                 1033
 #define IDC_ADDONS_INFO                 1034
+#define IDC_BORDER                      1034
 #define IDC_BBROWSE                     1035
 #define IDC_PATHIMG                     1036
 #define IDC_PATH                        1037
@@ -418,6 +419,10 @@
 #define IDC_CAP1_ACTIVE                 1083
 #define IDC_CAP1_RUNNING                1084
 #define IDC_CHECK9                      1088
+#define IDC_S2X                         1090
+#define IDC_S4X                         1091
+#define IDC_S8X                         1092
+#define IDC_S16X                        1093
 #define IDM_FIRMSETTINGS                1100
 #define IDD_FIRMSETTINGS                1101
 #define IDC_EDIT1                       1102
@@ -807,6 +812,10 @@
 #define ID_DISPLAYMETHOD_DIRECTDRAWHW   40071
 #define ID_DISPLAYMETHOD_DIRECTDRAWSW   40072
 #define ID_HOTKEYS_TITLE                40073
+#define ID_VIEWLAYERS_SUBOBJ            40074
+#define ID_VIEWLAYERS_MAINOBJ           40075
+#define IDM_MOBJ                        40076
+#define IDM_SOBJ                        40077
 #define IDC_LABEL_UP                    50000
 #define IDC_LABEL_RIGHT                 50001
 #define IDC_LABEL_LEFT                  50002
@@ -904,7 +913,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        121
-#define _APS_NEXT_COMMAND_VALUE         40074
+#define _APS_NEXT_COMMAND_VALUE         40078
 #define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

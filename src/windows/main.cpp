@@ -1873,8 +1873,8 @@ void NDS_UnPause(bool showMsg)
  **/
 void UpdateSaveStateMenu(int pos, char* txt)
 {
-	ModifyMenu(mainMenu,IDM_STATE_SAVE_F1 + pos, MF_BYCOMMAND | MF_STRING, IDM_STATE_SAVE_F1 + pos,  txt);
-	ModifyMenu(mainMenu,IDM_STATE_LOAD_F1 + pos, MF_BYCOMMAND | MF_STRING, IDM_STATE_LOAD_F1 + pos,	 txt);
+	ModifyMenu(mainMenu,IDM_STATE_SAVE_F10 + pos, MF_BYCOMMAND | MF_STRING, IDM_STATE_SAVE_F10 + pos, txt);
+	ModifyMenu(mainMenu,IDM_STATE_LOAD_F10 + pos, MF_BYCOMMAND | MF_STRING, IDM_STATE_LOAD_F10 + pos, txt);
 }
 
 /***
@@ -1890,7 +1890,7 @@ void ResetSaveStateTimes()
 	char ntxt[64];
 	for(int i = 0; i < NB_STATES;i++)
 	{
-		sprintf(ntxt,"%d %s", i+1, "");
+		sprintf(ntxt,"%d %s", i, "");
 		UpdateSaveStateMenu(i, ntxt);
 	}
 }
@@ -1911,7 +1911,7 @@ void LoadSaveStateInfo()
 	{
 		if(savestates[i].exists)
 		{
-			sprintf(ntxt, "&%d    %s", i+1, savestates[i].date);
+			sprintf(ntxt, "&%d    %s", i, savestates[i].date);
 			UpdateSaveStateMenu(i, ntxt);
 		}
 	}
@@ -2462,7 +2462,6 @@ int _main()
 	InitCustomKeys(&CustomKeys);
 	Hud.reset();
 
-	void input_init();
 	input_init();
 
 	if (addon_type == NDS_ADDON_GUITARGRIP) Guitar.Enabled = true;
@@ -2727,6 +2726,7 @@ int _main()
 
 
 	//------SHUTDOWN
+	input_deinit();
 
 	KillDisplay();
 
@@ -3610,8 +3610,8 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			//Update savestate slot items based on ROM loaded
 			for (int x = 0; x < 10; x++)
 			{
-				DesEnableMenuItem(mainMenu, IDM_STATE_SAVE_F1+x,   romloaded);
-				DesEnableMenuItem(mainMenu, IDM_STATE_LOAD_F1+x,   romloaded);
+				DesEnableMenuItem(mainMenu, IDM_STATE_SAVE_F10+x,   romloaded);
+				DesEnableMenuItem(mainMenu, IDM_STATE_LOAD_F10+x,   romloaded);
 			}
 
 			//Gray the recent ROM menu item if there are no recent ROMs
@@ -4567,39 +4567,22 @@ DOKEYDOWN:
 		case IDM_STATE_SAVE_F8:
 		case IDM_STATE_SAVE_F9:
 		case IDM_STATE_SAVE_F10:
-				HK_StateSaveSlot( abs(IDM_STATE_SAVE_F1 - LOWORD(wParam)) +1, true);
+				HK_StateSaveSlot(LOWORD(wParam)-IDM_STATE_SAVE_F10, true);
 				return 0;
 
 		case IDM_STATE_LOAD_F1:
-			HK_StateLoadSlot(1, true);
-			return 0;
 		case IDM_STATE_LOAD_F2:
-			HK_StateLoadSlot(2, true);
-			return 0;
 		case IDM_STATE_LOAD_F3:
-			HK_StateLoadSlot(3, true);
-			return 0;
 		case IDM_STATE_LOAD_F4:
-			HK_StateLoadSlot(4, true);
-			return 0;
 		case IDM_STATE_LOAD_F5:
-			HK_StateLoadSlot(5, true);
-			return 0;
 		case IDM_STATE_LOAD_F6:
-			HK_StateLoadSlot(6, true);
-			return 0;
 		case IDM_STATE_LOAD_F7:
-			HK_StateLoadSlot(7, true);
-			return 0;
 		case IDM_STATE_LOAD_F8:
-			HK_StateLoadSlot(8, true);
-			return 0;
 		case IDM_STATE_LOAD_F9:
-			HK_StateLoadSlot(9, true);
-			return 0;
 		case IDM_STATE_LOAD_F10:
-			HK_StateLoadSlot(10, true);
+			HK_StateLoadSlot(LOWORD(wParam)-IDM_STATE_LOAD_F10, true);
 			return 0;
+
 		case IDM_IMPORTBACKUPMEMORY:
 			{
 				OPENFILENAME ofn;
@@ -4762,6 +4745,19 @@ DOKEYDOWN:
 			WritePrivateProfileInt("Display","SubGpu",CommonSettings.showGpu.sub?1:0,IniName);
 			return 0;
 
+		case IDM_MOBJ:
+			if(MainScreen.gpu->dispOBJ)
+			{
+				GPU_remove(MainScreen.gpu, 4);
+				MainWindow->checkMenu(IDM_MOBJ, false);
+			}
+			else
+			{
+				GPU_addBack(MainScreen.gpu, 4);
+				MainWindow->checkMenu(IDM_MOBJ, true);
+			}
+			return 0;
+
 		case IDM_MBG0 : 
 			if(MainScreen.gpu->dispBG[0])
 			{
@@ -4808,6 +4804,19 @@ DOKEYDOWN:
 			{
 				GPU_addBack(MainScreen.gpu, 3);
 				MainWindow->checkMenu(IDM_MBG3, true);
+			}
+			return 0;
+
+		case IDM_SOBJ:
+			if(SubScreen.gpu->dispOBJ)
+			{
+				GPU_remove(SubScreen.gpu, 4);
+				MainWindow->checkMenu(IDM_SOBJ, false);
+			}
+			else
+			{
+				GPU_addBack(SubScreen.gpu, 4);
+				MainWindow->checkMenu(IDM_SOBJ, true);
 			}
 			return 0;
 		case IDM_SBG0 : 
@@ -6059,10 +6068,11 @@ void UpdateHotkeyAssignments()
 	UpdateHotkeyAssignment(CustomKeys.NewLuaScript, IDC_NEW_LUA_SCRIPT);
 	UpdateHotkeyAssignment(CustomKeys.MostRecentLuaScript, IDD_LUARECENT_RESERVE_START);
 	UpdateHotkeyAssignment(CustomKeys.CloseLuaScripts, IDC_CLOSE_LUA_SCRIPTS);
+
 	for(int i = 0; i < 10; i++)
-		UpdateHotkeyAssignment(CustomKeys.Save[(i+1)%10], IDM_STATE_SAVE_F1 + i);
+		UpdateHotkeyAssignment(CustomKeys.Save[i], IDM_STATE_SAVE_F10 + i);
 	for(int i = 0; i < 10; i++)
-		UpdateHotkeyAssignment(CustomKeys.Load[(i+1)%10], IDM_STATE_LOAD_F1 + i);
+		UpdateHotkeyAssignment(CustomKeys.Load[i], IDM_STATE_LOAD_F10 + i);
 }
 
 

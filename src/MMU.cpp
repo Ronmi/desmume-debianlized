@@ -1047,7 +1047,7 @@ static void execsqrt() {
 }
 
 static void execdiv() {
-	
+
 	s64 num,den;
 	s64 res,mod;
 	u8 mode = MMU_new.div.mode;
@@ -1056,18 +1056,18 @@ static void execdiv() {
 
 	switch(mode)
 	{
-	case 0:
+	case 0:	// 32/32
 		num = (s64) (s32) T1ReadLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x290);
 		den = (s64) (s32) T1ReadLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x298);
 		MMU.divCycles = nds_timer + 36;
 		break;
-	case 1:
+	case 1:	// 64/32
 	case 3: //gbatek says this is same as mode 1
 		num = (s64) T1ReadQuad(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x290);
 		den = (s64) (s32) T1ReadLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x298);
 		MMU.divCycles = nds_timer + 68;
 		break;
-	case 2:
+	case 2:	// 64/64
 	default:
 		num = (s64) T1ReadQuad(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x290);
 		den = (s64) T1ReadQuad(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x298);
@@ -1510,7 +1510,7 @@ u32 MMU_readFromGC()
 
 
 //does some validation on the game's choice of IF value, correcting it if necessary
-void validateIF_arm9()
+static void validateIF_arm9()
 {
 	//according to gbatek, these flags are forced on until the condition is removed.
 	//no proof of this though...
@@ -1714,8 +1714,7 @@ u32 TGXSTAT::read32()
 	// using in "The Wild West"
 	ret |= ((_hack_getMatrixStackLevel(0) << 13) | (_hack_getMatrixStackLevel(1) << 8)); //matrix stack levels //no proof that these are needed yet
 
-	//todo: stack busy flag (bit14)
-
+	ret |= sb<<14;	//stack busy
 	ret |= se<<15;
 	ret |= (std::min(gxFIFO.size,(u32)255))<<16;
 	if(gxFIFO.size>=255) ret |= BIT(24); //fifo full
@@ -1758,16 +1757,18 @@ void TGXSTAT::write32(const u32 val)
 
 void TGXSTAT::savestate(EMUFILE *f)
 {
-	write32le(0,f); //version
-	write8le(tb,f); write8le(tr,f); write8le(se,f); write8le(gxfifo_irq,f); 
+	write32le(1,f); //version
+	write8le(tb,f); write8le(tr,f); write8le(se,f); write8le(gxfifo_irq,f); write8le(sb,f);
 }
 bool TGXSTAT::loadstate(EMUFILE *f)
 {
 	u32 version;
 	if(read32le(&version,f) != 1) return false;
-	if(version != 0) return false;
+	if(version > 1) return false;
 
 	read8le(&tb,f); read8le(&tr,f); read8le(&se,f); read8le(&gxfifo_irq,f); 
+	if (version >= 1)
+		read8le(&sb,f);
 
 	return true;
 }
@@ -1959,17 +1960,17 @@ void DmaController::exec()
 				//if(!paused) printf("gxfifo dma ended with %d remaining\n",wordcount); //only print this once
 				if(wordcount>0) {
 					doPause();
-					goto start;
+					break;
 				}
-				else doStop();
-				break;
 			default:
 				doStop();
+				driver->DEBUG_UpdateIORegView(BaseDriver::EDEBUG_IOREG_DMA);
+				return;
 		}
 	}
-	else if(enable)
+	
+	if(enable)
 	{
-start:
 		//analyze startmode (this only gets latched when a dma begins)
 		if(procnum==ARMCPU_ARM9) startmode = (EDMAMode)_startmode;
 		else {
@@ -2325,7 +2326,7 @@ void FASTCALL _MMU_ARM9_write08(u32 adr, u8 val)
 				break ; 	 
 			case REG_DISPB_WININ+1: 	 
 				GPU_setWININ1(SubScreen.gpu,val) ; 	 
-				break ; 	 
+				break ; 
 			case REG_DISPB_WINOUT: 	 
 				GPU_setWINOUT(SubScreen.gpu,val) ; 	 
 				break ; 	 
@@ -2546,7 +2547,18 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 				MMU_new.div.write16(val);
 				execdiv();
 				return;
-
+#if 0
+			case REG_DIVNUMER:
+			case REG_DIVNUMER+2:
+			case REG_DIVNUMER+4:
+				printf("DIV: 16 write NUMER %08X. PLEASE REPORT! \n", val);
+				break;
+			case REG_DIVDENOM:
+			case REG_DIVDENOM+2:
+			case REG_DIVDENOM+4:
+				printf("DIV: 16 write DENOM %08X. PLEASE REPORT! \n", val);
+				break;
+#endif
 			case REG_SQRTCNT:
 				MMU_new.sqrt.write16(val);
 				execsqrt();
@@ -3163,10 +3175,10 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 			}
 
 			case REG_DISPA_BLDY:
-				GPU_setBLDY_EVY(MainScreen.gpu,val) ; 	 
+				GPU_setBLDY_EVY(MainScreen.gpu,val&0xFFFF) ; 	 
 				break ; 	 
 			case REG_DISPB_BLDY: 	 
-				GPU_setBLDY_EVY(SubScreen.gpu,val) ; 	 
+				GPU_setBLDY_EVY(SubScreen.gpu,val&0xFFFF);
 				break;
 
 			case REG_DISPA_DISPCNT :
@@ -3251,6 +3263,15 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 				write_timer(ARMCPU_ARM9, timerIndex, val>>16);
 				return;
 			}
+
+			case REG_DIVNUMER:
+				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x290, val);
+				execdiv();
+				return;
+			case REG_DIVNUMER+4:
+				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x294, val);
+				execdiv();
+				return;
 
             case REG_DIVDENOM :
 				{
@@ -3355,7 +3376,7 @@ u8 FASTCALL _MMU_ARM9_read08(u32 adr)
 	if (adr >> 24 == 4)
 	{	//Address is an IO register
 
-		if(MMU_new.is_dma(adr)) return MMU_new.read_dma(ARMCPU_ARM9,8,adr); 
+		if(MMU_new.is_dma(adr)) return MMU_new.read_dma(ARMCPU_ARM9,8,adr);
 
 		switch(adr)
 		{

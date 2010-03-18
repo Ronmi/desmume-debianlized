@@ -1,3 +1,120 @@
+desmume-trunk (svnrivisionr3376-r3417) karmic; urgency=low
+
+  [ zeromus ]
+  * win32: straighten out the save slot 0 / F10 business git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    95 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - fix timings in THUMB CPU mode (fix bug #2879374 and break
+    SW: CW JA intro :(, maybe mistake in WiFi emulation); git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    96 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: - fix some bugs in OAM viewer and add scale thumb viewer;
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    97 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: - sorry, I`m ignored last commit from zeromus :) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Make acl_check_access static and comment a variabile which is used
+    only in commented code. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * We can make validateIF_arm9 static. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Move declaration of nds_debug_* functions in header. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    01 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Remove unused variable and fix signed vs unsigned comparison
+    warning. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * colorAlpha is not used anymore. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Move unused functions under #if 0. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - handle 32bit divnumer & divdenom (fix "Sonic Classic
+    Collection"); git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    05 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Let the wx frontend build without libagg, based on a patch by Yar-
+    Tour in bug #2969484. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    06 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Use Destroy() instead of Close() to exit from the controls dialog.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    07 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fixup event enum Using straight standard wx defintion as values in
+    the enum for events is wrong because we end up reusing the already
+    defined standard values. Use the wx definitions directly in the code
+    so we start from 0 in the enum. This fix the funny random icons in
+    the menu. Slightly edited from patch #1 by yar-tour in bug #2969484
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    08 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Cleanup load / save states menu This cleanup the load and save
+    states menu by using EVT_MENU_RANGE. Slightly edited from patch #2
+    of yar-tour in bug #2969484 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    09 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add audio to wxfrontend on !win32 I've verified that calling the
+    SPU_* functions without SPU_ChangeSoundCore() does not harm here.
+    Based on patch #3 by yar-tour in #2969484. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    10 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add rotation to wxwidgets frontend Add rotation to wxwidgets
+    frontend, code derived from gtk frontend. rm: my changes are mostly
+    cosmetics (how can you read multiple statements in one line? a
+    mistery to me :) and some tidy up for gpu_screen_to_rgb. Let me left
+    this quote in my defense: "If you want to go somewhere, goto is the
+    best way to  get there." Patch #4 by yar-tour from #2969484 git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    11 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add gap and resize support to wx frontend This patch adds gap up to
+    90px when the user resize vertically the window. Speaking of sizes
+    we are losing the last entry in the menu because it does not fit in
+    the 256 px limit. Patch #5 by yar-tour from #2969484 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    12 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - fix matrix stack for Projection & Texture mode (fix bug
+    #2910405); - fix some typos; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    13 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * winport: - fix input feedback support; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    14 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * win32: add menu items for obj display toggle git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    15 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * gpu: fix 3d blending color effects being applied when they shouldnt
+    be git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    16 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * debug: add no$ message support git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    17 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * updated to r3417
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 18 Mar 2010 11:05:01 +0800
+
 desmume-trunk (svnrivisionr3376-r3394) karmic; urgency=low
 
   [ zeromus ]

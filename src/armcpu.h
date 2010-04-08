@@ -1,6 +1,5 @@
 /*  Copyright (C) 2006 yopyop
-    yopyop156@ifrance.com
-    yopyop156.ifrance.com
+	Copyright (C) 2008-2010 DeSmuME team
 
     This file is part of DeSmuME
 
@@ -16,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with DeSmuME; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
 #ifndef ARM_CPU
@@ -45,6 +44,31 @@ inline T SIGNED_OVERFLOW(T a,T b,T c) { return BIT31(((a)&(b)&(~c)) | ((~a)&(~(b
 
 template<typename T>
 inline T SIGNED_UNDERFLOW(T a,T b,T c) { return BIT31(((a)&(~(b))&(~c)) | ((~a)&(b)&(c))); }
+
+// ============================= CPRS flags funcs
+static bool CarryFrom(s32 left, s32 right)
+{
+  u32 res  = (0xFFFFFFFF - (u32)left);
+
+  return ((u32)right > res);
+}
+
+static bool BorrowFrom(s32 left, s32 right)
+{
+  return ((u32)right > (u32)left);
+}
+
+static bool OverflowFromADD(s32 alu_out, s32 left, s32 right)
+{
+    return ((left >= 0 && right >= 0) || (left < 0 && right < 0))
+			&& ((left < 0 && alu_out >= 0) || (left >= 0 && alu_out < 0));
+}
+
+static bool OverflowFromSUB(s32 alu_out, s32 left, s32 right)
+{
+    return ((left < 0 && right >= 0) || (left >= 0 && right < 0))
+			&& ((left < 0 && alu_out >= 0) || (left >= 0 && alu_out < 0));
+}
 
 //zero 15-feb-2009 - these werent getting used and they were getting in my way
 //#define EQ	0x0
@@ -148,7 +172,7 @@ struct armcpu_ctrl_iface {
 
 typedef void* armcp_t;
 
-typedef struct armcpu_t
+struct armcpu_t
 {
 	u32 proc_ID;
 	u32 instruction; //4
@@ -158,6 +182,8 @@ typedef struct armcpu_t
 	u32 R[16]; //16
 	Status_Reg CPSR;  //80
 	Status_Reg SPSR;
+
+	void changeCPSR();
 
 	u32 R13_usr, R14_usr;
 	u32 R13_svc, R14_svc;
@@ -173,6 +199,8 @@ typedef struct armcpu_t
 	u8 LDTBit;  //1 : ARMv5 style 0 : non ARMv5
 	BOOL waitIRQ;
 	BOOL wirq;
+
+	BOOL BIOS_loaded;
 
 	u32 (* *swi_tab)();
 
@@ -197,7 +225,7 @@ typedef struct armcpu_t
   /** the ctrl interface */
   struct armcpu_ctrl_iface ctrl_iface;
 #endif
-} armcpu_t;
+};
 
 #ifdef GDB_STUB
 int armcpu_new( armcpu_t *armcpu, u32 id, struct armcpu_memory_iface *mem_if,
@@ -224,32 +252,25 @@ static INLINE void setIF(int PROCNUM, u32 flag)
 
 	extern void NDS_Reschedule();
 	NDS_Reschedule();
+
+    //generate the interrupt if enabled
+	if ((MMU.reg_IE[PROCNUM] & (flag)) && MMU.reg_IME[PROCNUM])
+	{
+		if(PROCNUM==0)
+			NDS_ARM9.waitIRQ = FALSE;
+		else 
+			NDS_ARM7.waitIRQ = FALSE;
+	}
 }
 
 static INLINE void NDS_makeARM9Int(u32 num)
 {
-        /* flag the interrupt request source */
-       // MMU.reg_IF[0] |= (1<<num);
-		setIF(0, (1<<num));
-
-        /* generate the interrupt if enabled */
-	if ((MMU.reg_IE[0] & (1 << num)) && MMU.reg_IME[0])
-	{
-		NDS_ARM9.waitIRQ = FALSE;
-	}
+	setIF(0, (1<<num));
 }
 
 static INLINE void NDS_makeARM7Int(u32 num)
 {
-        /* flag the interrupt request source */
-	//MMU.reg_IF[1] |= (1<<num);
 	setIF(1, (1<<num));
-
-        /* generate the interrupt if enabled */
-	if ((MMU.reg_IE[1] & (1 << num)) && MMU.reg_IME[1])
-	{
-		NDS_ARM7.waitIRQ = FALSE;
-	}
 }
 
 static INLINE void NDS_makeInt(u8 proc_ID,u32 num)

@@ -30,10 +30,11 @@
 #include "mem.h"
 #include "wifi.h"
 #include "emufile.h"
+#include "firmware.h"
 
 #include <string>
 
-#if defined(WIN32) && !defined(WXPORT)
+#if defined(_WINDOWS) && !defined(WXPORT)
 #include "pathsettings.h"
 #endif
 
@@ -489,20 +490,28 @@ extern struct TCommonSettings {
 		, EnsataEmulation(false)
 		, cheatsDisable(false)
 		, num_cores(1)
+		, rigorous_timing(false)
+		, advanced_timing(true)
 		, micMode(InternalNoise)
 		, spuInterpolationMode(SPUInterpolation_Linear)
 		, manualBackupType(0)
+		, spu_captureMuted(false)
 		, spu_advanced(false)
 	{
 		strcpy(ARM9BIOS, "biosnds9.bin");
 		strcpy(ARM7BIOS, "biosnds7.bin");
 		strcpy(Firmware, "firmware.bin");
+		NDS_FillDefaultFirmwareConfigData(&InternalFirmConf);
 
 		wifi.mode = 0;
 		wifi.infraBridgeAdapter = 0;
 
 		for(int i=0;i<16;i++)
 			spu_muteChannels[i] = false;
+
+		for(int g=0;g<2;g++)
+			for(int x=0;x<5;x++)
+				dispLayers[g][x]=true;
 	}
 	bool GFX3D_HighResolutionInterpolateColor;
 	bool GFX3D_EdgeMark;
@@ -517,6 +526,7 @@ extern struct TCommonSettings {
 	bool UseExtFirmware;
 	char Firmware[256];
 	bool BootFromFirmware;
+	struct NDS_fw_config_data InternalFirmConf;
 
 	bool DebugConsole;
 	bool EnsataEmulation;
@@ -525,6 +535,11 @@ extern struct TCommonSettings {
 
 	int num_cores;
 	bool single_core() { return num_cores==1; }
+	bool rigorous_timing;
+
+	bool dispLayers[2][5];
+	
+	FAST_ALIGN bool advanced_timing;
 	
 	struct _Wifi {
 		int mode;
@@ -549,6 +564,7 @@ extern struct TCommonSettings {
 	int manualBackupType;
 
 	bool spu_muteChannels[16];
+	bool spu_captureMuted;
 	bool spu_advanced;
 
 	struct _ShowGpu {
@@ -567,8 +583,9 @@ extern struct TCommonSettings {
 			, FrameCounterDisplay(false)
 			, ShowLagFrameCounter(false)
 			, ShowMicrophone(false)
+			, ShowRTC(false)
 		{}
-		bool ShowInputDisplay, ShowGraphicalInputDisplay, FpsDisplay, FrameCounterDisplay, ShowLagFrameCounter, ShowMicrophone;
+		bool ShowInputDisplay, ShowGraphicalInputDisplay, FpsDisplay, FrameCounterDisplay, ShowLagFrameCounter, ShowMicrophone, ShowRTC;
 	} hud;
 
 } CommonSettings;
@@ -584,4 +601,3 @@ void ClearAutoHold(void);
 
 #endif
 
- 	  	 

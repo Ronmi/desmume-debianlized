@@ -20,11 +20,13 @@
 
 #include <io.h>
 #include <fstream>
+#include <time.h>
 #include "resource.h"
 #include "replay.h"
 #include "common.h"
 #include "main.h"
 #include "movie.h"
+#include "rtc.h"
 #include "utils/xstring.h"
 
 bool replayreadonly=1;
@@ -248,12 +250,43 @@ static INT_PTR CALLBACK RecordDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 	static struct CreateMovieParameters* p = NULL;
 	std::wstring author = L"";
 	std::string fname;
+	SYSTEMTIME systime;
 	switch(uMsg)
 	{
-		case WM_INITDIALOG:
+		case WM_INITDIALOG: {
 			CheckDlgButton(hwndDlg, IDC_START_FROM_SRAM, ((flag == 1) ? BST_CHECKED : BST_UNCHECKED));
 			SetFocus(GetDlgItem(hwndDlg, IDC_EDIT_FILENAME));
+
+			time_t timer = FCEUI_MovieGetRTCDefault();
+			struct tm *t = gmtime(&timer);
+			ZeroMemory(&systime, sizeof(SYSTEMTIME));
+			systime.wYear = t->tm_year + 1900;
+			systime.wMonth = t->tm_mon + 1;
+			systime.wDay = t->tm_mday;
+			systime.wDayOfWeek = t->tm_wday;
+			systime.wHour = t->tm_hour;
+			systime.wMinute = t->tm_min;
+			systime.wSecond = t->tm_sec;
+			systime.wMilliseconds = 0;
+			DateTime_SetSystemtime(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDT_VALID, &systime);
+			DateTime_SetSystemtime(GetDlgItem(hwndDlg, IDC_DTP_TIME), GDT_VALID, &systime);
+
+			SYSTEMTIME rtcMin;
+			SYSTEMTIME rtcMax;
+			ZeroMemory(&rtcMin, sizeof(SYSTEMTIME));
+			ZeroMemory(&rtcMax, sizeof(SYSTEMTIME));
+			rtcMin.wYear = 2000;
+			rtcMin.wMonth = 1;
+			rtcMin.wDay = 1;
+			rtcMin.wDayOfWeek = 6;
+			rtcMax.wYear = 2099;
+			rtcMax.wMonth = 12;
+			rtcMax.wDay = 31;
+			rtcMax.wDayOfWeek = 4;
+			DateTime_SetRange(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDTR_MIN, &rtcMin);
+			DateTime_SetRange(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDTR_MAX, &rtcMax);
 			return false;
+		}
 
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
@@ -264,7 +297,22 @@ static INT_PTR CALLBACK RecordDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 				std::string sramfname = GetDlgItemText<MAX_PATH>(hwndDlg,IDC_EDIT_SRAMFILENAME);
 				if (fname.length())
 				{
-					FCEUI_SaveMovie(fname.c_str(), author, flag, sramfname);
+					time_t rtcstart;
+					struct tm t;
+
+					DateTime_GetSystemtime(GetDlgItem(hwndDlg, IDC_DTP_DATE), &systime);
+					t.tm_year = systime.wYear - 1900;
+					t.tm_mon  = systime.wMonth - 1;
+					t.tm_mday = systime.wDay;
+					t.tm_wday = systime.wDayOfWeek;
+					DateTime_GetSystemtime(GetDlgItem(hwndDlg, IDC_DTP_TIME), &systime);
+					t.tm_hour = systime.wHour;
+					t.tm_min  = systime.wMinute;
+					t.tm_sec  = systime.wSecond;
+					t.tm_isdst= -1;
+					rtcstart = gmmktime(&t);
+
+					FCEUI_SaveMovie(fname.c_str(), author, flag, sramfname, rtcstart);
 					EndDialog(hwndDlg, 0);
 				}
 				return true;

@@ -115,6 +115,7 @@ bool bSocketsAvailable = false;
 
 VideoInfo video;
 
+#ifdef HAVE_WX
 #include "wx/wxprec.h"
 #ifdef _M_X64  
 	#ifdef __WXDEBUG__
@@ -150,13 +151,7 @@ public:
 };
 
 IMPLEMENT_APP_NO_MAIN( wxDesmumeApp )
-
-void wxTest() {
-	//wxdlg3dViewer *viewer = new wxdlg3dViewer(NULL);
-	//viewer->Show(true);
-    //wxTestModeless *frame = new wxTestModeless(_T("Controls wxWidgets App"), 50, 50);
-    //frame->Show(true);
-}
+#endif //HAVE_WX
 
 #ifndef PUBLIC_RELEASE
 #define DEVELOPER_MENU_ITEMS
@@ -1990,6 +1985,8 @@ joinThread_gdb( void *thread_handle) {
 
 int MenuInit()
 {
+	MENUITEMINFO mm = {0};
+
 	mainMenu = LoadMenu(hAppInst, MAKEINTRESOURCE(MENU_PRINCIPAL)); //Load Menu, and store handle
 	if (!MainWindow->setMenu(mainMenu)) return 0;
 
@@ -2002,6 +1999,23 @@ int MenuInit()
 	HMENU fileMenu = GetSubMenu(mainMenu, 0);
 	DeleteMenu(fileMenu, IDM_FILE_RECORDUSERSPUWAV, MF_BYCOMMAND);
 #endif
+
+	for(int i=0; i<MAX_SAVE_TYPES; i++)
+	{
+		memset(&mm, 0, sizeof(MENUITEMINFO));
+		
+		mm.cbSize = sizeof(MENUITEMINFO);
+		mm.fMask = MIIM_TYPE;
+		mm.fType = MFT_STRING;
+		mm.dwTypeData = (LPSTR)save_names[i];
+
+		MainWindow->addMenuItem(IDC_SAVETYPE, false, &mm);
+	}
+	memset(&mm, 0, sizeof(MENUITEMINFO));
+	mm.cbSize = sizeof(MENUITEMINFO);
+	mm.fMask = MIIM_TYPE;
+	mm.fType = MFT_SEPARATOR;
+	MainWindow->addMenuItem(IDC_SAVETYPE, false, &mm);
 
 	return 1;
 }
@@ -2260,7 +2274,7 @@ static void RefreshMicSettings()
 }
 
 #define GPU3D_NULL_SAVED -1
-#define GPU3D_DEFAULT  GPU3D_OPENGL
+#define GPU3D_DEFAULT  GPU3D_SWRAST
 
 DWORD wmTimerRes;
 int _main()
@@ -2364,6 +2378,7 @@ int _main()
 	CommonSettings.hud.ShowGraphicalInputDisplay = GetPrivateProfileBool("Display","Display Graphical Input", false, IniName);
 	CommonSettings.hud.ShowLagFrameCounter = GetPrivateProfileBool("Display","Display Lag Counter", false, IniName);
 	CommonSettings.hud.ShowMicrophone = GetPrivateProfileBool("Display","Display Microphone", false, IniName);
+	CommonSettings.hud.ShowRTC = GetPrivateProfileBool("Display","Display RTC", false, IniName);
 
 	CommonSettings.micMode = (TCommonSettings::MicMode)GetPrivateProfileInt("MicSettings", "MicMode", (int)TCommonSettings::InternalNoise, IniName);
 	GetPrivateProfileString("MicSettings", "MicSampleFile", "micsample.raw", MicSampleName, MAX_PATH, IniName);
@@ -2376,7 +2391,8 @@ int _main()
 	CommonSettings.showGpu.main = GetPrivateProfileInt("Display", "MainGpu", 1, IniName) != 0;
 	CommonSettings.showGpu.sub = GetPrivateProfileInt("Display", "SubGpu", 1, IniName) != 0;
 	CommonSettings.spu_advanced = GetPrivateProfileBool("Sound", "SpuAdvanced", false, IniName);
-
+	CommonSettings.advanced_timing = GetPrivateProfileBool("Emulation", "AdvancedTiming", true, IniName);
+	
 	lostFocusPause = GetPrivateProfileBool("Focus", "BackgroundPause", false, IniName);
 
 	//Get Ram-Watch values
@@ -3427,7 +3443,7 @@ void ScreenshotToClipboard()
 	memcpy(&str[titlelen+1], &MMU.CART_ROM[12], 6); str[titlelen+1+6] = '\0';
 	TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 3:2), str, strlen(str));
 
-	sprintf(str, "FPS: %i/%i | %s", mainLoopData.fps, mainLoopData.fps3d, paused ? "Paused":"Running");
+	sprintf(str, "FPS: %i/%i (%02d%%) | %s", mainLoopData.fps, mainLoopData.fps3d, Hud.arm9load, paused ? "Paused":"Running");
 	TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 4:3), str, strlen(str));
 
 	sprintf(str, "3D Render: %s", core3DList[cur3DCore]->name);
@@ -3537,6 +3553,23 @@ void SaveWindowPos(HWND hwnd)
 	if(IsZoomed(hwnd)) return;
 	WritePrivateProfileInt("Video", "WindowPosX", WndX/*MainWindowRect.left*/, IniName);
 	WritePrivateProfileInt("Video", "WindowPosY", WndY/*MainWindowRect.top*/, IniName);
+}
+
+
+static void TwiddleLayer(UINT ctlid, int core, int layer)
+{
+	GPU* gpu = core==0?MainScreen.gpu:SubScreen.gpu;
+	if(CommonSettings.dispLayers[core][layer])
+	{
+		GPU_remove(gpu,layer);
+		MainWindow->checkMenu(ctlid, false);
+	}
+	else
+	{
+		GPU_addBack(gpu,layer);
+		MainWindow->checkMenu(ctlid, true);
+	}
+
 }
 
 
@@ -3675,6 +3708,7 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			MainWindow->checkMenu(ID_VIEW_DISPLAYGRAPHICALINPUT,CommonSettings.hud.ShowGraphicalInputDisplay);
 			MainWindow->checkMenu(ID_VIEW_DISPLAYLAG,CommonSettings.hud.ShowLagFrameCounter);
 			MainWindow->checkMenu(ID_VIEW_DISPLAYMICROPHONE,CommonSettings.hud.ShowMicrophone);
+			MainWindow->checkMenu(ID_VIEW_DISPLAYRTC,CommonSettings.hud.ShowRTC);
 			MainWindow->checkMenu(ID_VIEW_HUDEDITOR, HudEditorMode);
 			MainWindow->checkMenu(IDC_FRAMELIMIT, FrameLimit);
 			
@@ -3726,10 +3760,10 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			MainWindow->checkMenu(IDM_CHEATS_DISABLE, CommonSettings.cheatsDisable == true);
 
 			//Save type
-			const int savelist[] = {IDC_SAVETYPE1,IDC_SAVETYPE2,IDC_SAVETYPE3,IDC_SAVETYPE4,IDC_SAVETYPE5,IDC_SAVETYPE6,IDC_SAVETYPE7,IDC_SAVETYPE8};
-			for(int i=0;i<8;i++) 
-				MainWindow->checkMenu(savelist[i], false);
-			MainWindow->checkMenu(savelist[CommonSettings.manualBackupType], true);
+			for(int i=0;i<MAX_SAVE_TYPES;i++)
+				MainWindow->checkMenu(IDC_SAVETYPE+i, false);
+
+			MainWindow->checkMenu(IDC_SAVETYPE+CommonSettings.manualBackupType, true);
 
 			// recent/active scripts menu
 			PopulateLuaSubmenu();
@@ -4702,8 +4736,12 @@ DOKEYDOWN:
 			OpenToolWindow(new CMemView());
 			return 0;
 		case IDM_VIEW3D:
-			driver->VIEW3D_Init();
-			driver->view3d->Launch();
+			#ifdef HAVE_WX
+				driver->VIEW3D_Init();
+				driver->view3d->Launch();
+			#else
+				MessageBox(hwnd, "Sorry to get your hopes up; 3d viewer isn't finished yet.\r\nBut because of all these languages, it is too much trouble to remove from all the menus...", "DeSmuME", MB_OK);
+			#endif
 			return 0;
 		case IDM_SOUND_VIEW:
 			if(!SoundView_IsOpened()) SoundView_DlgOpen(HWND_DESKTOP);
@@ -4745,128 +4783,16 @@ DOKEYDOWN:
 			WritePrivateProfileInt("Display","SubGpu",CommonSettings.showGpu.sub?1:0,IniName);
 			return 0;
 
-		case IDM_MOBJ:
-			if(MainScreen.gpu->dispOBJ)
-			{
-				GPU_remove(MainScreen.gpu, 4);
-				MainWindow->checkMenu(IDM_MOBJ, false);
-			}
-			else
-			{
-				GPU_addBack(MainScreen.gpu, 4);
-				MainWindow->checkMenu(IDM_MOBJ, true);
-			}
-			return 0;
-
-		case IDM_MBG0 : 
-			if(MainScreen.gpu->dispBG[0])
-			{
-				GPU_remove(MainScreen.gpu, 0);
-				MainWindow->checkMenu(IDM_MBG0, false);
-			}
-			else
-			{
-				GPU_addBack(MainScreen.gpu, 0);
-				MainWindow->checkMenu(IDM_MBG0, true);
-			}
-			return 0;
-		case IDM_MBG1 : 
-			if(MainScreen.gpu->dispBG[1])
-			{
-				GPU_remove(MainScreen.gpu, 1);
-				MainWindow->checkMenu(IDM_MBG1, false);
-			}
-			else
-			{
-				GPU_addBack(MainScreen.gpu, 1);
-				MainWindow->checkMenu(IDM_MBG1, true);
-			}
-			return 0;
-		case IDM_MBG2 : 
-			if(MainScreen.gpu->dispBG[2])
-			{
-				GPU_remove(MainScreen.gpu, 2);
-				MainWindow->checkMenu(IDM_MBG2, false);
-			}
-			else
-			{
-				GPU_addBack(MainScreen.gpu, 2);
-				MainWindow->checkMenu(IDM_MBG2, true);
-			}
-			return 0;
-		case IDM_MBG3 : 
-			if(MainScreen.gpu->dispBG[3])
-			{
-				GPU_remove(MainScreen.gpu, 3);
-				MainWindow->checkMenu(IDM_MBG3, false);
-			}
-			else
-			{
-				GPU_addBack(MainScreen.gpu, 3);
-				MainWindow->checkMenu(IDM_MBG3, true);
-			}
-			return 0;
-
-		case IDM_SOBJ:
-			if(SubScreen.gpu->dispOBJ)
-			{
-				GPU_remove(SubScreen.gpu, 4);
-				MainWindow->checkMenu(IDM_SOBJ, false);
-			}
-			else
-			{
-				GPU_addBack(SubScreen.gpu, 4);
-				MainWindow->checkMenu(IDM_SOBJ, true);
-			}
-			return 0;
-		case IDM_SBG0 : 
-			if(SubScreen.gpu->dispBG[0])
-			{
-				GPU_remove(SubScreen.gpu, 0);
-				MainWindow->checkMenu(IDM_SBG0, false);
-			}
-			else
-			{
-				GPU_addBack(SubScreen.gpu, 0);
-				MainWindow->checkMenu(IDM_SBG0, true);
-			}
-			return 0;
-		case IDM_SBG1 : 
-			if(SubScreen.gpu->dispBG[1])
-			{
-				GPU_remove(SubScreen.gpu, 1);
-				MainWindow->checkMenu(IDM_SBG1, false);
-			}
-			else
-			{
-				GPU_addBack(SubScreen.gpu, 1);
-				MainWindow->checkMenu(IDM_SBG1, true);
-			}
-			return 0;
-		case IDM_SBG2 : 
-			if(SubScreen.gpu->dispBG[2])
-			{
-				GPU_remove(SubScreen.gpu, 2);
-				MainWindow->checkMenu(IDM_SBG2, false);
-			}
-			else
-			{
-				GPU_addBack(SubScreen.gpu, 2);
-				MainWindow->checkMenu(IDM_SBG2, true);
-			}
-			return 0;
-		case IDM_SBG3 : 
-			if(SubScreen.gpu->dispBG[3])
-			{
-				GPU_remove(SubScreen.gpu, 3);
-				MainWindow->checkMenu(IDM_SBG3, false);
-			}
-			else
-			{
-				GPU_addBack(SubScreen.gpu, 3);
-				MainWindow->checkMenu(IDM_SBG3, true);
-			}
-			return 0;
+		case IDM_MBG0: TwiddleLayer(IDM_MBG0,0,0); return 0;
+		case IDM_MBG1: TwiddleLayer(IDM_MBG1,0,1); return 0;
+		case IDM_MBG2: TwiddleLayer(IDM_MBG2,0,2); return 0;
+		case IDM_MBG3: TwiddleLayer(IDM_MBG3,0,3); return 0;
+		case IDM_MOBJ: TwiddleLayer(IDM_MOBJ,0,4); return 0;
+		case IDM_SBG0: TwiddleLayer(IDM_SBG0,0,0); return 0;
+		case IDM_SBG1: TwiddleLayer(IDM_SBG1,0,1); return 0;
+		case IDM_SBG2: TwiddleLayer(IDM_SBG2,0,2); return 0;
+		case IDM_SBG3: TwiddleLayer(IDM_SBG3,0,3); return 0;
+		case IDM_SOBJ: TwiddleLayer(IDM_SOBJ,0,4); return 0;
 
 		case IDM_PAUSE:
 			TogglePause();
@@ -4960,6 +4886,12 @@ DOKEYDOWN:
 			osd->clear();
 			return 0;
 
+		case ID_VIEW_DISPLAYRTC:
+			CommonSettings.hud.ShowRTC ^= true;
+			WritePrivateProfileBool("Display", "Display RTC", CommonSettings.hud.ShowRTC, IniName);
+			osd->clear();
+			return 0;
+
 		case ID_VIEW_HUDEDITOR:
 			HudEditorMode ^= true;
 			osd->clear();
@@ -4996,15 +4928,6 @@ DOKEYDOWN:
 			lostFocusPause = !lostFocusPause;
 			WritePrivateProfileInt("Focus", "BackgroundPause", (int)lostFocusPause, IniName);
 			return 0;
-
-		case IDC_SAVETYPE1: backup_setManualBackupType(0); return 0;
-		case IDC_SAVETYPE2: backup_setManualBackupType(1); return 0;   
-		case IDC_SAVETYPE3: backup_setManualBackupType(2); return 0;   
-		case IDC_SAVETYPE4: backup_setManualBackupType(3); return 0;
-		case IDC_SAVETYPE5: backup_setManualBackupType(4); return 0; 
-		case IDC_SAVETYPE6: backup_setManualBackupType(5); return 0; 
-		case IDC_SAVETYPE7: backup_setManualBackupType(6); return 0; 
-		case IDC_SAVETYPE8: backup_setManualBackupType(7); return 0; 
 
 		case ID_DISPLAYMETHOD_DIRECTDRAWHW:
 			{
@@ -5259,7 +5182,14 @@ DOKEYDOWN:
 			return 0;
 
 		default:
-			return 0;
+			{
+				u32 id = LOWORD(wParam);
+				if ((id >= IDC_SAVETYPE) && (id < IDC_SAVETYPE+MAX_SAVE_TYPES+1))
+				{
+					backup_setManualBackupType(id-IDC_SAVETYPE);
+				}
+				return 0;
+			}
 		}
 		break;
 
@@ -5410,6 +5340,7 @@ LRESULT CALLBACK EmulationSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 			CheckDlgItem(hDlg,IDC_CHECKBOX_DEBUGGERMODE,CommonSettings.DebugConsole);
 			CheckDlgItem(hDlg,IDC_CHECKBOX_ENSATAEMULATION,CommonSettings.EnsataEmulation);
+			CheckDlgItem(hDlg, IDC_CHECBOX_ADVANCEDTIMING, CommonSettings.advanced_timing);
 			CheckDlgItem(hDlg,IDC_USEEXTBIOS,CommonSettings.UseExtBIOS);
 			CheckDlgItem(hDlg, IDC_BIOSSWIS, CommonSettings.SWIFromBIOS);
 			CheckDlgItem(hDlg, IDC_PATCHSWI3, CommonSettings.PatchSWI3);
@@ -5480,9 +5411,11 @@ LRESULT CALLBACK EmulationSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 					CommonSettings.DebugConsole = IsDlgCheckboxChecked(hDlg, IDC_CHECKBOX_DEBUGGERMODE);
 					CommonSettings.EnsataEmulation = IsDlgCheckboxChecked(hDlg, IDC_CHECKBOX_ENSATAEMULATION);
+					CommonSettings.advanced_timing = IsDlgCheckboxChecked(hDlg, IDC_CHECBOX_ADVANCEDTIMING);
 
 					WritePrivateProfileInt("Emulation", "DebugConsole", ((CommonSettings.DebugConsole == true) ? 1 : 0), IniName);
 					WritePrivateProfileInt("Emulation", "EnsataEmulation", ((CommonSettings.EnsataEmulation == true) ? 1 : 0), IniName);
+					WritePrivateProfileBool("Emulation", "AdvancedTiming", CommonSettings.advanced_timing, IniName);
 					WritePrivateProfileInt("BIOS", "UseExtBIOS", ((CommonSettings.UseExtBIOS == true) ? 1 : 0), IniName);
 					WritePrivateProfileString("BIOS", "ARM9BIOSFile", CommonSettings.ARM9BIOS, IniName);
 					WritePrivateProfileString("BIOS", "ARM7BIOSFile", CommonSettings.ARM7BIOS, IniName);

@@ -25,6 +25,12 @@
 
 //#define FLUSHMODE_HACK
 
+//---------------
+//TODO TODO TODO TODO
+//make up mind once and for all whether fog, toon, etc. should reside in memory buffers (for easier handling in MMU)
+//if they do, then we need to copy them out in doFlush!!!
+//---------------
+
 #include <algorithm>
 #include <assert.h>
 #include <math.h>
@@ -495,8 +501,9 @@ void gfx3d_init()
 
 void gfx3d_reset()
 {
-	gfx3d = GFX3D();
-
+	//if this doesn't work on the xbox, we need to find out why.
+	reconstruct(&gfx3d);
+	
 	gxf_hardware.reset();
 
 	control = 0;
@@ -878,7 +885,7 @@ static void gfx3d_glLoadIdentity()
 
 static BOOL gfx3d_glLoadMatrix4x4(s32 v)
 {
-	mtxCurrent[mode][ML4x4ind] = (float)v;
+	mtxCurrent[mode][ML4x4ind] = (float)((v<<4)>>4);
 
 	++ML4x4ind;
 	if(ML4x4ind<16) return FALSE;
@@ -897,7 +904,7 @@ static BOOL gfx3d_glLoadMatrix4x4(s32 v)
 
 static BOOL gfx3d_glLoadMatrix4x3(s32 v)
 {
-	mtxCurrent[mode][ML4x3ind] = (float)v;
+	mtxCurrent[mode][ML4x3ind] = (float)((v<<4)>>4);
 
 	ML4x3ind++;
 	if((ML4x3ind & 0x03) == 3) ML4x3ind++;
@@ -920,7 +927,7 @@ static BOOL gfx3d_glLoadMatrix4x3(s32 v)
 
 static BOOL gfx3d_glMultMatrix4x4(s32 v)
 {
-	mtxTemporal[MM4x4ind] = (float)v;
+	mtxTemporal[MM4x4ind] = (float)((v<<4)>>4);
 
 	MM4x4ind++;
 	if(MM4x4ind<16) return FALSE;
@@ -946,7 +953,7 @@ static BOOL gfx3d_glMultMatrix4x4(s32 v)
 
 static BOOL gfx3d_glMultMatrix4x3(s32 v)
 {
-	mtxTemporal[MM4x3ind] = (float)v;
+	mtxTemporal[MM4x3ind] = (float)((v<<4)>>4);
 
 	MM4x3ind++;
 	if((MM4x3ind & 0x03) == 3) MM4x3ind++;
@@ -978,7 +985,7 @@ static BOOL gfx3d_glMultMatrix4x3(s32 v)
 
 static BOOL gfx3d_glMultMatrix3x3(s32 v)
 {
-	mtxTemporal[MM3x3ind] = (float)v;
+	mtxTemporal[MM3x3ind] = (float)((v<<4)>>4);
 
 
 	MM3x3ind++;
@@ -1558,11 +1565,6 @@ void VIEWPORT::decode(u32 v)
 	height = ((v>>24)+1)-((v>>8)&0xFF);
 }
 
-void gfx3d_glClearColor(u32 v)
-{
-	gfx3d.state.clearColor = v;
-}
-
 void gfx3d_glFogColor(u32 v)
 {
 	gfx3d.state.fogColor = v;
@@ -1624,14 +1626,6 @@ s32 gfx3d_GetDirectionalMatrix (unsigned int index)
 	int _index = (((index / 3) * 4) + (index % 3));
 
 	return (s32)(mtxCurrent[2][_index]*(1<<12));
-}
-
-void gfx3d_ClearStack()
-{
-	MatrixStackSetStackPosition(&mtxStack[0], -5);
-	//MatrixStackSetStackPosition(&mtxStack[1], -55);
-	//MatrixStackSetStackPosition(&mtxStack[2], -55); //?
-	MatrixStackSetStackPosition(&mtxStack[3], -5);
 }
 
 void gfx3d_glAlphaFunc(u32 v)
@@ -1956,8 +1950,7 @@ void gfx3d_execute3D()
 void gfx3d_glFlush(u32 v)
 {
 	//printf("-------------FLUSH------------- (vcount=%d\n",nds.VCount);
-	gfx3d.state.sortmode = BIT0(v);
-	gfx3d.state.wbuffer = BIT1(v);
+	gfx3d.state.pendingFlushCommand = v;
 #if 0
 	if (isSwapBuffers)
 	{
@@ -1985,8 +1978,8 @@ static bool gfx3d_ysort_compare(int num1, int num2)
 	//also the buttons in the knights in the nightmare frontend depend on this and the perspective division
 	if (poly1.maxy < poly2.maxy) return true;
 	if (poly1.maxy > poly2.maxy) return false;
-	if (poly1.miny > poly2.miny) return true;
-	if (poly1.miny < poly2.miny) return false;
+	if (poly1.miny < poly2.miny) return true;
+	if (poly1.miny > poly2.miny) return false;
 	//notably, the main shop interface in harvest moon will not have a correct RTN button
 	//i think this is due to a math error rounding its position to one pixel too high and it popping behind
 	//the bar that it sits on.
@@ -2019,6 +2012,12 @@ static void gfx3d_doFlush()
 	gfx3d.state.enableFog = BIT7(control);
 	gfx3d.state.enableClearImage = BIT14(control);
 	gfx3d.state.fogShift = (control>>8)&0xF;
+	gfx3d.state.sortmode = BIT0(gfx3d.state.activeFlushCommand);
+	gfx3d.state.wbuffer = BIT1(gfx3d.state.activeFlushCommand);
+
+	gfx3d.renderState = gfx3d.state;
+	
+	gfx3d.state.activeFlushCommand = gfx3d.state.pendingFlushCommand;
 
 	int polycount = polylist->count;
 
@@ -2032,17 +2031,18 @@ static void gfx3d_doFlush()
 		POLY &poly = polylist->list[i];
 		float verty = vertlist->list[poly.vertIndexes[0]].y;
 		float vertw = vertlist->list[poly.vertIndexes[0]].w;
-		verty = (verty+vertw)/(2*vertw);
+		verty = 1.0f-(verty+vertw)/(2*vertw);
 		poly.miny = poly.maxy = verty;
 
 		for(int j=1; j<poly.type; j++)
 		{
 			verty = vertlist->list[poly.vertIndexes[j]].y;
 			vertw = vertlist->list[poly.vertIndexes[j]].w;
-			verty = (verty+vertw)/(2*vertw);
+			verty = 1.0f-(verty+vertw)/(2*vertw);
 			poly.miny = min(poly.miny, verty);
 			poly.maxy = max(poly.maxy, verty);
 		}
+
 	}
 
 	//we need to sort the poly list with alpha polys last
@@ -2318,6 +2318,8 @@ SFORMAT SF_GFX3D[]={
 	{ "GST3", 4, 32, gfx3d.state.rgbToonTable},
 	{ "GSST", 4, 128, &gfx3d.state.shininessTable[0]},
 	{ "GSSI", 4, 1, &shininessInd},
+	{ "GSAF", 4, 1, &gfx3d.state.activeFlushCommand},
+	{ "GSPF", 4, 1, &gfx3d.state.pendingFlushCommand},
 	//------------------------
 	{ "GTST", 4, 1, &triStripToggle},
 	{ "GTVC", 4, 1, &tempVertInfo.count},

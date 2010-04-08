@@ -21,9 +21,29 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-//todo - everyone will want to support this eventually, i suppose
+//analyze microsoft compilers
 #ifdef _MSC_VER
+	#ifdef _XBOX
+		//#define _XBOX //already defined
+	#else
+		#define _WINDOWS
+		#ifdef _M_X64
+			//#define _WIN64 //already defined in x64 compiler
+		#else
+			//#define _WIN32 //already defined
+		#endif
+	#endif
+#endif
+
+//todo - everyone will want to support this eventually, i suppose
+#ifdef _WINDOWS
 #include "config.h"
+#endif
+
+//xbox needs to include this to resemble windows
+#ifdef _XBOX
+	#include <xtl.h>
+	#include <io.h>
 #endif
 
 #ifdef DEVELOPER
@@ -32,8 +52,8 @@
 #define IF_DEVELOPER(X)
 #endif
 
-#ifdef _MSC_VER
-	#define HAVE_WX
+#ifdef _WINDOWS
+	//#define HAVE_WX //not useful yet....
 	#define HAVE_LIBAGG
 	#define ENABLE_SSE
 	#define ENABLE_SSE2
@@ -59,7 +79,7 @@
 #undef ENABLE_SSE2
 #endif
 
-#ifdef _WIN32
+#ifdef _MSC_VER 
 #define strcasecmp(x,y) _stricmp(x,y)
 #define snprintf _snprintf
 #else
@@ -75,6 +95,13 @@
 #endif
 #endif
 
+
+#ifdef _XBOX
+#define MAX_PATH 1024
+#define PATH_MAX 1024
+#endif
+
+
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
 #define ALIGN(X) __declspec(align(X))
 #elif __GNUC__
@@ -85,10 +112,13 @@
 
 #define CACHE_ALIGN ALIGN(32)
 
+//use this for example when you want a byte value to be better-aligned
+#define FAST_ALIGN ALIGN(4)
+
 #ifndef FASTCALL
 #ifdef __MINGW32__
 #define FASTCALL __attribute__((fastcall))
-#elif defined (__i386__)
+#elif defined (__i386__) && !defined(__clang__)
 #define FASTCALL __attribute__((regparm(3)))
 #elif defined(_MSC_VER) || defined(__INTEL_COMPILER)
 #define FASTCALL
@@ -417,5 +447,12 @@ char (*BLAHBLAHBLAH( UNALIGNED T (&)[N] ))[N];
 #endif
 
 static const char hexValid[23] = {"0123456789ABCDEFabcdef"};
+
+
+template<typename T> inline void reconstruct(T* t) { 
+	t->~T();
+	new(t) T();
+}
+
 
 #endif

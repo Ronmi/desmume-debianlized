@@ -25,7 +25,7 @@
 //#include "LogManager.h"
 #include "pluginspecs_pad.h"
 #include "PadSimple.h"
-#include "../IniFile.h"
+#include <wx/config.h>
 //#include "StringUtil.h"
 //#include "FileUtil.h"
 //#include "ChunkFile.h"
@@ -113,6 +113,7 @@ BOOL APIENTRY aMain(HINSTANCE hinstDLL,	// DLL module handle
 }
 #endif
 
+#if 0
 #if defined(HAVE_WX)
 wxWindow* GetParentedWxWindow(HWND Parent)
 {
@@ -127,7 +128,7 @@ wxWindow* GetParentedWxWindow(HWND Parent)
 	return win;
 }
 #endif
-
+#endif
 
 
 // Input Recording
@@ -227,12 +228,13 @@ bool IsFocus()
 #endif
 }
 
+#ifdef _WIN32
 // Implement circular deadzone
-const float kDeadZone = 0.1f;
 void ScaleStickValues(unsigned char* outx,
 					  unsigned char* outy,
 					  short inx, short iny)
 {
+	const float kDeadZone = 0.1f;
 	float x = ((float)inx + 0.5f) / 32767.5f;
 	float y = ((float)iny + 0.5f) / 32767.5f;
 
@@ -258,12 +260,13 @@ void ScaleStickValues(unsigned char* outx,
 	*outx = 0x80 + ix;
 	*outy = 0x80 + iy;
 }
+#endif
 
 // for same displacement should be sqrt(2)/2 (in theory)
 // 3/4 = 0.75 is a little faster than sqrt(2)/2 = 0.7071...
 // In SMS, 17/20 = 0.85 is perfect; in WW, 7/10 = 0.70 is closer.
 #define DIAGONAL_SCALE 0.70710678
-void EmulateAnalogStick(unsigned char *stickX, unsigned char *stickY, bool buttonUp, bool buttonDown, bool buttonLeft, bool buttonRight, int magnitude) {
+static void EmulateAnalogStick(unsigned char *stickX, unsigned char *stickY, bool buttonUp, bool buttonDown, bool buttonLeft, bool buttonRight, int magnitude) {
 	int mainY = 0;
 	int mainX = 0;
 	if      (buttonUp)
@@ -434,7 +437,7 @@ bool XInput_Read(int XPadPlayer, SPADStatus* _pPADStatus)
 #if (defined(HAVE_X11) && HAVE_X11) || (defined(HAVE_COCOA) && HAVE_COCOA)
 #if defined(HAVE_X11) && HAVE_X11
 // The graphics plugin in the PCSX2 design leaves a lot of the window processing to the pad plugin, weirdly enough.
-void X11_Read(int _numPAD, SPADStatus* _pPADStatus)
+static void X11_Read(int _numPAD, SPADStatus* _pPADStatus)
 {
 	// Do all the stuff we need to do once per frame here
 	if (_numPAD != 0)
@@ -684,6 +687,7 @@ void Initialize(void *init)
 	#endif
 }
 
+#if 0
 void DoState(unsigned char **ptr, int mode)
 {
 #ifdef RERECORDING
@@ -704,7 +708,7 @@ void DoState(unsigned char **ptr, int mode)
 #endif
 }
 
-void Shutdown()
+static void Shutdown()
 {
 	// Save the recording and reset the counter
 #ifdef RERECORDING
@@ -729,7 +733,7 @@ void Shutdown()
 #endif
 	SaveConfig();
 }
-
+#endif
 
 // Set buttons status from wxWidgets in the main application
 void PAD_Input(u16 _Key, u8 _UpDown) {}
@@ -822,7 +826,6 @@ void PAD_Rumble(u8 _numPAD, unsigned int _uType, unsigned int _uStrength)
 //******************************************************************************
 // Load and save the configuration
 //******************************************************************************
-extern std::string executableDirectory;
 void LoadConfig()
 {
 	// Initialize first pad to standard controls
@@ -916,34 +919,32 @@ void LoadConfig()
 		46, // Mic (m)
 	};
 #endif
-	IniFile file;
 
-	file.Load((executableDirectory + std::string("pad.ini")).c_str());
+	wxConfigBase *config = wxConfigBase::Get();
 
 	for(int i = 0; i < 4; i++)
 	{
-		char SectionName[32];
-		sprintf(SectionName, "PAD%i", i+1);
+		config->SetPath(wxString::Format(_T("/PAD%i"), i+1));
 
-		file.Get(SectionName, "UseXPad", &pad[i].bEnableXPad, i==0);
-		file.Get(SectionName, "DisableOnBackground", &pad[i].bDisable, false);
-		file.Get(SectionName, "Rumble", &pad[i].bRumble, true);
-		file.Get(SectionName, "RumbleStrength", &pad[i].RumbleStrength, 8000);
-		file.Get(SectionName, "XPad#", &pad[i].XPadPlayer);
+		config->Read(_T("UseXPad"), &pad[i].bEnableXPad, i==0);
+		config->Read(_T("DisableOnBackground"), &pad[i].bDisable, false);
+		config->Read(_T("Rumble"), &pad[i].bRumble, true);
+		config->Read(_T("RumbleStrength"), (long *)&pad[i].RumbleStrength, 8000);
+		config->Read(_T("XPad#"), &pad[i].XPadPlayer);
 
-		file.Get(SectionName, "Trigger_semivalue", &pad[i].Trigger_semivalue, TRIGGER_HALF_DEFAULT);
-		file.Get(SectionName, "Main_stick_semivalue", &pad[i].Main_stick_semivalue, STICK_HALF_DEFAULT);
-		file.Get(SectionName, "Sub_stick_semivalue", &pad[i].Sub_stick_semivalue, STICK_HALF_DEFAULT);
+		config->Read(_T("Trigger_semivalue"), (long *)&pad[i].Trigger_semivalue, TRIGGER_HALF_DEFAULT);
+		config->Read(_T("Main_stick_semivalue"), (long *)&pad[i].Main_stick_semivalue, STICK_HALF_DEFAULT);
+		config->Read(_T("Sub_stick_semivalue"), (long *)&pad[i].Sub_stick_semivalue, STICK_HALF_DEFAULT);
 
 		#ifdef RERECORDING
-			file.Get(SectionName, "Recording", &pad[0].bRecording, false);
-			file.Get(SectionName, "Playback", &pad[0].bPlayback, false);
+			config->Read(_T("Recording"), &pad[0].bRecording, false);
+			config->Read(_T("Playback"), &pad[0].bPlayback, false);
 		#endif
 
 		for (int x = 0; x < NUMCONTROLS; x++)
 		{
-			file.Get(SectionName, controlNames[x],
-			         &pad[i].keyForControl[x],
+			config->Read(wxString(controlNames[x],wxConvUTF8),
+			         (long *)&pad[i].keyForControl[x],
                      (i==0) ? defaultKeyForControl[x] : 0);
 #if defined(HAVE_X11) && HAVE_X11
 			// In linux we have a problem assigning the upper case of the
@@ -957,33 +958,30 @@ void LoadConfig()
 
 void SaveConfig()
 {
-	IniFile file;
-	file.Load((executableDirectory + std::string("pad.ini")).c_str());
+	wxConfigBase *config = wxConfigBase::Get();
 
 	for(int i = 0; i < 4; i++)
 	{
-		char SectionName[32];
-		sprintf(SectionName, "PAD%i", i+1);
+		config->SetPath(wxString::Format(_T("/PAD%i"), i+1));
 
-		file.Set(SectionName, "UseXPad", pad[i].bEnableXPad);
-		file.Set(SectionName, "DisableOnBackground", pad[i].bDisable);
-		file.Set(SectionName, "Rumble", pad[i].bRumble);
-		file.Set(SectionName, "RumbleStrength", pad[i].RumbleStrength);
-		file.Set(SectionName, "XPad#", pad[i].XPadPlayer);
+		config->Write(_T("UseXPad"), pad[i].bEnableXPad);
+		config->Write(_T("DisableOnBackground"), pad[i].bDisable);
+		config->Write(_T("Rumble"), pad[i].bRumble);
+		config->Write(_T("RumbleStrength"), (long)pad[i].RumbleStrength);
+		config->Write(_T("XPad#"), pad[i].XPadPlayer);
 
-		file.Set(SectionName, "Trigger_semivalue", pad[i].Trigger_semivalue);
-		file.Set(SectionName, "Main_stick_semivalue", pad[i].Main_stick_semivalue);
-		file.Set(SectionName, "Sub_stick_semivalue", pad[i].Sub_stick_semivalue);
+		config->Write(_T("Trigger_semivalue"), (long)pad[i].Trigger_semivalue);
+		config->Write(_T("Main_stick_semivalue"), (long)pad[i].Main_stick_semivalue);
+		config->Write(_T("Sub_stick_semivalue"), (long)pad[i].Sub_stick_semivalue);
 
 		#ifdef RERECORDING
-			file.Set(SectionName, "Recording", pad[0].bRecording);
-			file.Set(SectionName, "Playback", pad[0].bPlayback);
+			config->Write(_T("Recording"), pad[0].bRecording);
+			config->Write(_T("Playback"), pad[0].bPlayback);
 		#endif
 
 		for (int x = 0; x < NUMCONTROLS; x++)
 		{
-			file.Set(SectionName, controlNames[x], pad[i].keyForControl[x]);
+			config->Write(wxString(controlNames[x],wxConvUTF8), (long)pad[i].keyForControl[x]);
 		}
 	}
-	file.Save((executableDirectory + std::string("pad.ini")).c_str());
 }

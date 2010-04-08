@@ -19,8 +19,6 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-//#define NEW_IRQ 1
-
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -325,9 +323,10 @@ static const TVramBankInfo vram_bank_info[VRAM_BANKS] = {
 //TODO - in cases where this does some mapping work, we could bypass the logic at the end of the _read* and _write* routines
 //this is a good optimization to consider
 template<int PROCNUM> 
-static FORCEINLINE u32 MMU_LCDmap(u32 addr, bool& unmapped)
+static FORCEINLINE u32 MMU_LCDmap(u32 addr, bool& unmapped, bool& restricted)
 {
 	unmapped = false;
+	restricted = false; //this will track whether 8bit writes are allowed
 
 	//in case the address is entirely outside of the interesting ranges
 	if(addr < 0x06000000) return addr;
@@ -348,6 +347,8 @@ static FORCEINLINE u32 MMU_LCDmap(u32 addr, bool& unmapped)
 		}
 		return LCDC_HACKY_LOCATION + (vram_arm7_map[bank]<<14) + ofs;
 	}
+
+	restricted = true;
 
 	//handle LCD memory mirroring
 	if(addr>=0x068A4000)
@@ -984,10 +985,6 @@ void MMU_Reset()
 	MMU_timing.arm9dataFetch.Reset();
 	MMU_timing.arm9codeCache.Reset();
 	MMU_timing.arm9dataCache.Reset();
-
-	// Booted from card -- EXTREMELY IMPORTANT!!! Thanks to cReDiAr
-	MMU_write8(0,0x027ffc40,0x1);
-	MMU_write8(1,0x027ffc40,0x1);
 }
 
 void MMU_setRom(u8 * rom, u32 mask)
@@ -1079,7 +1076,10 @@ static void execdiv() {
 	{
 		res = ((num < 0) ? 1 : -1);
 		mod = num;
-		MMU_new.div.div0 = 1;
+
+		// the DIV0 flag in DIVCNT is set only if the full 64bit DIV_DENOM value is zero, even in 32bit mode
+		if ((s64)T1ReadQuad(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x298) == 0) 
+			MMU_new.div.div0 = 1;
 	}
 	else
 	{
@@ -1102,6 +1102,8 @@ static void execdiv() {
 	NDS_Reschedule();
 }
 
+// TODO: 
+// NAND flash support (used in Made in Ore/WariWare D.I.Y.)
 template<int PROCNUM>
 void FASTCALL MMU_writeToGCControl(u32 val)
 {
@@ -1138,6 +1140,7 @@ void FASTCALL MMU_writeToGCControl(u32 val)
 		}
 		break;
 	case CardMode_KEY2:
+			INFO("Cartridge: KEY2 mode unsupported.\n");
 		break;
 	}
 
@@ -1166,7 +1169,8 @@ void FASTCALL MMU_writeToGCControl(u32 val)
 				card.transfer_count = 1;
 			}
 			break;
-		// Nand Write?
+		
+		// Nand Write? ---- PROGRAM for INTERNAL DATA MOVE/RANDOM DATA INPUT
 		//case 0x8B:
 		case 0x85:
 			{
@@ -1320,6 +1324,7 @@ u32 MMU_readFromGC()
 		// Nand Status?
 		case 0xD6:
 			//0x80 == busy
+			// Made in Ore/WariWare D.I.Y. need set value to 0x80
 			val = 0x20; //0x20 == ready
 			break;
 
@@ -1343,8 +1348,10 @@ u32 MMU_readFromGC()
 
 				if(card.address >= gameInfo.romsize)
 				{
-					INFO("Reading beyond end of cart! ... %08X > %08X\n",card.address, gameInfo.romsize);
+					DEBUG_Notify.ReadBeyondEndOfCart(card.address,gameInfo.romsize);
+					val = 0xFFFFFFFF;
 				}
+				else
 				//but, this is actually handled by the cart rom buffer being oversized and full of 0xFF.
 				//is this a good idea? We think so.
 				val = T1ReadLong(MMU.CART_ROM, card.address & MMU.CART_ROM_MASK);
@@ -2230,6 +2237,18 @@ void FASTCALL _MMU_ARM9_write08(u32 adr, u8 val)
 			case REG_SQRTCNT+2: printf("ERROR 8bit SQRTCNT WRITE\n"); return;
 			case REG_SQRTCNT+3: printf("ERROR 8bit SQRTCNT WRITE\n"); return;
 
+			//fog table: only write bottom 7 bits
+			case eng_3D_FOG_TABLE+0x00: case eng_3D_FOG_TABLE+0x01: case eng_3D_FOG_TABLE+0x02: case eng_3D_FOG_TABLE+0x03: 
+			case eng_3D_FOG_TABLE+0x04: case eng_3D_FOG_TABLE+0x05: case eng_3D_FOG_TABLE+0x06: case eng_3D_FOG_TABLE+0x07: 
+			case eng_3D_FOG_TABLE+0x08: case eng_3D_FOG_TABLE+0x09: case eng_3D_FOG_TABLE+0x0A: case eng_3D_FOG_TABLE+0x0B: 
+			case eng_3D_FOG_TABLE+0x0C: case eng_3D_FOG_TABLE+0x0D: case eng_3D_FOG_TABLE+0x0E: case eng_3D_FOG_TABLE+0x0F: 
+			case eng_3D_FOG_TABLE+0x10: case eng_3D_FOG_TABLE+0x11: case eng_3D_FOG_TABLE+0x12: case eng_3D_FOG_TABLE+0x13: 
+			case eng_3D_FOG_TABLE+0x14: case eng_3D_FOG_TABLE+0x15: case eng_3D_FOG_TABLE+0x16: case eng_3D_FOG_TABLE+0x17: 
+			case eng_3D_FOG_TABLE+0x18: case eng_3D_FOG_TABLE+0x19: case eng_3D_FOG_TABLE+0x1A: case eng_3D_FOG_TABLE+0x1B: 
+			case eng_3D_FOG_TABLE+0x1C: case eng_3D_FOG_TABLE+0x1D: case eng_3D_FOG_TABLE+0x1E: case eng_3D_FOG_TABLE+0x1F: 
+				val &= 0x7F;
+				break;
+
 			//ensata putchar port
 			case 0x04FFF000:
 				if(nds.ensataEmulation)
@@ -2390,6 +2409,11 @@ void FASTCALL _MMU_ARM9_write08(u32 adr, u8 val)
 				writereg_POWCNT1(8,adr,val);
 				break;
 
+			case eng_3D_CLEAR_COLOR+0: case eng_3D_CLEAR_COLOR+1:
+			case eng_3D_CLEAR_COLOR+2: case eng_3D_CLEAR_COLOR+3:
+				T1WriteByte((u8*)&gfx3d.state.clearColor,adr-eng_3D_CLEAR_COLOR,val); 
+				break;
+
 			case REG_VRAMCNTA:
 			case REG_VRAMCNTB:
 			case REG_VRAMCNTC:
@@ -2427,9 +2451,10 @@ void FASTCALL _MMU_ARM9_write08(u32 adr, u8 val)
 		return;
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped, restricted);
 	if(unmapped) return;
+	if(restricted) return; //block 8bit vram writes
 	
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [shash]
 	MMU.MMU_MEM[ARMCPU_ARM9][adr>>20][adr&MMU.MMU_MASK[ARMCPU_ARM9][adr>>20]]=val;
@@ -2482,6 +2507,14 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 			MMU_new.gxstat.write(16,adr,val);
 			break;
 
+		//fog table: only write bottom 7 bits
+		case eng_3D_FOG_TABLE+0x00: case eng_3D_FOG_TABLE+0x02: case eng_3D_FOG_TABLE+0x04: case eng_3D_FOG_TABLE+0x06:
+		case eng_3D_FOG_TABLE+0x08: case eng_3D_FOG_TABLE+0x0A: case eng_3D_FOG_TABLE+0x0C: case eng_3D_FOG_TABLE+0x0E:
+		case eng_3D_FOG_TABLE+0x10: case eng_3D_FOG_TABLE+0x12: case eng_3D_FOG_TABLE+0x14: case eng_3D_FOG_TABLE+0x16:
+		case eng_3D_FOG_TABLE+0x18: case eng_3D_FOG_TABLE+0x1A: case eng_3D_FOG_TABLE+0x1C: case eng_3D_FOG_TABLE+0x1E:
+			val &= 0x7F7F;
+			break;
+
 		case REG_DISPA_BG2XL: MainScreen.gpu->setAffineStartWord(2,0,val,0); break;
 		case REG_DISPA_BG2XH: MainScreen.gpu->setAffineStartWord(2,0,val,1); break;
 		case REG_DISPA_BG2YL: MainScreen.gpu->setAffineStartWord(2,1,val,0); break;
@@ -2515,13 +2548,14 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 				gfx3d_glAlphaFunc(val);
 				return;
 			}
-			// Clear background color setup - Parameters:2
+			
 			case eng_3D_CLEAR_COLOR:
+			case eng_3D_CLEAR_COLOR+2:
 			{
-				((u16 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[0x350>>1] = val;
-				gfx3d_glClearColor(val);
-				return;
+				T1WriteWord((u8*)&gfx3d.state.clearColor,adr-eng_3D_CLEAR_COLOR,val);
+				break;
 			}
+
 			// Clear background depth setup - Parameters:2
 			case eng_3D_CLEAR_DEPTH:
 			{
@@ -2773,47 +2807,16 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 					u32 new_val = val & 0x01;
 					MMU.reg_IME[ARMCPU_ARM9] = new_val;
 					T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x208, val);
-#ifndef NEW_IRQ
-					if ( new_val && old_val != new_val) 
-					{
-						// raise an interrupt request to the CPU if needed
-						if ( MMU.reg_IE[ARMCPU_ARM9] & MMU.reg_IF[ARMCPU_ARM9])
-						{
-							NDS_ARM9.waitIRQ = FALSE;
-						}
-					}
-#endif
-				return;
+					return;
 				}
 			case REG_IE :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM9] = (MMU.reg_IE[ARMCPU_ARM9]&0xFFFF0000) | val;
-#ifndef NEW_IRQ
-				if ( MMU.reg_IME[ARMCPU_ARM9])
-				{
-					// raise an interrupt request to the CPU if needed
-					if ( MMU.reg_IE[ARMCPU_ARM9] & MMU.reg_IF[ARMCPU_ARM9]) 
-					{
-						NDS_ARM9.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
 			case REG_IE + 2 :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM9] = (MMU.reg_IE[ARMCPU_ARM9]&0xFFFF) | (((u32)val)<<16);
-#ifndef NEW_IRQ
-				if ( MMU.reg_IME[ARMCPU_ARM9])
-				{
-					// raise an interrupt request to the CPU if needed
-					if ( MMU.reg_IE[ARMCPU_ARM9] & MMU.reg_IF[ARMCPU_ARM9]) 
-					{
-						NDS_ARM9.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
-				
 			case REG_IF :
 				NDS_Reschedule();
 				MMU.reg_IF[ARMCPU_ARM9] &= (~((u32)val)); 
@@ -2905,8 +2908,8 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 	}
 
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped, restricted);
 	if(unmapped) return;
 
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [shash]
@@ -2957,10 +2960,6 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 		switch (adr >> 4)
 		{
 			case 0x400033:		//edge color table
-				((u32 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[(adr & 0xFFF) >> 2] = val;
-				return;
-			case 0x400036:		//fog table
-			case 0x400037:
 				((u32 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[(adr & 0xFFF) >> 2] = val;
 				return;
 
@@ -3023,8 +3022,13 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 			case REG_SQRTCNT: MMU_new.sqrt.write16((u16)val); return;
 			case REG_DIVCNT: MMU_new.div.write16((u16)val); return;
 
+			case REG_POWCNT1: writereg_POWCNT1(32,adr,val); break;
 
-            case REG_POWCNT1: writereg_POWCNT1(32,adr,val); break;
+			//fog table: only write bottom 7 bits
+			case eng_3D_FOG_TABLE+0x00: case eng_3D_FOG_TABLE+0x04: case eng_3D_FOG_TABLE+0x08: case eng_3D_FOG_TABLE+0x0C:
+			case eng_3D_FOG_TABLE+0x10: case eng_3D_FOG_TABLE+0x14: case eng_3D_FOG_TABLE+0x18: case eng_3D_FOG_TABLE+0x1C:
+				val &= 0x7F7F7F7F;
+				break;
 
 
 			//ensata handshaking port?
@@ -3077,21 +3081,19 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 				return;
 
 			// Alpha test reference value - Parameters:1
-			case 0x04000340:
+			case eng_3D_ALPHA_TEST_REF:
 			{
 				((u32 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[0x340>>2] = val;
 				gfx3d_glAlphaFunc(val);
 				return;
 			}
-			// Clear background color setup - Parameters:2
-			case 0x04000350:
-			{
-				((u32 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[0x350>>2] = val;
-				gfx3d_glClearColor(val);
-				return;
-			}
+
+			case eng_3D_CLEAR_COLOR:
+				T1WriteLong((u8*)&gfx3d.state.clearColor,0,val); 
+				break;
+				
 			// Clear background depth setup - Parameters:2
-			case 0x04000354:
+			case eng_3D_CLEAR_DEPTH:
 			{
 				((u32 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[0x354>>2] = val;
 				gfx3d_glClearDepth(val);
@@ -3218,32 +3220,12 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 					u32 new_val = val & 0x01;
 					MMU.reg_IME[ARMCPU_ARM9] = new_val;
 					T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x208, val);
-#ifndef NEW_IRQ
-					if ( new_val && old_val != new_val) 
-					{
-						// raise an interrupt request to the CPU if needed
-						if ( MMU.reg_IE[ARMCPU_ARM9] & MMU.reg_IF[ARMCPU_ARM9]) 
-						{
-							NDS_ARM9.waitIRQ = FALSE;
-						}
-					}
-#endif
 				}
 				return;
 				
 			case REG_IE :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM9] = val;
-#ifndef NEW_IRQ
-				if ( MMU.reg_IME[ARMCPU_ARM9]) 
-				{
-					// raise an interrupt request to the CPU if needed
-					if ( MMU.reg_IE[ARMCPU_ARM9] & MMU.reg_IF[ARMCPU_ARM9]) 
-					{
-						NDS_ARM9.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
 			
 			case REG_IF :
@@ -3347,13 +3329,9 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 		T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][adr>>20], adr & MMU.MMU_MASK[ARMCPU_ARM9][adr>>20], val);
 		return;
 	}
-	if(adr>=0x05000000 && adr<0x06200000)
-	{
-		int zzz=9;
-	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped, restricted);
 	if(unmapped) return;
 
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [shash]
@@ -3380,6 +3358,14 @@ u8 FASTCALL _MMU_ARM9_read08(u32 adr)
 
 		switch(adr)
 		{
+			case REG_DISPA_DISPSTAT:
+				break;
+			case REG_DISPA_DISPSTAT+1:
+				break;
+			case REG_DISPx_VCOUNT:
+				break;
+			case REG_DISPx_VCOUNT+1:
+				break;
 			case REG_SQRTCNT: printf("ERROR 8bit SQRTCNT READ\n"); return 0;
 			case REG_SQRTCNT+1: printf("ERROR 8bit SQRTCNT READ\n"); return 0;
 			case REG_SQRTCNT+2: printf("ERROR 8bit SQRTCNT READ\n"); return 0;
@@ -3388,6 +3374,17 @@ u8 FASTCALL _MMU_ARM9_read08(u32 adr)
 			case REG_DIVCNT+1: printf("ERROR 8bit DIVCNT READ\n"); return 0;
 			case REG_DIVCNT+2: printf("ERROR 8bit DIVCNT READ\n"); return 0;
 			case REG_DIVCNT+3: printf("ERROR 8bit DIVCNT READ\n"); return 0;
+
+			//fog table: write only
+			case eng_3D_FOG_TABLE+0x00: case eng_3D_FOG_TABLE+0x01: case eng_3D_FOG_TABLE+0x02: case eng_3D_FOG_TABLE+0x03: 
+			case eng_3D_FOG_TABLE+0x04: case eng_3D_FOG_TABLE+0x05: case eng_3D_FOG_TABLE+0x06: case eng_3D_FOG_TABLE+0x07: 
+			case eng_3D_FOG_TABLE+0x08: case eng_3D_FOG_TABLE+0x09: case eng_3D_FOG_TABLE+0x0A: case eng_3D_FOG_TABLE+0x0B: 
+			case eng_3D_FOG_TABLE+0x0C: case eng_3D_FOG_TABLE+0x0D: case eng_3D_FOG_TABLE+0x0E: case eng_3D_FOG_TABLE+0x0F: 
+			case eng_3D_FOG_TABLE+0x10: case eng_3D_FOG_TABLE+0x11: case eng_3D_FOG_TABLE+0x12: case eng_3D_FOG_TABLE+0x13: 
+			case eng_3D_FOG_TABLE+0x14: case eng_3D_FOG_TABLE+0x15: case eng_3D_FOG_TABLE+0x16: case eng_3D_FOG_TABLE+0x17: 
+			case eng_3D_FOG_TABLE+0x18: case eng_3D_FOG_TABLE+0x19: case eng_3D_FOG_TABLE+0x1A: case eng_3D_FOG_TABLE+0x1B: 
+			case eng_3D_FOG_TABLE+0x1C: case eng_3D_FOG_TABLE+0x1D: case eng_3D_FOG_TABLE+0x1E: case eng_3D_FOG_TABLE+0x1F: 
+				return 0;
 
 			case REG_POWCNT1: 
 			case REG_POWCNT1+1: 
@@ -3400,8 +3397,8 @@ u8 FASTCALL _MMU_ARM9_read08(u32 adr)
 		}
 	}
 
-	bool unmapped;	
-	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped);
+	bool unmapped, restricted;	
+	adr = MMU_LCDmap<ARMCPU_ARM9>(adr, unmapped, restricted);
 	if(unmapped) return 0;
 
 	return MMU.MMU_MEM[ARMCPU_ARM9][(adr>>20)&0xFF][adr&MMU.MMU_MASK[ARMCPU_ARM9][(adr>>20)&0xFF]];
@@ -3427,6 +3424,9 @@ u16 FASTCALL _MMU_ARM9_read16(u32 adr)
 		// Address is an IO register
 		switch(adr)
 		{
+			case REG_DISPA_DISPSTAT:
+				break;
+
 			case REG_SQRTCNT: return MMU_new.sqrt.read16();
 			case REG_DIVCNT: return MMU_new.div.read16();
 			case eng_3D_GXSTAT: return MMU_new.gxstat.read(16,adr);
@@ -3480,13 +3480,20 @@ u16 FASTCALL _MMU_ARM9_read16(u32 adr)
 				//not sure whether these should trigger from byte reads
 				LagFrameFlag=0;
 				break;
+
+			//fog table: write only
+			case eng_3D_FOG_TABLE+0x00: case eng_3D_FOG_TABLE+0x02: case eng_3D_FOG_TABLE+0x04: case eng_3D_FOG_TABLE+0x06:
+			case eng_3D_FOG_TABLE+0x08: case eng_3D_FOG_TABLE+0x0A: case eng_3D_FOG_TABLE+0x0C: case eng_3D_FOG_TABLE+0x0E:
+			case eng_3D_FOG_TABLE+0x10: case eng_3D_FOG_TABLE+0x12: case eng_3D_FOG_TABLE+0x14: case eng_3D_FOG_TABLE+0x16:
+			case eng_3D_FOG_TABLE+0x18: case eng_3D_FOG_TABLE+0x1A: case eng_3D_FOG_TABLE+0x1C: case eng_3D_FOG_TABLE+0x1E:
+				return 0;
 		}
 
 		return  T1ReadWord_guaranteedAligned(MMU.MMU_MEM[ARMCPU_ARM9][adr>>20], adr & MMU.MMU_MASK[ARMCPU_ARM9][adr>>20]);
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM9>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM9>(adr,unmapped, restricted);
 	if(unmapped) return 0;
 	
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF
@@ -3513,10 +3520,18 @@ u32 FASTCALL _MMU_ARM9_read32(u32 adr)
 
 		switch(adr)
 		{
+		case REG_DISPA_DISPSTAT:
+			break;
+
 			//Dolphin Island Underwater Adventures uses this amidst seemingly reasonable divs so we're going to emulate it.
 			case REG_DIVCNT: return MMU_new.div.read16();
 			//I guess we'll do this also
 			case REG_SQRTCNT: return MMU_new.sqrt.read16();
+
+			//fog table: write only
+			case eng_3D_FOG_TABLE+0x00: case eng_3D_FOG_TABLE+0x04: case eng_3D_FOG_TABLE+0x08: case eng_3D_FOG_TABLE+0x0C:
+			case eng_3D_FOG_TABLE+0x10: case eng_3D_FOG_TABLE+0x14: case eng_3D_FOG_TABLE+0x18: case eng_3D_FOG_TABLE+0x1C:
+				return 0;
 
 			case eng_3D_CLIPMTX_RESULT:
 			case eng_3D_CLIPMTX_RESULT+4:
@@ -3596,8 +3611,8 @@ u32 FASTCALL _MMU_ARM9_read32(u32 adr)
 		return T1ReadLong_guaranteedAligned(MMU.MMU_MEM[ARMCPU_ARM9][adr>>20], adr & MMU.MMU_MASK[ARMCPU_ARM9][adr>>20]);
 	}
 	
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM9>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM9>(adr,unmapped, restricted);
 	if(unmapped) return 0;
 
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [zeromus, inspired by shash]
@@ -3682,8 +3697,8 @@ void FASTCALL _MMU_ARM7_write08(u32 adr, u8 val)
 		return;
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped, restricted);
 	if(unmapped) return;
 	
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [shash]
@@ -3809,13 +3824,35 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 								}
 								else
 								{
+									u16 reg = MMU.powerMan_CntReg&0x7F;
+									reg &= 0x7;
+									if(reg==5 || reg==6 || reg==7) reg = 4;
+
+									//(let's start with emulating a DS lite, since it is the more complex case)
 									if(MMU.powerMan_CntReg & 0x80)
 									{
-										val = MMU.powerMan_Reg[MMU.powerMan_CntReg & 0x3];
+										//read
+										val = MMU.powerMan_Reg[reg];
 									}
 									else
 									{
-										MMU.powerMan_Reg[MMU.powerMan_CntReg & 0x3] = (u8)val;
+										//write
+										MMU.powerMan_Reg[reg] = (u8)val;
+											
+										enum PM_Bits //from libnds
+										{
+											PM_SOUND_AMP		= BIT(0) ,   /*!< \brief Power the sound hardware (needed to hear stuff in GBA mode too) */
+											PM_SOUND_MUTE		= BIT(1),    /*!< \brief   Mute the main speakers, headphone output will still work. */
+											PM_BACKLIGHT_BOTTOM	= BIT(2),    /*!< \brief   Enable the top backlight if set */
+											PM_BACKLIGHT_TOP	= BIT(3)  ,  /*!< \brief   Enable the bottom backlight if set */
+											PM_SYSTEM_PWR		= BIT(6) ,   /*!< \brief  Turn the power *off* if set */
+										};
+
+										//our totally pathetic register handling, only the one thing we've wanted so far
+										if(MMU.powerMan_Reg[0]&PM_SYSTEM_PWR) {
+											printf("SYSTEM POWERED OFF VIA ARM7 SPI POWER DEVICE\n");
+											emu_halt();
+										}
 									}
 
 									MMU.powerMan_CntRegWritten = FALSE;
@@ -3912,46 +3949,16 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 					u32 new_val = val & 1;
 					MMU.reg_IME[ARMCPU_ARM7] = new_val;
 					T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM7][0x40], 0x208, val);
-#ifndef NEW_IRQ
-					if ( new_val && old_val != new_val) 
-					{
-						/* raise an interrupt request to the CPU if needed */
-						if ( MMU.reg_IE[ARMCPU_ARM7] & MMU.reg_IF[ARMCPU_ARM7])
-						{
-							NDS_ARM7.waitIRQ = FALSE;
-						}
-					}
-#endif
-				return;
+					return;
 				}
 			case REG_IE :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM7] = (MMU.reg_IE[ARMCPU_ARM7]&0xFFFF0000) | val;
-#ifndef NEW_IRQ
-				if ( MMU.reg_IME[ARMCPU_ARM7]) 
-				{
-					/* raise an interrupt request to the CPU if needed */
-					if ( MMU.reg_IE[ARMCPU_ARM7] & MMU.reg_IF[ARMCPU_ARM7]) 
-					{
-						NDS_ARM7.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
 			case REG_IE + 2 :
 				NDS_Reschedule();
 				//emu_halt();
 				MMU.reg_IE[ARMCPU_ARM7] = (MMU.reg_IE[ARMCPU_ARM7]&0xFFFF) | (((u32)val)<<16);
-#ifndef NEW_IRQ
-				if ( MMU.reg_IME[ARMCPU_ARM7]) 
-				{
-					/* raise an interrupt request to the CPU if needed */
-					if ( MMU.reg_IE[ARMCPU_ARM7] & MMU.reg_IF[ARMCPU_ARM7]) 
-					{
-						NDS_ARM7.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
 				
 			case REG_IF :
@@ -3994,8 +4001,8 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 		return;
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped, restricted);
 	if(unmapped) return;
 
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [shash]
@@ -4049,32 +4056,12 @@ void FASTCALL _MMU_ARM7_write32(u32 adr, u32 val)
 				u32 new_val = val & 1;
 				MMU.reg_IME[ARMCPU_ARM7] = new_val;
 				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM7][0x40], 0x208, val);
-#ifndef NEW_IRQ
-				if ( new_val && old_val != new_val) 
-				{
-					// raise an interrupt request to the CPU if needed
-					if ( MMU.reg_IE[ARMCPU_ARM7] & MMU.reg_IF[ARMCPU_ARM7]) 
-					{
-						NDS_ARM7.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
 			}
 				
 			case REG_IE :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM7] = val;
-#ifndef NEW_IRQ
-				if ( MMU.reg_IME[ARMCPU_ARM7])
-				{
-					/* raise an interrupt request to the CPU if needed */
-					if ( MMU.reg_IE[ARMCPU_ARM7] & MMU.reg_IF[ARMCPU_ARM7]) 
-					{
-						NDS_ARM7.waitIRQ = FALSE;
-					}
-				}
-#endif
 				return;
 			
 			case REG_IF :
@@ -4111,8 +4098,8 @@ void FASTCALL _MMU_ARM7_write32(u32 adr, u32 val)
 		return;
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped, restricted);
 	if(unmapped) return;
 
 	// Removed the &0xFF as they are implicit with the adr&0x0FFFFFFF [shash]
@@ -4162,8 +4149,8 @@ u8 FASTCALL _MMU_ARM7_read08(u32 adr)
 		return MMU.MMU_MEM[ARMCPU_ARM7][adr>>20][adr&MMU.MMU_MASK[ARMCPU_ARM7][adr>>20]];
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped, restricted);
 	if(unmapped) return 0;
 
     return MMU.MMU_MEM[ARMCPU_ARM7][adr>>20][adr&MMU.MMU_MASK[ARMCPU_ARM7][adr>>20]];
@@ -4253,8 +4240,8 @@ u16 FASTCALL _MMU_ARM7_read16(u32 adr)
 		return T1ReadWord_guaranteedAligned(MMU.MMU_MEM[ARMCPU_ARM7][adr>>20], adr & MMU.MMU_MASK[ARMCPU_ARM7][adr>>20]); 
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped, restricted);
 	if(unmapped) return 0;
 
 	/* Returns data from memory */
@@ -4326,8 +4313,8 @@ u32 FASTCALL _MMU_ARM7_read32(u32 adr)
 		return T1ReadLong_guaranteedAligned(MMU.MMU_MEM[ARMCPU_ARM7][adr>>20], adr & MMU.MMU_MASK[ARMCPU_ARM7][adr>>20]);
 	}
 
-	bool unmapped;
-	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped);
+	bool unmapped, restricted;
+	adr = MMU_LCDmap<ARMCPU_ARM7>(adr,unmapped, restricted);
 	if(unmapped) return 0;
 
 	//Returns data from memory
@@ -4662,4 +4649,3 @@ struct armcpu_memory_iface arm9_direct_memory_iface = {
 //print_memory_profiling( void) {
 //}
 //#endif /* End of PROFILE_MEMORY_ACCESS area */
-

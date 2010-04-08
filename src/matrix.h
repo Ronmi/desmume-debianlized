@@ -59,7 +59,6 @@ void	MatrixIdentity			(float *matrix);
 void	MatrixTranspose				(float *matrix);
 void	MatrixStackInit				(MatrixStack *stack);
 void	MatrixStackSetMaxSize		(MatrixStack *stack, int size);
-void	MatrixStackSetStackPosition (MatrixStack *stack, int pos);
 void	MatrixStackPushMatrix		(MatrixStack *stack, const float *ptr);
 void	MatrixStackPopMatrix		(float *mtxCurr, MatrixStack *stack, int size);
 float*	MatrixStackGetPos			(MatrixStack *stack, int pos);
@@ -140,7 +139,11 @@ FORCEINLINE void memset_u16_le(void* dst, u16 val)
 #else //no sse2
 
 template<int NUM>
+#ifdef _XBOX
+FORCEINLINE void memset_u16_le(void* dst, u16 val)
+#else
 static FORCEINLINE void memset_u16_le(void* dst, u16 val)
+#endif
 {
 	for(int i=0;i<NUM;i++)
 		T1WriteWord((u8*)dst,i<<1,val);
@@ -316,7 +319,11 @@ FORCEINLINE void vector_fix2float(float* matrix, const float divisor)
 }
 
 template<int NUM>
+#ifdef _XBOX
+FORCEINLINE void memset_u8(void* dst, u8 val)
+#else
 static FORCEINLINE void memset_u8(void* dst, u8 val)
+#endif
 {
 	memset(dst,val,NUM);
 }

@@ -1,8 +1,6 @@
-/*	Copyright (C) 2006 yopyop
-    yopyop156@ifrance.com
-    yopyop156.ifrance.com 
-
-	Copyright (C) 2008-2009 DeSmuME team
+/*	gfx3d.h
+	Copyright (C) 2006 yopyop
+	Copyright (C) 2008-2010 DeSmuME team
 
     This file is part of DeSmuME
 
@@ -307,16 +305,20 @@ struct GFX3D_State
 		, enableFogAlphaOnly(false)
 		, shading(TOON)
 		, alphaTestRef(0)
+		, activeFlushCommand(0)
+		, pendingFlushCommand(0)
 		, clearDepth(1)
 		, clearColor(0)
 		, fogColor(0)
 		, fogOffset(0)
 		, fogShift(0)
+		, invalidateToon(true)
 	{
-		for(u32 i=0;i<ARRAY_SIZE(u16ToonTable);i++)
-			u16ToonTable[i] = 0;
 		for(u32 i=0;i<ARRAY_SIZE(shininessTable);i++)
 			shininessTable[i] = 0;
+
+		for(u32 i=0;i<ARRAY_SIZE(rgbToonTable);i++)
+			rgbToonTable[i] = 0;
 	}
 
 	BOOL enableTexturing, enableAlphaTest, enableAlphaBlending, 
@@ -328,6 +330,8 @@ struct GFX3D_State
 
 	BOOL wbuffer, sortmode;
 	u8 alphaTestRef;
+	u32 activeFlushCommand;
+	u32 pendingFlushCommand;
 
 	u32 clearDepth;
 	u32 clearColor;
@@ -340,7 +344,8 @@ struct GFX3D_State
 	u32 fogOffset;
 	u32 fogShift;
 
-	u16 u16ToonTable[32];
+	bool invalidateToon;
+	u32 rgbToonTable[32];
 	float shininessTable[128];
 };
 
@@ -364,8 +369,11 @@ struct GFX3D
 		, frameCtrRaw(0) {
 	}
 
+	//currently set values
 	GFX3D_State state;
 
+	//values used for the currently-rendered frame (committed with each flush)
+	GFX3D_State renderState;
 
 	POLYLIST* polylist;
 	VERTLIST* vertlist;
@@ -403,7 +411,6 @@ int _hack_getMatrixStackLevel(int);
 void gfx3d_glFlush(u32 v);
 // end GE commands
 
-void gfx3d_glClearColor(u32 v);
 void gfx3d_glFogColor(u32 v);
 void gfx3d_glFogOffset (u32 v);
 void gfx3d_glClearDepth(u32 v);

@@ -30,10 +30,11 @@
 #include "mem.h"
 #include "wifi.h"
 #include "emufile.h"
+#include "firmware.h"
 
 #include <string>
 
-#if defined(WIN32) && !defined(WXPORT)
+#if defined(_WINDOWS) && !defined(WXPORT)
 #include "pathsettings.h"
 #endif
 
@@ -280,11 +281,31 @@ struct GameInfo
 	{
 		resize(size);
 		memcpy(romdata,buf,size);
+		romsize = (u32)size;
+		fillGap();
+	}
+
+	void fillGap()
+	{
+		memset(romdata+romsize,0xFF,allocatedSize-romsize);
 	}
 
 	void resize(int size) {
 		if(romdata != NULL) delete[] romdata;
-		romdata = new char[size];
+
+		//calculate the necessary mask for the requested size
+		mask = size-1; 
+		mask |= (mask >>1);
+		mask |= (mask >>2);
+		mask |= (mask >>4);
+		mask |= (mask >>8);
+		mask |= (mask >>16);
+
+		//now, we actually need to over-allocate, because bytes from anywhere protected by that mask
+		//could be read from the rom
+		allocatedSize = mask+1;
+
+		romdata = new char[allocatedSize];
 		romsize = size;
 	}
 	u32 crc;
@@ -294,7 +315,9 @@ struct GameInfo
 	char ROMfullName[7][0x100];
 	void populate();
 	char* romdata;
-	int romsize;
+	u32 romsize;
+	u32 allocatedSize;
+	u32 mask;
 };
 
 typedef struct TSCalInfo
@@ -395,6 +418,10 @@ void NDS_SkipNextFrame();
 #define NDS_SkipFrame(s) if(s) NDS_SkipNext2DFrame();
 void NDS_OmitFrameSkip(int force=0);
 
+void NDS_debug_break();
+void NDS_debug_continue();
+void NDS_debug_step();
+
 void execHardware_doAllDma(EDMAMode modeNum);
 
 template<bool FORCE> void NDS_exec(s32 nb = 560190<<1);
@@ -463,20 +490,28 @@ extern struct TCommonSettings {
 		, EnsataEmulation(false)
 		, cheatsDisable(false)
 		, num_cores(1)
+		, rigorous_timing(false)
+		, advanced_timing(true)
 		, micMode(InternalNoise)
 		, spuInterpolationMode(SPUInterpolation_Linear)
 		, manualBackupType(0)
+		, spu_captureMuted(false)
 		, spu_advanced(false)
 	{
 		strcpy(ARM9BIOS, "biosnds9.bin");
 		strcpy(ARM7BIOS, "biosnds7.bin");
 		strcpy(Firmware, "firmware.bin");
+		NDS_FillDefaultFirmwareConfigData(&InternalFirmConf);
 
 		wifi.mode = 0;
 		wifi.infraBridgeAdapter = 0;
 
 		for(int i=0;i<16;i++)
 			spu_muteChannels[i] = false;
+
+		for(int g=0;g<2;g++)
+			for(int x=0;x<5;x++)
+				dispLayers[g][x]=true;
 	}
 	bool GFX3D_HighResolutionInterpolateColor;
 	bool GFX3D_EdgeMark;
@@ -491,6 +526,7 @@ extern struct TCommonSettings {
 	bool UseExtFirmware;
 	char Firmware[256];
 	bool BootFromFirmware;
+	struct NDS_fw_config_data InternalFirmConf;
 
 	bool DebugConsole;
 	bool EnsataEmulation;
@@ -499,6 +535,11 @@ extern struct TCommonSettings {
 
 	int num_cores;
 	bool single_core() { return num_cores==1; }
+	bool rigorous_timing;
+
+	bool dispLayers[2][5];
+	
+	FAST_ALIGN bool advanced_timing;
 	
 	struct _Wifi {
 		int mode;
@@ -523,6 +564,7 @@ extern struct TCommonSettings {
 	int manualBackupType;
 
 	bool spu_muteChannels[16];
+	bool spu_captureMuted;
 	bool spu_advanced;
 
 	struct _ShowGpu {
@@ -541,8 +583,9 @@ extern struct TCommonSettings {
 			, FrameCounterDisplay(false)
 			, ShowLagFrameCounter(false)
 			, ShowMicrophone(false)
+			, ShowRTC(false)
 		{}
-		bool ShowInputDisplay, ShowGraphicalInputDisplay, FpsDisplay, FrameCounterDisplay, ShowLagFrameCounter, ShowMicrophone;
+		bool ShowInputDisplay, ShowGraphicalInputDisplay, FpsDisplay, FrameCounterDisplay, ShowLagFrameCounter, ShowMicrophone, ShowRTC;
 	} hud;
 
 } CommonSettings;
@@ -558,4 +601,3 @@ void ClearAutoHold(void);
 
 #endif
 
- 	  	 

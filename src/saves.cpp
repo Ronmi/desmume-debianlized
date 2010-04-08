@@ -46,7 +46,7 @@
 
 #include "path.h"
 
-#ifdef _MSC_VER
+#ifdef _WINDOWS
 #include "windows/main.h"
 #endif
 
@@ -248,6 +248,10 @@ SFORMAT SF_MMU[]={
 	{ "FDHD", 4, 1,       &disp_fifo.head},
 	{ "FDTL", 4, 1,       &disp_fifo.tail},
 	{ "FDBF", 4, 0x6000,  disp_fifo.buf},
+
+	{ "PMCN", 1, 1,			&MMU.powerMan_CntReg},
+	{ "PMCW", 4, 1,			&MMU.powerMan_CntRegWritten},
+	{ "PMCR", 1, 5,			&MMU.powerMan_Reg},
 	
 	{ 0 }
 };
@@ -493,10 +497,11 @@ static void cp15_saveone(armcp15_t *cp15, EMUFILE* os)
 static void cp15_savestate(EMUFILE* os)
 {
 	//version
-	write32le(0,os);
+	write32le(1,os);
 
 	cp15_saveone((armcp15_t *)NDS_ARM9.coproc[15],os);
-	cp15_saveone((armcp15_t *)NDS_ARM7.coproc[15],os);
+	//ARM7 not have coprocessor
+	//cp15_saveone((armcp15_t *)NDS_ARM7.coproc[15],os);
 }
 
 static bool cp15_loadone(armcp15_t *cp15, EMUFILE* is)
@@ -549,10 +554,19 @@ static bool cp15_loadstate(EMUFILE* is, int size)
 	//read version
 	u32 version;
 	if(read32le(&version,is) != 1) return false;
-	if(version != 0) return false;
+	if(version > 1) return false;
 
 	if(!cp15_loadone((armcp15_t *)NDS_ARM9.coproc[15],is)) return false;
-	if(!cp15_loadone((armcp15_t *)NDS_ARM7.coproc[15],is)) return false;
+	
+	if(version == 0)
+	{
+		//ARM7 not have coprocessor
+		u8 *tmp_buf = new u8 [sizeof(armcp15_t)];
+		if (!tmp_buf) return false;
+		if(!cp15_loadone((armcp15_t *)tmp_buf,is)) return false;
+		delete [] tmp_buf;
+		tmp_buf = NULL;
+	}
 
 	return true;
 }
@@ -578,25 +592,24 @@ void clear_savestates()
     savestates[i].exists = FALSE;
 }
 
-/* Scan for existing savestates and update struct */
+// Scan for existing savestates and update struct
 void scan_savestates()
 {
   struct stat sbuf;
   char filename[MAX_PATH+1];
-  u8 i;
 
   clear_savestates();
 
-  for( i = 1; i <= NB_STATES; i++ )
+  for(int i = 0; i < NB_STATES; i++ )
     {
-    path.getpathnoext(path.STATES, filename);
+     path.getpathnoext(path.STATES, filename);
 	  
 	  if (strlen(filename) + strlen(".dst") + strlen("-2147483648") /* = biggest string for i */ >MAX_PATH) return ;
       sprintf(filename+strlen(filename), ".ds%d", i);
       if( stat(filename,&sbuf) == -1 ) continue;
-      savestates[i-1].exists = TRUE;
-      strncpy(savestates[i-1].date, format_time(sbuf.st_mtime),40);
-	  savestates[i-1].date[40-1] = '\0';
+      savestates[i].exists = TRUE;
+      strncpy(savestates[i].date, format_time(sbuf.st_mtime),40);
+	  savestates[i].date[40-1] = '\0';
     }
 
   return ;
@@ -1178,7 +1191,7 @@ bool savestate_load(EMUFILE* is)
 	if(!x && !SAV_silent_fail_flag)
 	{
 		printf("Error loading savestate. It failed halfway through;\nSince there is no savestate backup system, your current game session is wrecked");
-#ifdef _MSC_VER
+#ifdef _WINDOWS
 		//HACK! we really need a better way to handle this kind of feedback
 		MessageBox(0,"Error loading savestate. It failed halfway through;\nSince there is no savestate backup system, your current game session is wrecked",0,0);
 #endif

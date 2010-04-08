@@ -1,5 +1,5 @@
 /*  Copyright (C) 2008 Guillaume Duhamel
-	Copyright (C) 2009 DeSmuME team
+	Copyright (C) 2009-2010 DeSmuME team
 
     This file is part of DeSmuME
 
@@ -27,9 +27,75 @@
 #include "armcpu.h"
 #include "arm_instructions.h"
 #include "thumb_instructions.h"
+#include "cp15.h"
+#include "NDSSystem.h"
+#include "utils/xstring.h"
+#include "movie.h"
 
-std::vector<Logger *> Logger::channels;
+#ifdef HAVE_LUA
+#include "lua-engine.h"
+#endif
 
+TDebugEventData DebugEventData;
+u32 debugFlag;
+
+//DEBUG CONFIGURATION
+const bool debug_acl = false;
+
+static bool acl_check_access(u32 adr, u32 access) {
+	//tweak the access value with the execution mode.
+	//user code is USR and every other mode is SYS.
+	//this is weird logic, but I didn't want to change..
+	access |= 1;
+	if ((NDS_ARM9.CPSR.val & 0x1F) == 0x10) {
+		// is user mode access
+		access ^= 1;
+	}
+	if (armcp15_isAccessAllowed((armcp15_t *)NDS_ARM9.coproc[15],adr,access)==FALSE) {
+		HandleDebugEvent(DEBUG_EVENT_ACL_EXCEPTION);
+	}
+	return true;
+}
+
+
+void HandleDebugEvent_ACL_Exception()
+{
+	printf("ACL EXCEPTION!\n");
+	emu_halt();
+}
+
+void HandleDebugEvent_Read()
+{
+	if(!debug_acl) return;
+	if(DebugEventData.procnum != ARMCPU_ARM9) return; //acl only valid on arm9
+	acl_check_access(DebugEventData.addr,CP15_ACCESS_READ);
+}
+
+void HandleDebugEvent_Write()
+{
+	if(!debug_acl) return;
+	if(DebugEventData.procnum != ARMCPU_ARM9) return; //acl only valid on arm9
+	acl_check_access(DebugEventData.addr,CP15_ACCESS_WRITE);
+}
+
+void HandleDebugEvent_Execute()
+{
+	//HACKY BREAKPOINTS!
+	//extern bool nds_debug_continuing[2];
+	//if(!nds_debug_continuing[DebugEventData.procnum]) //dont keep hitting the same breakpoint
+	//{
+	//	if((DebugEventData.addr & 0xFFFFFFF0) == 0x02000000)
+	//	{
+	//		void NDS_debug_break();
+	//		NDS_debug_break();
+	//	}
+	//}
+	if(!debug_acl) return;
+	if(DebugEventData.procnum != ARMCPU_ARM9) return; //acl only valid on arm9
+	acl_check_access(DebugEventData.addr,CP15_ACCESS_EXECUTE);
+}
+
+//------------------------------------------------
 DebugStatistics DEBUG_statistics;
 
 DebugStatistics::DebugStatistics()
@@ -132,9 +198,20 @@ void DebugStatistics::printSequencerExecutionCounters()
 
 void DEBUG_reset()
 {
+	//for now, just enable all debugging in developer builds
+#ifdef DEVELOPER
+	debugFlag = 1;
+#endif
+
+	DEBUG_Notify = DebugNotify();
 	DEBUG_statistics = DebugStatistics();
 	printf("DEBUG_reset: %08X\n",&DebugStatistics::print); //force a reference to this function
 }
+
+//----------------------------------------------------
+
+std::vector<Logger *> Logger::channels;
+
 
 static void defaultCallback(const Logger& logger, const char * message) {
 	logger.getOutput() << message;
@@ -215,13 +292,92 @@ void Logger::log(unsigned int channel, const char * file, unsigned int line, voi
 void IdeasLog(armcpu_t* cpu)
 {
 	u32 adr = cpu->R[0];
-	printf("EMULOG%c: ",cpu->proc_ID==0?'9':'7');
 	for(;;) {
-		u8 c = MMU_read8(cpu->proc_ID,adr);
+		u8 c = _MMU_read08(cpu->proc_ID, MMU_AT_DEBUG, adr);
 		adr++;
 		if(!c) break;
 		printf("%c",c);
 	}
-	printf("\n");
+	//don't emit a newline. that is a pain in the butt.
 }
 
+void NocashMessage(armcpu_t* cpu)
+{
+	u32 adr = cpu->instruct_adr + 6;
+
+	std::string todo;
+	for(;;) {
+		u8 c = _MMU_read08(cpu->proc_ID, MMU_AT_DEBUG, adr);
+		adr++;
+		if(!c) break;
+		todo.push_back(c);
+	}
+
+	//r0,r1,r2,...,r15  show register content (displayed as 32bit Hex number)
+	//sp,lr,pc          alias for r13,r14,r15
+	//scanline          show current scanline number
+	//frame             show total number of frames since coldboot
+	//totalclks         show total number of clock cycles since coldboot
+	//lastclks          show number of cycles since previous lastclks (or zeroclks)
+	//zeroclks          resets the 'lastclks' counter
+
+	//this is very inefficiently coded!
+	char tmp[100];
+	todo = mass_replace(todo,"%sp%","%r13%");
+	todo = mass_replace(todo,"%lr%","%r14%");
+	todo = mass_replace(todo,"%pc%","%r15%");
+	sprintf(tmp,"%08X",cpu->R[0]); todo = mass_replace(todo,"%r0%",tmp);
+	sprintf(tmp,"%08X",cpu->R[1]); todo = mass_replace(todo,"%r1%",tmp);
+	sprintf(tmp,"%08X",cpu->R[2]); todo = mass_replace(todo,"%r2%",tmp);
+	sprintf(tmp,"%08X",cpu->R[3]); todo = mass_replace(todo,"%r3%",tmp);
+	sprintf(tmp,"%08X",cpu->R[4]); todo = mass_replace(todo,"%r4%",tmp);
+	sprintf(tmp,"%08X",cpu->R[5]); todo = mass_replace(todo,"%r5%",tmp);
+	sprintf(tmp,"%08X",cpu->R[6]); todo = mass_replace(todo,"%r6%",tmp);
+	sprintf(tmp,"%08X",cpu->R[7]); todo = mass_replace(todo,"%r7%",tmp);
+	sprintf(tmp,"%08X",cpu->R[8]); todo = mass_replace(todo,"%r8%",tmp);
+	sprintf(tmp,"%08X",cpu->R[9]); todo = mass_replace(todo,"%r9%",tmp);
+	sprintf(tmp,"%08X",cpu->R[10]); todo = mass_replace(todo,"%r10%",tmp);
+	sprintf(tmp,"%08X",cpu->R[11]); todo = mass_replace(todo,"%r11%",tmp);
+	sprintf(tmp,"%08X",cpu->R[12]); todo = mass_replace(todo,"%r12%",tmp);
+	sprintf(tmp,"%08X",cpu->R[13]); todo = mass_replace(todo,"%r13%",tmp);
+	sprintf(tmp,"%08X",cpu->R[14]); todo = mass_replace(todo,"%r14%",tmp);
+	sprintf(tmp,"%08X",cpu->R[15]); todo = mass_replace(todo,"%r15%",tmp);
+	sprintf(tmp,"%d",nds.VCount); todo = mass_replace(todo,"%scanline%",tmp);
+	sprintf(tmp,"%d",currFrameCounter); todo = mass_replace(todo,"%frame%",tmp);
+	sprintf(tmp,"%lld",nds_timer); todo = mass_replace(todo,"%totalclks%",tmp);
+
+	printf("%s",todo.c_str());
+}
+
+//-------
+DebugNotify DEBUG_Notify;
+
+//enable bits arent being used right now.
+//if you want exhaustive logging, move the print before the early return (or comment the early return)
+
+//the intent of this system is to provide a compact dialog box showing which debug notifies have been
+//triggered in this frame (with a glowing LED!) and which debug notifies have been triggered EVER
+//which can be cleared, like a clip indicator in an audio tool.
+//obviously all this isnt implemented yet.
+
+void DebugNotify::NextFrame()
+{
+#ifdef DEVELOPER
+	pingBits.reset();
+#endif
+}
+
+void DebugNotify::ReadBeyondEndOfCart(u32 addr, u32 romsize)
+{
+#ifdef DEVELOPER
+	if(!ping(DEBUG_NOTIFY_READ_BEYOND_END_OF_CART)) return;
+	INFO("Reading beyond end of cart! ... %08X > %08X\n",addr,romsize);
+#endif
+}
+
+bool DebugNotify::ping(EDEBUG_NOTIFY which)
+{
+	bool wasPinged = pingBits[(int)which];
+	pingBits[(int)which] = true;
+	return !wasPinged;
+}

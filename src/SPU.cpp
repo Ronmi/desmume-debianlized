@@ -461,7 +461,8 @@ u8 SPU_struct::ReadByte(u32 addr)
 			| (regs.cap[which].source<<1)
 			| (regs.cap[which].oneshot<<2)
 			| (regs.cap[which].bits8<<3)
-			| (regs.cap[which].active<<7);
+			//| (regs.cap[which].active<<7); //? which is right? need test
+			| (regs.cap[which].runtime.running<<7);
 	}	
 
 	//SNDCAP0DAD
@@ -523,6 +524,58 @@ u8 SPU_struct::ReadByte(u32 addr)
 	} //switch on address
 }
 
+SPUFifo::SPUFifo()
+{
+	reset();
+}
+
+void SPUFifo::reset()
+{
+	head = tail = size = 0;
+}
+
+void SPUFifo::enqueue(s16 val)
+{
+	if(size==16) return;
+	buffer[tail] = val;
+	tail++;
+	tail &= 15;
+	size++;
+}
+
+s16 SPUFifo::dequeue()
+{
+	if(size==0) return 0;
+	head++;
+	head &= 15;
+	s16 ret = buffer[head];
+	size--;
+	return ret;
+}
+
+void SPUFifo::save(EMUFILE* fp)
+{
+	u32 version = 1;
+	write32le(version,fp);
+	write32le(head,fp);
+	write32le(tail,fp);
+	write32le(size,fp);
+	for(int i=0;i<16;i++)
+		write16le(buffer[i],fp);
+}
+
+bool SPUFifo::load(EMUFILE* fp)
+{
+	u32 version;
+	if(read32le(&version,fp) != 1) return false;
+	read32le(&head,fp);
+	read32le(&tail,fp);
+	read32le(&size,fp);
+	for(int i=0;i<16;i++)
+		read16le(&buffer[i],fp);
+	return true;
+}
+
 void SPU_struct::ProbeCapture(int which)
 {
 	//VERY UNTESTED -- HOW MUCH OF THIS RESETS, AND WHEN?
@@ -533,12 +586,14 @@ void SPU_struct::ProbeCapture(int which)
 		return;
 	}
 
-	regs.cap[which].runtime.running = 1;
-	regs.cap[which].runtime.curdad = regs.cap[which].dad;
-	u32 len = regs.cap[which].len;
+	REGS::CAP &cap = regs.cap[which];
+	cap.runtime.running = 1;
+	cap.runtime.curdad = cap.dad;
+	u32 len = cap.len;
 	if(len==0) len=1;
-	regs.cap[which].runtime.maxdad = regs.cap[which].dad + len*4;
-	regs.cap[which].runtime.sampcnt = 0;
+	cap.runtime.maxdad = cap.dad + len*4;
+	cap.runtime.sampcnt = 0;
+	cap.runtime.fifo.reset();
 }
 
 void SPU_struct::WriteByte(u32 addr, u8 val)
@@ -1036,6 +1091,8 @@ static void SPU_MixAudio_Advanced(bool actuallyMix, SPU_struct *SPU, int length)
 		SPU->sndbuf[1] = 0;
 		SPU->buflength = 1;
 
+		s32 capmix[2] = {0,0};
+		s32 mix[2] = {0,0};
 		s32 chanout[16];
 		s32 submix[32];
 
@@ -1047,14 +1104,25 @@ static void SPU_MixAudio_Advanced(bool actuallyMix, SPU_struct *SPU, int length)
 			if (chan->status == CHANSTAT_PLAY)
 			{
 				SPU->bufpos = 0;
-	
-				bool domix = actuallyMix && !CommonSettings.spu_muteChannels[i];
+
 				bool bypass = false;
 				if(i==1 && SPU->regs.ctl_ch1bypass) bypass=true;
 				if(i==3 && SPU->regs.ctl_ch3bypass) bypass=true;
 
-				//save our old mix accumulators so we can generate a clean panned sample
-				s32 save[] = {SPU->sndbuf[0],SPU->sndbuf[1]};
+
+				//output to mixer unless we are bypassed.
+				//dont output to mixer if the user muted us
+				bool outputToMix = true;
+				if(CommonSettings.spu_muteChannels[i]) outputToMix = false;
+				if(bypass) outputToMix = false;
+				bool outputToCap = outputToMix;
+				if(CommonSettings.spu_captureMuted && !bypass) outputToCap = true;
+
+				//channels 1 and 3 should probably always generate their audio
+				//internally at least, just in case they get used by the spu output
+				bool domix = outputToCap || outputToMix || i==1 || i==3;
+
+				//clear the output buffer since this is where _SPU_ChanUpdate wants to accumulate things
 				SPU->sndbuf[0] = SPU->sndbuf[1] = 0;
 
 				//get channel's next output sample.
@@ -1065,17 +1133,19 @@ static void SPU_MixAudio_Advanced(bool actuallyMix, SPU_struct *SPU, int length)
 				submix[i*2] = SPU->sndbuf[0];
 				submix[i*2+1] = SPU->sndbuf[1];
 
-				//restore the old mix accumulator
-				SPU->sndbuf[0] = save[0];
-				SPU->sndbuf[1] = save[1];
-
-				//mix in this sample, unless we were bypassing it
-				if(!bypass)
+				//send sample to our capture mix
+				if(outputToCap)
 				{
-					SPU->sndbuf[0] += submix[i*2];
-					SPU->sndbuf[1] += submix[i*2+1];
+					capmix[0] += submix[i*2];
+					capmix[1] += submix[i*2+1];
 				}
 
+				//send sample to our main mixer
+				if(outputToMix)
+				{
+					mix[0] += submix[i*2];
+					mix[1] += submix[i*2+1];
+				}
 			}
 			else 
 			{
@@ -1083,9 +1153,10 @@ static void SPU_MixAudio_Advanced(bool actuallyMix, SPU_struct *SPU, int length)
 				submix[i*2] = 0;
 				submix[i*2+1] = 0;
 			}
-		}
+		} //foreach channel
 
-		s32 mixout[2] = {SPU->sndbuf[0],SPU->sndbuf[1]};
+		s32 mixout[2] = {mix[0],mix[1]};
+		s32 capmixout[2] = {capmix[0],capmix[1]};
 		s32 sndout[2];
 		s32 capout[2];
 
@@ -1108,23 +1179,30 @@ static void SPU_MixAudio_Advanced(bool actuallyMix, SPU_struct *SPU, int length)
 
 		//generate capture output ("capture bugs" from gbatek are not emulated)
 		if(SPU->regs.cap[0].source==0) 
-			capout[0] = mixout[0]; //cap0 = L-mix
+			capout[0] = capmixout[0]; //cap0 = L-mix
 		else if(SPU->regs.cap[0].add)
 			capout[0] = chanout[0] + chanout[1]; //cap0 = ch0+ch1
 		else capout[0] = chanout[0]; //cap0 = ch0
 
 		if(SPU->regs.cap[1].source==0) 
-			capout[1] = mixout[1]; //cap1 = R-mix
+			capout[1] = capmixout[1]; //cap1 = R-mix
 		else if(SPU->regs.cap[1].add)
 			capout[1] = chanout[2] + chanout[3]; //cap1 = ch2+ch3
 		else capout[1] = chanout[2]; //cap1 = ch2
 
+		capout[0] = MinMax(capout[0],-0x8000,0x7FFF);
+		capout[1] = MinMax(capout[1],-0x8000,0x7FFF);
+
 		//write the output sample where it is supposed to go
-		SPU->sndbuf[samp*2+0] = sndout[0];
-		SPU->sndbuf[samp*2+1] = sndout[1];
-		if(samp==0) {
-			samp0[0] = SPU->sndbuf[samp*2+0];
-			samp0[1] = SPU->sndbuf[samp*2+1];
+		if(samp==0)
+		{
+			samp0[0] = sndout[0];
+			samp0[1] = sndout[1];
+		}
+		else
+		{
+			SPU->sndbuf[samp*2+0] = sndout[0];
+			SPU->sndbuf[samp*2+1] = sndout[1];
 		}
 
 		for(int capchan=0;capchan<2;capchan++)
@@ -1132,14 +1210,39 @@ static void SPU_MixAudio_Advanced(bool actuallyMix, SPU_struct *SPU, int length)
 			if(SPU->regs.cap[capchan].runtime.running)
 			{
 				SPU_struct::REGS::CAP& cap = SPU->regs.cap[capchan];
-				s32 sample = capout[capchan];
-				//s32 sample = 0;
 				u32 last = sputrunc(cap.runtime.sampcnt);
 				cap.runtime.sampcnt += SPU->channels[1+2*capchan].sampinc;
 				u32 curr = sputrunc(cap.runtime.sampcnt);
 				for(u32 j=last;j<curr;j++)
 				{
+					//so, this is a little strange. why go through a fifo?
+					//it seems that some games will set up a reverb effect by capturing
+					//to the nearly same address as playback, but ahead by a couple.
+					//So, playback will always end up being what was captured a couple of samples ago.
+					//This system counts on playback always having read ahead 16 samples.
+					//In that case, playback will end up being what was processed at one entire buffer length ago,
+					//since the 16 samples would have read ahead before they got captured over
+
+					//It's actually the source channels which should have a fifo, but we are
+					//not going to take the hit in speed and complexity. Save it for a future rewrite.
+					//Instead, what we do here is delay the capture by 16 samples to create a similar effect.
+					//Subjectively, it seems to be working.
+
+					//Don't do anything until the fifo is filled, so as to delay it
+					if(cap.runtime.fifo.size<16)
+					{
+						cap.runtime.fifo.enqueue(capout[capchan]);
+						continue;
+					}
+
+					//(actually capture sample from fifo instead of most recently generated)
 					u32 multiplier;
+					s32 sample = cap.runtime.fifo.dequeue();
+					cap.runtime.fifo.enqueue(capout[capchan]);
+
+					//static FILE* fp = NULL;
+					//if(!fp) fp = fopen("d:\\capout.raw","wb");
+					//fwrite(&sample,2,1,fp);
 					
 					if(cap.bits8)
 					{
@@ -1227,15 +1330,7 @@ static void SPU_MixAudio(bool actuallyMix, SPU_struct *SPU, int length)
 		{
 			// Apply Master Volume
 			SPU->sndbuf[i] = spumuldiv7(SPU->sndbuf[i], vol);
-
-			u16 outsample;
-			if (SPU->sndbuf[i] > 0x7FFF)
-				outsample = 0x7FFF;
-			else if (SPU->sndbuf[i] < -0x8000)
-				outsample = -0x8000;
-			else
-				outsample = (s16)SPU->sndbuf[i];
-
+			s16 outsample = MinMax(SPU->sndbuf[i],-0x8000,0x7FFF);
 			SPU->outbuf[i] = outsample;
 		}
 
@@ -1458,7 +1553,7 @@ void WAV_WavSoundUpdate(void* soundData, int numSamples, WAVMode mode)
 void spu_savestate(EMUFILE* os)
 {
 	//version
-	write32le(5,os);
+	write32le(6,os);
 
 	SPU_struct *spu = SPU_core;
 
@@ -1512,6 +1607,9 @@ void spu_savestate(EMUFILE* os)
 		write32le(spu->regs.cap[i].runtime.maxdad,os);
 		write_double_le(spu->regs.cap[i].runtime.sampcnt,os);
 	}
+
+	for(int i=0;i<2;i++)
+		spu->regs.cap[i].runtime.fifo.save(os);
 }
 
 bool spu_loadstate(EMUFILE* is, int size)
@@ -1523,6 +1621,7 @@ bool spu_loadstate(EMUFILE* is, int size)
 	if(read32le(&version,is) != 1) return false;
 
 	SPU_struct *spu = SPU_core;
+	reconstruct(&SPU_core->regs);
 
 	for(int j=0;j<16;j++) {
 		channel_struct &chan = spu->channels[j];
@@ -1567,6 +1666,7 @@ bool spu_loadstate(EMUFILE* is, int size)
 
 		//fixup the pointers which we had are supposed to keep cached
 		chan.buf8 = (s8*)&MMU.MMU_MEM[1][(chan.addr>>20)&0xFF][(chan.addr & MMU.MMU_MASK[1][(chan.addr >> 20) & 0xFF])];
+		chan.buf16 = (s16*)chan.buf8;
 	}
 
 	if(version>=2) {
@@ -1601,6 +1701,11 @@ bool spu_loadstate(EMUFILE* is, int size)
 			read_double_le(&spu->regs.cap[i].runtime.sampcnt,is);
 		}
 	}
+
+	if(version>=6)
+		for(int i=0;i<2;i++) spu->regs.cap[i].runtime.fifo.load(is);
+	else
+		for(int i=0;i<2;i++) spu->regs.cap[i].runtime.fifo.reset();
 
 	//older versions didnt store a mastervol; 
 	//we must reload this or else games will start silent

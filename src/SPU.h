@@ -36,9 +36,10 @@
 #define CHANSTAT_STOPPED          0
 #define CHANSTAT_PLAY             1
 
-static FORCEINLINE u32 sputrunc(float f) { return u32floor(f); }
-static FORCEINLINE u32 sputrunc(double d) { return u32floor(d); }
-static FORCEINLINE s32 spumuldiv7(s32 val, u8 multiplier) {
+//who made these static? theyre used in multiple places.
+FORCEINLINE u32 sputrunc(float f) { return u32floor(f); }
+FORCEINLINE u32 sputrunc(double d) { return u32floor(d); }
+FORCEINLINE s32 spumuldiv7(s32 val, u8 multiplier) {
 	assert(multiplier <= 127);
 	return (multiplier == 127) ? val : ((val * multiplier) >> 7);
 }
@@ -102,7 +103,20 @@ struct channel_struct
    int loop_index;
    u16 x;
    s16 psgnoise_last;
-} ;
+};
+
+class SPUFifo
+{
+public:
+	SPUFifo();
+	void enqueue(s16 val);
+	s16 dequeue();
+	s16 buffer[16];
+	s32 head,tail,size;
+	void save(EMUFILE* fp);
+	bool load(EMUFILE* fp);
+	void reset();
+};
 
 class SPU_struct
 {
@@ -159,6 +173,7 @@ public:
 			   u32 curdad;
 			   u32 maxdad;
 			   double sampcnt;
+			   SPUFifo fifo;
 		   } runtime;
 	   } cap[2];
    } regs;

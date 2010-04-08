@@ -16,6 +16,7 @@
 #define IDC_AUTO_UPDATE                 108
 #define IDB_OPEN                        108
 #define IDM_MEMORY                      109
+#define IDC_CONTINUE                    109
 #define IDM_DISASSEMBLER                110
 #define IDB_PAUSE                       110
 #define IDD_3DSETTINGS                  111
@@ -54,6 +55,7 @@
 #define IDM_SUBMITBUGREPORT             134
 #define IDM_STATE_LOAD                  135
 #define IDM_STATE_SAVE                  136
+#define IDM_STATE_SAVE_F10              139
 #define IDM_STATE_SAVE_F1               140
 #define IDM_STATE_SAVE_F2               141
 #define IDM_STATE_SAVE_F3               142
@@ -63,7 +65,7 @@
 #define IDM_STATE_SAVE_F7               146
 #define IDM_STATE_SAVE_F8               147
 #define IDM_STATE_SAVE_F9               148
-#define IDM_STATE_SAVE_F10              149
+#define IDM_STATE_LOAD_F10              149
 #define IDM_STATE_LOAD_F1               150
 #define IDM_STATE_LOAD_F2               151
 #define IDM_STATE_LOAD_F3               152
@@ -73,18 +75,11 @@
 #define IDM_STATE_LOAD_F7               156
 #define IDM_STATE_LOAD_F8               157
 #define IDM_STATE_LOAD_F9               158
-#define IDM_STATE_LOAD_F10              159
 #define IDC_COMBO1                      160
 #define IDC_COMBO2                      161
 #define IDC_COMBO3                      162
 #define IDC_COMBO4                      163
 #define IDM_CONFIG                      180
-#define IDC_SAVETYPE1                   182
-#define IDC_SAVETYPE2                   183
-#define IDC_SAVETYPE3                   184
-#define IDC_SAVETYPE4                   185
-#define IDC_SAVETYPE5                   186
-#define IDC_SAVETYPE6                   187
 #define IDC_FRAMESKIP0                  191
 #define IDC_FRAMESKIP1                  192
 #define IDC_FRAMESKIP2                  193
@@ -356,15 +351,23 @@
 #define IDC_CAP1_ADD                    1025
 #define IDC_SPU_ADVANCED                1025
 #define IDC_CAP1_CURDAD                 1026
+#define IDC_CHECBOX_ADVANCEDTIMING      1026
 #define IDC_DEFAULT                     1027
+#define IDC_DTP_DATE                    1027
 #define IDC_3DCORE                      1028
 #define IDC_SNDCTRL_ENABLE              1028
+#define IDC_DTP_TIME                    1028
 #define IDC_TXT_COMPILED                1029
 #define IDC_SNDCTRL_CH1NOMIX            1029
 #define IDC_TXT_VERSION                 1030
 #define IDC_SNDCTRL_CH3NOMIX            1030
+#define IDC_SOUND_CAPTURE_MUTED         1031
+#define IDC_SOUND_ANALYZE_CAP           1032
 #define IDC_ADDONS_LIST                 1033
+#define IDC_BUTTON3                     1033
+#define IDC_SOUND_UNMUTE_ALL            1033
 #define IDC_ADDONS_INFO                 1034
+#define IDC_BORDER                      1034
 #define IDC_BBROWSE                     1035
 #define IDC_PATHIMG                     1036
 #define IDC_PATH                        1037
@@ -417,6 +420,10 @@
 #define IDC_CAP1_ACTIVE                 1083
 #define IDC_CAP1_RUNNING                1084
 #define IDC_CHECK9                      1088
+#define IDC_S2X                         1090
+#define IDC_S4X                         1091
+#define IDC_S8X                         1092
+#define IDC_S16X                        1093
 #define IDM_FIRMSETTINGS                1100
 #define IDD_FIRMSETTINGS                1101
 #define IDC_EDIT1                       1102
@@ -780,7 +787,6 @@
 #define IDM_SCREENSEP_COLORBLACK        40025
 #define IDM_FILE_RECORDUSERSPUWAV       40026
 #define ID_FILE_RECENTROM               40034
-#define IDC_SAVETYPE7                   40037
 #define IDM_DEFSIZE                     40038
 #define IDM_3DCONFIG                    40040
 #define IDM_GBASLOT                     40042
@@ -799,13 +805,17 @@
 #define ID_RAMSEARCH_CAPTIONTEXT        40064
 #define IDM_VIEW3D                      40065
 #define IDM_LOCKDOWN                    40066
-#define IDC_SAVETYPE8                   40067
 #define IDM_EJECTCARD                   40068
 #define IDM_SHOWTOOLBAR                 40069
 #define ID_CONFIG_DISPLAYMETHOD         40070
 #define ID_DISPLAYMETHOD_DIRECTDRAWHW   40071
 #define ID_DISPLAYMETHOD_DIRECTDRAWSW   40072
 #define ID_HOTKEYS_TITLE                40073
+#define ID_VIEWLAYERS_SUBOBJ            40074
+#define ID_VIEWLAYERS_MAINOBJ           40075
+#define IDM_MOBJ                        40076
+#define IDM_SOBJ                        40077
+#define ID_VIEW_DISPLAYRTC              40078
 #define IDC_LABEL_UP                    50000
 #define IDC_LABEL_RIGHT                 50001
 #define IDC_LABEL_LEFT                  50002
@@ -897,14 +907,15 @@
 #define IDM_RENDER_HQ2XS                60081
 #define IDM_RENDER_LQ2X                 60082
 #define IDM_RENDER_LQ2XS                60083
+#define IDC_SAVETYPE                    64000
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        121
-#define _APS_NEXT_COMMAND_VALUE         40074
-#define _APS_NEXT_CONTROL_VALUE         1026
+#define _APS_NEXT_COMMAND_VALUE         40079
+#define _APS_NEXT_CONTROL_VALUE         1033
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

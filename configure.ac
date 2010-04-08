@@ -195,7 +195,7 @@ AM_CONDITIONAL([HAVE_LIBAGG], [test "${HAVE_LIBAGG}" = "yes"])
 if test "x$HAVE_LIBAGG" = "xyes"; then
    AC_DEFINE([HAVE_LIBAGG])
 else
-   AC_MSG_ERROR([Antigrain library is required to build desmume])
+   AC_MSG_WARN([Antigrain library not found, HUD will be disabled])
 fi
 
 if test "x$FOUND_GLIB" = "xno"; then
@@ -231,10 +231,8 @@ AM_CONDITIONAL([HAVE_WX], [test "x$wxwidgets" = "xyes"])
 dnl - Determine which UIs to build and if po/ should be included
 PO_DIR=""
 if test "x$HAVE_SDL" = "xyes"; then
-  # SDL adds just a cli
   UI_DIR="cli $UI_DIR"
   if test "x$HAVE_GTK" = "xyes"; then
-    # GTK requires SDL
     UI_DIR="gtk $UI_DIR"
   fi
   if test "x$wxwin" = "xyes"; then

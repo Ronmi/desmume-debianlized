@@ -236,6 +236,7 @@ public:
 					HMENU menu);
 
 	bool setMenu(HMENU menu);
+	bool addMenuItem(u32 item, bool byPos, LPCMENUITEMINFO info);
 	DWORD checkMenu(UINT idd, bool check);
 
 	void Show(int mode);
@@ -289,13 +290,16 @@ private:
 	char		class_name[256];
 	char		class_name2[256];
 
+	DWORD doOpen();
+	void doClose();
+
 protected:
 	DWORD	ThreadFunc();
 
 public:
 	TOOLSCLASS(HINSTANCE hInst, int IDD, DLGPROC wndproc);
 	virtual ~TOOLSCLASS();
-	bool open();
+	bool open(bool useThread=true);
 	bool close();
 	void regClass(LPSTR class_name, WNDPROC wproc, bool SecondReg = false);
 	void unregClass();

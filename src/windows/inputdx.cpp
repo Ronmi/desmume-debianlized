@@ -282,9 +282,6 @@ typedef char TcDIBuf[512];
 TcDIBuf					cDIBuf;
 LPDIRECTINPUT8			pDI;
 DIDEVCAPS				DIJoycap;
-LPDIRECTINPUTEFFECT     pEffect;
-BOOL	Feedback;
-
 
 static LPDIRECTINPUT8		tmp_pDI = NULL;
 static char					tmp_device_name[255] = { 0 };
@@ -441,7 +438,6 @@ static void SaveInputConfig()
 
 BOOL di_init()
 {
-	Feedback = FALSE;
 	HWND hParentWnd = MainWindow->getHWnd();
 
 	pDI = NULL;
@@ -457,6 +453,7 @@ BOOL di_init()
 	for(int i=0;i<(int)joyDevices.size();i++) {
 		JoystickF[i].Attached = true;
 		JoystickF[i].Device = joyDevices[i];
+		JoystickF[i].FeedBack = true;
 
 		LPDIRECTINPUTDEVICE8 pJoystick = joyDevices[i];
 
@@ -520,11 +517,11 @@ BOOL di_init()
 				eff.lpvTypeSpecificParams = &cf;
 				eff.dwStartDelay = 0;
 
-				//if( FAILED( pJoystick->CreateEffect(GUID_ConstantForce, &eff, &pEffect, NULL) ) )
-				//	Feedback = FALSE;
+				if( FAILED( pJoystick->CreateEffect(GUID_ConstantForce, &eff, &JoystickF[i].pEffect, NULL) ) )
+					JoystickF[i].FeedBack = FALSE;
 			}
 			else
-				//Feedback = FALSE;
+				JoystickF[i].FeedBack = FALSE;
 			{}
 		}
 
@@ -1909,8 +1906,6 @@ void EnableDisableKeyFields (int index, HWND hDlg)
 	//EnableWindow(GetDlgItem(hDlg,IDC_UPRIGHT), false);
 	//EnableWindow(GetDlgItem(hDlg,IDC_DWNRIGHT), false);
 	//EnableWindow(GetDlgItem(hDlg,IDC_DWNLEFT), false);
-	EnableWindow(GetDlgItem(hDlg,IDC_DEBUG), false);
-	EnableWindow(GetDlgItem(hDlg,IDC_LID), true);
 }
 
 INT_PTR CALLBACK DlgInputConfig(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -2204,8 +2199,6 @@ bool S9xGetState (WORD KeyIdent)
 
 void S9xWinScanJoypads ()
 {
-    u32 PadState;
-
 	S9xUpdateJoyState();
 
     for (int J = 0; J < 8; J++)
@@ -2396,13 +2389,19 @@ void S9xWinScanJoypads ()
 
 void input_feedback(BOOL enable)
 {
-	if (!Feedback) return;
-	if (!pEffect) return;
-
-	if (enable)
-		pEffect->Start(2, 0);
-	else
-		pEffect->Stop();
+	
+	for(int C=0;C<16;C++)
+	{
+		if(!JoystickF[C].Attached) continue;
+		if(!JoystickF[C].FeedBack) continue;
+		if(!JoystickF[C].pEffect) continue;
+		
+		//printf("Joy%i Feedback %s\n", C, enable?"ON":"OFF");
+		if (enable)
+			JoystickF[C].pEffect->Start(2, 0);
+		else
+			JoystickF[C].pEffect->Stop();
+	}
 }
 
 
@@ -2416,6 +2415,14 @@ void input_init()
 
 	di_init();
 	FeedbackON = input_feedback;
+}
+
+void input_deinit()
+{
+	input_feedback(false);
+
+	//todo
+	// release all dx input devices
 }
 
 // TODO: maybe some of this stuff should move back to NDSSystem.cpp?

@@ -2736,6 +2736,7 @@ return txt;}
 
 //-----------------------LDRBT-------------------------------------
 
+#if 0
 static char * OP_LDRBT_P_IMM_OFF_POSTIND(u32 adr, u32 i, char * txt)
 {
      sprintf(txt, "LDRBT%s %s, [%s], #%X!", Condition[CONDITION(i)], Registre[REG_POS(i,12)], Registre[REG_POS(i,16)], (int)(i&0x7FF));
@@ -2837,6 +2838,7 @@ static char * OP_STRBT_M_ROR_IMM_OFF_POSTIND(u32 adr, u32 i, char * txt)
 {
      LDRSTR_ROR_IMM(STRBT, "-", "]", "");
 return txt;}
+#endif
 
 //---------------------LDM-----------------------------
 
@@ -3754,7 +3756,7 @@ static char * OP_BL_10(u32 adr, u32 i, char * txt)
 
 }
 
-static char * OP_BL_THUMB(u32 adr, u32 i, char * txt)
+static char * OP_BL_11(u32 adr, u32 i, char * txt)
 {
      sprintf(txt, "BL #%X", (int)(part + ((i&0x7FF)<<1))&0xFFFFFFFC);
      return txt;

@@ -1,3 +1,430 @@
+desmume-trunk (svnrivisionr3508) karmic; urgency=low
+
+  [ zeromus ]
+  * debug: get rid of excessive "Reading beyond end of cart" messages
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    18 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix swi 0x0E (crc16); your dawn of sorrow savefiles are invalidated.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    19 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - fix overflow in matrices, NDS using only 24 bits for fixed-
+    point numbers (fixed minigame with carrot :) and dialogs with star
+    in "M&L Bowser Inside Story"); tools: - add matrix stack test; git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    20 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * rasterize: fix fog densities > 127 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    21 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * tweak around lcd line timing: make 3d vblank more generous (is still
+    unrealistically brutal since all the rendering happens
+    instantaneously, unlike real HW); give scanlines more time to render
+    (render at end of scanline instead of hblank begin); execute an
+    additional hblank dma on vcount=262 (speculative; fixes jittery nsmb
+    split-parallax clouds) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    22 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix dualscreen 3d frameskip screen cloning/flickering regression
+    from r3422 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    23 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ yoshihiropsp ]
+  * Added xbox360 support by Yoshihiro git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    24 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * - x360 port directory; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    25 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * - move xbox360 stuff to new directory; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    26 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ yoshihiropsp ]
+  * Added xbox360 support on desmume git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    27 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    28 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    29 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Added xbox360 support to desmume Yoshihiro git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    30 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    31 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Added some define for the xbox360 support git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    32 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    33 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Version string fixed for XBox360 new def git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    34 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    35 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Big endian argb git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    36 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ yabause ]
+  * Reverting the whole tree to revision 3423, please test to make sure
+    everything is back :) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    37 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ yoshihiropsp ]
+  * Added XBOX360 support for compactflash git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    38 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add _XBOX undefined git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    39 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * #undef min max for XBOX360 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    40 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fixed GFX3D reset on xbox hardware #define _XBOX git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    41 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Added Forceinline fix on XBOX360 cannot be used with static git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    42 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Added XBOX include git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    43 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * #undef min max and fix forceinline for XBOX360 git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    44 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * check in all the xbox compile fixes after tweaking some things.
+    looks benign. need to test compilation in nix still git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    45 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ yoshihiropsp ]
+  * Xbox Project git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    46 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * dont checkin  suo git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    47 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix fog tables more correctly by throwing away top bit and making
+    write-only. add a new test for register tests git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    48 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - add support for 16Mbit, 32Mbit, 64Mbit, 128Mbit, 256Mbit,
+    512Mbit flash memory card :) (NAND not implemented yet); - fix a
+    "div by zero" flag; winport: - now savetypes in menu create
+    dynamically; - fix x64 build; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    49 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * oops :( git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    50 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * continue tweaking scanline render timing (fix some parallax
+    regressions) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    51 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix interrupt handling to respond immediately when CPSR.I is
+    changed; also double buffer 3d configuration so that the settings in
+    place at the time of flush get used for rendering (important for
+    dual screen 3d games that use different settings for each screen);
+    and handle 3d clear color register more thoroughly git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    52 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add emulation for spi power management device system power-off and
+    add power management device to savestates git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    53 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * oops i did that wrong git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    54 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * make swap_buffers parameter take effect for subsequent frame,
+    instead of previous frame, contrary to intuition and good sense.
+    fixes some dual screen games which have been w/z broken for ages
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    55 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * gfx3d: fiddle with poly sorting. break some things, fix more things.
+    broken things I think are due to floating point gfx3d math git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    56 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: add arm9 load average to ctrl+prtscr git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    57 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * default to soft rasterizer git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    58 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * changelog needed 2 months of updates git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    59 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * block 8bit vram writes (except from arm7 which gbatek says works)
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    60 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * remove alternate flush mode reminder label; add option for advanced
+    bus timing and add to emuconfig dialog; unhook 3d viewer temporarily
+    since it doesn't work yet git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    61 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Use WxConfig for config file No need to rewrite the handling of a
+    ini-like config file when wxwidgets have already one available.
+    These are patches 1 and 3 from yar-tour second series, at #2969484
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    62 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add recent menu to wx frontend Apply patch 2 series 2 from yar-tour,
+    #2969484 rm: The fact that we need to call NDSInitialize on rom
+    open is silly. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    63 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Pause the SPU when closing rom to avoid annoying sound loop git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    64 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Standardize on WIN32 for preprocessor directives. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    65 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * ...So there's no need to call NDSInitialize everytime we load a rom.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    66 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * ROMfullName is already zero'ed before, no need to do it for each
+    entry. I swear, i was looking there for another issue. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    67 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Shutdown the machine before exiting, otherwise we can segfault if a
+    rom is playing. It also cleanups valgrind output when looking for
+    leaks. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    68 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * add --advanced-timing for nonwindows users git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    69 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: why wasnt the debug key enabled? git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    70 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ gocha ]
+  * Add new field 'rtcStart' to the movie. It specifies the time of RTC
+    at the beginning of the movie. (needs more test!) TODO: record
+    firmware settings as well. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    71 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Fixup movie.cpp compilation. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    72 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ gocha ]
+  * Add RTC display for movie recording, and small modifications. git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * ARM: fix a bug in the instruction table. Fixes issue #2977277
+    (undefined instruction 0x54F13001). git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ gocha ]
+  * Fix toBCD(), RTC read date should work right again. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add dirty dirty() calls for clearing Lua drawings even when no HUD
+    parts are displayed. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * tweak boot from card flag git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * oops typo git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ gocha ]
+  * Give movies firmware settings as well as bios settings. (For now,
+    it's write only!) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * add soundview toys git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    80 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ gocha ]
+  * Do not memcpy the destination itself git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    81 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * dont checkin debug code git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * spu: fix regression in some sound capture cases and support reverb
+    better git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Add missing cast. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Does this FASTCALL definition helps? how much? in the mean time just
+    don't enable it for clang since it breaks arm_instruction.cpp
+    compilation with that. clang finally compiles desmume \o/ git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Remove wx integration demo from gtk frontend It works but since we
+    have the 3d viewer available in the wx frontend it does little sense
+    to keep this here. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    86 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Remember to destroy the 3d dialog If we don't call Destroy() on
+    close event callback i'm not able to quit fully from wx frontend if
+    i've previously launched the 3d viewer. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    87 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Reorder initialization order of some classes to shut up gcc warnings
+    about having them in a different order where defined. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    88 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Make our stub code for not shipping lua a bit less lame. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    89 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Cleanup the code a bit wrt, unused functions and functions that can
+    be declared static. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * No need to include wx/isql.h (!) for a typedef. Brown paper bag for
+    me. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Move initialization stuff not strictly related with the wx frontend
+    in DesmumeFrame::NDSInitialize(). While at it add dummy firmware.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    92 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * and lo, the lies were abated and the untruth receded from the land
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    93 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - fix CP15 register 1 (control register); - fix CP15 register
+    2 (TCM size); - remove CP15 from ARM7; - fix some CPU bugs in THUMB
+    mode (added comments from official reference); - added loops for HLE
+    BIOS exceptions; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    94 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ normmatt234 ]
+  * fix a couple of thumb opcode regressions. allow ds, ds/dsi hybrid
+    and dsi only nds files to be opened. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    95 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * THUMB: - fix Carry & Negative flags in ADC, SBC opcodes; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    96 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * spu: fix crash in loadstate with sound enabled git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: make layer toggling not so glitchy when switching roms or
+    loading states, and fix a spu related crash when opening a new rom
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * - fix CPSR flags in ADC/SBC :P git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Move cli frontend event processing to process_ctrls_event Unify the
+    switch Instead of evaluating sdl events both in ctrlsdl and cli
+    frontend. With this change now ctrlsdl gets in touch with both
+    GPU_osd and fake mic code. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    01 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Update wx frontend per GPU changes. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Correct menu layers widgets to be checked check item. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * ARM: Add more missing opcodes to the table (it should be fine now).
+    Also, more clean formatting, each line has got its index shown in
+    binary to help looking for one particular opcode... git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Switch hud related switches to proper widget too. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    05 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Add more TODO, and nuke the useless OP_LDR_M_IMM_OFF_POSTIND2. git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    06 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ yabause ]
+  * Added missing agg flags. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    07 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * - again ADC/SBC :( git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    08 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ Ronmi Ren ]
+  * update to r3508
+
+ -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 08 Apr 2010 18:05:15 +0800
+
 desmume-trunk (svnrivisionr3376-r3417) karmic; urgency=low
 
   [ zeromus ]

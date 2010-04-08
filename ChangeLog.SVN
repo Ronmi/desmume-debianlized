@@ -1,4 +1,503 @@
 ------------------------------------------------------------------------
+r3508 | mtabachenko | 2010-04-08 05:11:24 +0800 (四, 08  4月 2010) | 2 lines
+
+- again ADC/SBC :(
+
+------------------------------------------------------------------------
+r3507 | yabause | 2010-04-08 04:57:51 +0800 (四, 08  4月 2010) | 2 lines
+
+Added missing agg flags.
+
+------------------------------------------------------------------------
+r3506 | luigi__ | 2010-04-08 00:54:12 +0800 (四, 08  4月 2010) | 2 lines
+
+Add more TODO, and nuke the useless OP_LDR_M_IMM_OFF_POSTIND2.
+
+------------------------------------------------------------------------
+r3505 | riccardom | 2010-04-08 00:53:54 +0800 (四, 08  4月 2010) | 2 lines
+
+Switch hud related switches to proper widget too.
+
+------------------------------------------------------------------------
+r3504 | luigi__ | 2010-04-08 00:36:09 +0800 (四, 08  4月 2010) | 3 lines
+
+ARM: Add more missing opcodes to the table (it should be fine now).
+Also, more clean formatting, each line has got its index shown in binary to help looking for one particular opcode...
+
+------------------------------------------------------------------------
+r3503 | riccardom | 2010-04-08 00:27:30 +0800 (四, 08  4月 2010) | 2 lines
+
+Correct menu layers widgets to be checked check item.
+
+------------------------------------------------------------------------
+r3502 | riccardom | 2010-04-08 00:18:06 +0800 (四, 08  4月 2010) | 2 lines
+
+Update wx frontend per GPU changes.
+
+------------------------------------------------------------------------
+r3501 | riccardom | 2010-04-07 20:51:47 +0800 (三, 07  4月 2010) | 8 lines
+
+Move cli frontend event processing to process_ctrls_event
+
+Unify the switch Instead of evaluating sdl events both
+in ctrlsdl and cli frontend.
+
+With this change now ctrlsdl gets in touch with both
+GPU_osd and fake mic code.
+
+------------------------------------------------------------------------
+r3500 | mtabachenko | 2010-04-07 05:28:14 +0800 (三, 07  4月 2010) | 2 lines
+
+- fix CPSR flags in ADC/SBC :P
+
+------------------------------------------------------------------------
+r3499 | zeromus | 2010-04-07 05:10:11 +0800 (三, 07  4月 2010) | 2 lines
+
+win32: make layer toggling not so glitchy when switching roms or loading states, and fix a spu related crash when opening a new rom
+
+------------------------------------------------------------------------
+r3498 | zeromus | 2010-04-07 02:41:19 +0800 (三, 07  4月 2010) | 2 lines
+
+spu: fix crash in loadstate with sound enabled
+
+------------------------------------------------------------------------
+r3496 | mtabachenko | 2010-04-07 01:24:31 +0800 (三, 07  4月 2010) | 3 lines
+
+THUMB:
+- fix Carry & Negative flags in ADC, SBC opcodes;
+
+------------------------------------------------------------------------
+r3495 | normmatt234 | 2010-04-07 00:20:48 +0800 (三, 07  4月 2010) | 3 lines
+
+fix a couple of thumb opcode regressions.
+allow ds, ds/dsi hybrid and dsi only nds files to be opened.
+
+------------------------------------------------------------------------
+r3494 | mtabachenko | 2010-04-06 23:44:03 +0800 (二, 06  4月 2010) | 7 lines
+
+core:
+- fix CP15 register 1 (control register);
+- fix CP15 register 2 (TCM size);
+- remove CP15 from ARM7;
+- fix some CPU bugs in THUMB mode (added comments from official reference);
+- added loops for HLE BIOS exceptions;
+
+------------------------------------------------------------------------
+r3493 | zeromus | 2010-04-06 06:47:46 +0800 (二, 06  4月 2010) | 2 lines
+
+and lo, the lies were abated and the untruth receded from the land
+
+------------------------------------------------------------------------
+r3492 | riccardom | 2010-04-06 01:03:06 +0800 (二, 06  4月 2010) | 4 lines
+
+Move initialization stuff not strictly related with the
+wx frontend in DesmumeFrame::NDSInitialize(). While at
+it add dummy firmware.
+
+------------------------------------------------------------------------
+r3491 | riccardom | 2010-04-06 00:33:24 +0800 (二, 06  4月 2010) | 3 lines
+
+No need to include wx/isql.h (!) for a typedef. Brown
+paper bag for me.
+
+------------------------------------------------------------------------
+r3490 | riccardom | 2010-04-06 00:11:29 +0800 (二, 06  4月 2010) | 3 lines
+
+Cleanup the code a bit wrt, unused functions and functions
+that can be declared static.
+
+------------------------------------------------------------------------
+r3489 | riccardom | 2010-04-05 23:16:37 +0800 (一, 05  4月 2010) | 2 lines
+
+Make our stub code for not shipping lua a bit less lame.
+
+------------------------------------------------------------------------
+r3488 | riccardom | 2010-04-05 23:03:51 +0800 (一, 05  4月 2010) | 4 lines
+
+Reorder initialization order of some classes to shut up
+gcc warnings about having them in a different order
+where defined.
+
+------------------------------------------------------------------------
+r3487 | riccardom | 2010-04-05 22:40:08 +0800 (一, 05  4月 2010) | 6 lines
+
+Remember to destroy the 3d dialog
+
+If we don't call Destroy() on close event callback i'm not
+able to quit fully from wx frontend if i've previously
+launched the 3d viewer.
+
+------------------------------------------------------------------------
+r3486 | riccardom | 2010-04-05 22:30:46 +0800 (一, 05  4月 2010) | 5 lines
+
+Remove wx integration demo from gtk frontend
+
+It works but since we have the 3d viewer available in the
+wx frontend it does little sense to keep this here.
+
+------------------------------------------------------------------------
+r3485 | riccardom | 2010-04-05 21:07:30 +0800 (一, 05  4月 2010) | 5 lines
+
+Does this FASTCALL definition helps? how much? in the mean
+time just don't enable it for clang since it breaks
+arm_instruction.cpp compilation with that. clang finally
+compiles desmume \o/
+
+------------------------------------------------------------------------
+r3484 | riccardom | 2010-04-05 21:00:51 +0800 (一, 05  4月 2010) | 2 lines
+
+Add missing cast.
+
+------------------------------------------------------------------------
+r3483 | zeromus | 2010-04-05 14:24:12 +0800 (一, 05  4月 2010) | 2 lines
+
+spu: fix regression in some sound capture cases and support reverb better
+
+------------------------------------------------------------------------
+r3482 | zeromus | 2010-04-04 17:23:53 +0800 (日, 04  4月 2010) | 2 lines
+
+dont checkin debug code
+
+------------------------------------------------------------------------
+r3481 | gocha | 2010-04-04 17:12:55 +0800 (日, 04  4月 2010) | 2 lines
+
+Do not memcpy the destination itself
+
+------------------------------------------------------------------------
+r3480 | zeromus | 2010-04-04 17:06:29 +0800 (日, 04  4月 2010) | 2 lines
+
+add soundview toys
+
+------------------------------------------------------------------------
+r3479 | gocha | 2010-04-04 16:43:32 +0800 (日, 04  4月 2010) | 2 lines
+
+Give movies firmware settings as well as bios settings. (For now, it's write only!)
+
+------------------------------------------------------------------------
+r3478 | zeromus | 2010-04-04 16:25:42 +0800 (日, 04  4月 2010) | 2 lines
+
+oops typo
+
+------------------------------------------------------------------------
+r3477 | zeromus | 2010-04-04 15:28:00 +0800 (日, 04  4月 2010) | 2 lines
+
+tweak boot from card flag
+
+------------------------------------------------------------------------
+r3476 | gocha | 2010-04-04 11:59:10 +0800 (日, 04  4月 2010) | 2 lines
+
+Add dirty dirty() calls for clearing Lua drawings even when no HUD parts are displayed.
+
+------------------------------------------------------------------------
+r3475 | gocha | 2010-04-04 07:11:48 +0800 (日, 04  4月 2010) | 2 lines
+
+Fix toBCD(), RTC read date should work right again.
+
+------------------------------------------------------------------------
+r3474 | luigi__ | 2010-04-04 03:14:44 +0800 (日, 04  4月 2010) | 3 lines
+
+ARM: fix a bug in the instruction table.
+Fixes issue #2977277 (undefined instruction 0x54F13001).
+
+------------------------------------------------------------------------
+r3473 | gocha | 2010-04-03 23:18:57 +0800 (六, 03  4月 2010) | 2 lines
+
+Add RTC display for movie recording, and small modifications.
+
+------------------------------------------------------------------------
+r3472 | riccardom | 2010-04-03 21:04:55 +0800 (六, 03  4月 2010) | 2 lines
+
+Fixup movie.cpp compilation.
+
+------------------------------------------------------------------------
+r3471 | gocha | 2010-04-03 15:11:29 +0800 (六, 03  4月 2010) | 3 lines
+
+Add new field 'rtcStart' to the movie. It specifies the time of RTC at the beginning of the movie. (needs more test!)
+TODO: record firmware settings as well.
+
+------------------------------------------------------------------------
+r3470 | zeromus | 2010-04-03 03:38:15 +0800 (六, 03  4月 2010) | 2 lines
+
+win32: why wasnt the debug key enabled?
+
+------------------------------------------------------------------------
+r3469 | zeromus | 2010-04-03 02:06:21 +0800 (六, 03  4月 2010) | 2 lines
+
+add --advanced-timing for nonwindows users
+
+------------------------------------------------------------------------
+r3468 | riccardom | 2010-04-02 21:49:57 +0800 (五, 02  4月 2010) | 4 lines
+
+Shutdown the machine before exiting, otherwise we can
+segfault if a rom is playing. It also cleanups valgrind
+output when looking for leaks.
+
+------------------------------------------------------------------------
+r3467 | riccardom | 2010-04-02 21:45:54 +0800 (五, 02  4月 2010) | 4 lines
+
+ROMfullName is already zero'ed before, no need to do it
+for each entry.
+I swear, i was looking there for another issue.
+
+------------------------------------------------------------------------
+r3466 | riccardom | 2010-04-02 01:01:29 +0800 (五, 02  4月 2010) | 3 lines
+
+...So there's no need to call NDSInitialize everytime
+we load a rom.
+
+------------------------------------------------------------------------
+r3465 | riccardom | 2010-04-02 00:54:26 +0800 (五, 02  4月 2010) | 2 lines
+
+Standardize on WIN32 for preprocessor directives.
+
+------------------------------------------------------------------------
+r3464 | riccardom | 2010-04-02 00:52:00 +0800 (五, 02  4月 2010) | 2 lines
+
+Pause the SPU when closing rom to avoid annoying sound loop
+
+------------------------------------------------------------------------
+r3463 | riccardom | 2010-04-02 00:47:07 +0800 (五, 02  4月 2010) | 7 lines
+
+Add recent menu to wx frontend
+
+Apply patch 2 series 2 from yar-tour, #2969484
+
+rm: The fact that we need to call NDSInitialize on rom
+    open is silly.
+
+------------------------------------------------------------------------
+r3462 | riccardom | 2010-04-02 00:35:00 +0800 (五, 02  4月 2010) | 8 lines
+
+Use WxConfig for config file
+
+No need to rewrite the handling of a ini-like config
+file when wxwidgets have already one available.
+
+These are patches 1 and 3 from yar-tour second series,
+at #2969484
+
+------------------------------------------------------------------------
+r3461 | zeromus | 2010-04-01 12:57:08 +0800 (四, 01  4月 2010) | 2 lines
+
+remove alternate flush mode reminder label; add option for advanced bus timing and add to emuconfig dialog; unhook 3d viewer temporarily since it doesn't work yet
+
+------------------------------------------------------------------------
+r3460 | zeromus | 2010-04-01 07:51:47 +0800 (四, 01  4月 2010) | 2 lines
+
+block 8bit vram writes (except from arm7 which gbatek says works)
+
+------------------------------------------------------------------------
+r3459 | zeromus | 2010-04-01 05:51:51 +0800 (四, 01  4月 2010) | 2 lines
+
+changelog needed 2 months of updates
+
+------------------------------------------------------------------------
+r3458 | zeromus | 2010-04-01 05:49:56 +0800 (四, 01  4月 2010) | 2 lines
+
+default to soft rasterizer
+
+------------------------------------------------------------------------
+r3457 | zeromus | 2010-04-01 05:31:30 +0800 (四, 01  4月 2010) | 2 lines
+
+win32: add arm9 load average to ctrl+prtscr
+
+------------------------------------------------------------------------
+r3456 | zeromus | 2010-04-01 03:19:39 +0800 (四, 01  4月 2010) | 2 lines
+
+gfx3d: fiddle with poly sorting. break some things, fix more things. broken things I think are due to floating point gfx3d math
+
+------------------------------------------------------------------------
+r3455 | zeromus | 2010-03-31 14:58:14 +0800 (三, 31  3月 2010) | 2 lines
+
+make swap_buffers parameter take effect for subsequent frame, instead of previous frame, contrary to intuition and good sense. fixes some dual screen games which have been w/z broken for ages
+
+------------------------------------------------------------------------
+r3454 | zeromus | 2010-03-30 16:43:42 +0800 (二, 30  3月 2010) | 2 lines
+
+oops i did that wrong
+
+------------------------------------------------------------------------
+r3453 | zeromus | 2010-03-30 16:34:01 +0800 (二, 30  3月 2010) | 2 lines
+
+add emulation for spi power management device system power-off and add power management device to savestates
+
+------------------------------------------------------------------------
+r3452 | zeromus | 2010-03-30 14:34:08 +0800 (二, 30  3月 2010) | 2 lines
+
+fix interrupt handling to respond immediately when CPSR.I is changed; also double buffer 3d configuration so that the settings in place at the time of flush get used for rendering (important for dual screen 3d games that use different settings for each screen); and handle 3d clear color register more thoroughly
+
+------------------------------------------------------------------------
+r3451 | zeromus | 2010-03-30 10:11:04 +0800 (二, 30  3月 2010) | 2 lines
+
+continue tweaking scanline render timing (fix some parallax regressions)
+
+------------------------------------------------------------------------
+r3450 | mtabachenko | 2010-03-29 04:20:29 +0800 (一, 29  3月 2010) | 2 lines
+
+oops :(
+
+------------------------------------------------------------------------
+r3449 | mtabachenko | 2010-03-29 04:18:49 +0800 (一, 29  3月 2010) | 8 lines
+
+core:
+- add support for 16Mbit, 32Mbit, 64Mbit, 128Mbit, 256Mbit, 512Mbit flash memory card :) (NAND not implemented yet);
+- fix a "div by zero" flag;
+
+winport:
+- now savetypes in menu create dynamically;
+- fix x64 build;
+
+------------------------------------------------------------------------
+r3448 | zeromus | 2010-03-28 03:18:57 +0800 (日, 28  3月 2010) | 2 lines
+
+fix fog tables more correctly by throwing away top bit and making write-only. add a new test for register tests
+
+------------------------------------------------------------------------
+r3447 | zeromus | 2010-03-27 02:53:54 +0800 (六, 27  3月 2010) | 2 lines
+
+dont checkin  suo
+
+------------------------------------------------------------------------
+r3446 | yoshihiropsp | 2010-03-27 02:51:37 +0800 (六, 27  3月 2010) | 2 lines
+
+Xbox Project
+
+------------------------------------------------------------------------
+r3445 | zeromus | 2010-03-27 02:22:46 +0800 (六, 27  3月 2010) | 2 lines
+
+check in all the xbox compile fixes after tweaking some things. looks benign. need to test compilation in nix still
+
+------------------------------------------------------------------------
+r3444 | yoshihiropsp | 2010-03-26 23:38:56 +0800 (五, 26  3月 2010) | 2 lines
+
+#undef min max and fix forceinline for XBOX360
+
+------------------------------------------------------------------------
+r3443 | yoshihiropsp | 2010-03-26 23:37:25 +0800 (五, 26  3月 2010) | 2 lines
+
+Added XBOX include
+
+------------------------------------------------------------------------
+r3442 | yoshihiropsp | 2010-03-26 23:36:22 +0800 (五, 26  3月 2010) | 2 lines
+
+Added Forceinline fix on XBOX360 cannot be used with static
+
+------------------------------------------------------------------------
+r3441 | yoshihiropsp | 2010-03-26 23:33:46 +0800 (五, 26  3月 2010) | 2 lines
+
+Fixed GFX3D reset on xbox hardware #define _XBOX
+
+------------------------------------------------------------------------
+r3440 | yoshihiropsp | 2010-03-26 23:32:15 +0800 (五, 26  3月 2010) | 2 lines
+
+#undef min max for XBOX360
+
+------------------------------------------------------------------------
+r3439 | yoshihiropsp | 2010-03-26 23:30:35 +0800 (五, 26  3月 2010) | 2 lines
+
+Add _XBOX undefined
+
+------------------------------------------------------------------------
+r3438 | yoshihiropsp | 2010-03-26 23:27:39 +0800 (五, 26  3月 2010) | 2 lines
+
+Added XBOX360 support for compactflash
+
+------------------------------------------------------------------------
+r3437 | yabause | 2010-03-26 22:48:19 +0800 (五, 26  3月 2010) | 3 lines
+
+Reverting the whole tree to revision 3423, please test to
+make sure everything is back :)
+
+------------------------------------------------------------------------
+r3436 | yoshihiropsp | 2010-03-26 22:09:25 +0800 (五, 26  3月 2010) | 2 lines
+
+Big endian argb
+
+------------------------------------------------------------------------
+r3435 | yoshihiropsp | 2010-03-26 22:07:31 +0800 (五, 26  3月 2010) | 1 line
+
+------------------------------------------------------------------------
+r3434 | yoshihiropsp | 2010-03-26 22:05:31 +0800 (五, 26  3月 2010) | 2 lines
+
+Version string fixed for XBox360 new def
+
+------------------------------------------------------------------------
+r3433 | yoshihiropsp | 2010-03-26 22:03:43 +0800 (五, 26  3月 2010) | 1 line
+
+------------------------------------------------------------------------
+r3432 | yoshihiropsp | 2010-03-26 22:01:24 +0800 (五, 26  3月 2010) | 2 lines
+
+Added some define for the xbox360 support
+
+------------------------------------------------------------------------
+r3431 | yoshihiropsp | 2010-03-26 22:00:06 +0800 (五, 26  3月 2010) | 1 line
+
+------------------------------------------------------------------------
+r3430 | yoshihiropsp | 2010-03-26 21:53:21 +0800 (五, 26  3月 2010) | 2 lines
+
+Added xbox360 support to desmume Yoshihiro
+
+------------------------------------------------------------------------
+r3429 | yoshihiropsp | 2010-03-26 21:50:14 +0800 (五, 26  3月 2010) | 1 line
+
+------------------------------------------------------------------------
+r3428 | yoshihiropsp | 2010-03-26 21:48:41 +0800 (五, 26  3月 2010) | 1 line
+
+------------------------------------------------------------------------
+r3427 | yoshihiropsp | 2010-03-26 21:47:15 +0800 (五, 26  3月 2010) | 2 lines
+
+Added xbox360 support on desmume
+
+------------------------------------------------------------------------
+r3426 | mtabachenko | 2010-03-26 21:45:24 +0800 (五, 26  3月 2010) | 2 lines
+
+- move xbox360 stuff to new directory;
+
+------------------------------------------------------------------------
+r3425 | mtabachenko | 2010-03-26 21:42:46 +0800 (五, 26  3月 2010) | 2 lines
+
+- x360 port directory;
+
+------------------------------------------------------------------------
+r3424 | yoshihiropsp | 2010-03-26 21:26:31 +0800 (五, 26  3月 2010) | 2 lines
+
+Added xbox360 support by Yoshihiro
+
+------------------------------------------------------------------------
+r3423 | zeromus | 2010-03-25 11:10:11 +0800 (四, 25  3月 2010) | 2 lines
+
+fix dualscreen 3d frameskip screen cloning/flickering regression from r3422
+
+------------------------------------------------------------------------
+r3422 | zeromus | 2010-03-25 07:13:36 +0800 (四, 25  3月 2010) | 2 lines
+
+tweak around lcd line timing: make 3d vblank more generous (is still unrealistically brutal since all the rendering happens instantaneously, unlike real HW); give scanlines more time to render (render at end of scanline instead of hblank begin); execute an additional hblank dma on vcount=262 (speculative; fixes jittery nsmb split-parallax clouds)
+
+------------------------------------------------------------------------
+r3421 | zeromus | 2010-03-24 05:56:24 +0800 (三, 24  3月 2010) | 2 lines
+
+rasterize: fix fog densities > 127
+
+------------------------------------------------------------------------
+r3420 | mtabachenko | 2010-03-24 02:56:10 +0800 (三, 24  3月 2010) | 6 lines
+
+core:
+- fix overflow in matrices, NDS using only 24 bits for fixed-point numbers (fixed minigame with carrot :) and dialogs with star in "M&L Bowser Inside Story");
+
+tools:
+- add matrix stack test;
+
+------------------------------------------------------------------------
+r3419 | zeromus | 2010-03-19 06:19:31 +0800 (五, 19  3月 2010) | 2 lines
+
+fix swi 0x0E (crc16); your dawn of sorrow savefiles are invalidated.
+
+------------------------------------------------------------------------
+r3418 | zeromus | 2010-03-19 02:57:36 +0800 (五, 19  3月 2010) | 2 lines
+
+debug: get rid of excessive "Reading beyond end of cart" messages
+
+------------------------------------------------------------------------
 r3417 | zeromus | 2010-03-18 06:45:33 +0800 (四, 18  3月 2010) | 2 lines
 
 debug: add no$ message support

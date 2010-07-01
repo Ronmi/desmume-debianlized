@@ -1,1161 +1,777 @@
-desmume-trunk-pgo (svnr3508) karmic; urgency=low
-
-  [ wntrmute ]
-  * build with gdb stub git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    72 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Dont include lua cflags unconditionally especially since we don't
-    compile lua stuff. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * OpenGL: - rewrite shaders, optimized & fixed some bugs (fixed dark
-    donuts in Garfield, bosses in Nanostray 2); git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
+desmume-trunk-pgo (svn3693) lucid; urgency=low
 
   [ zeromus ]
-  * fix powcnt1 better (fixes manicminer homebrew) note that 90% of all
-    remaining desmume bugs can probably be fixed by more correct
-    register emulation in a way done like this checkin. however I have
-    not yet established a code pattern that I like for it so I am not
-    sweeping through and changing them all at once yet. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix typo in powcnt1 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix another typo. this is why i said I dont have a code pattern i
-    like yet git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * winport: - removed EXPERIMENTAL_WIFI_COMM definition from VS2008 x86
-    project (use userconfig.h for definitions); git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * don't print mandatory \n in ideaslog git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * We can make CLZ_TAB const. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    80 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * stop letting roms read off the end of the cart and crash the
-    emulator. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    81 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * GPU_osd.h is not needed here. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Let desmume build without libagg libagg is used only by the HUD but
-    the usage of it outside windows is pretty small. So just in case it
-    is not available we can live without it. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Don't build the wx frontend if antigrain is not available I don't
-    want to clutter the source code with ifdef :) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Whitespace cleanup. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * core: - add 32bits BLDY register write (fix fading in GTA); git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    86 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Add a note about the libagg now optional for linux frontends. git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    87 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * screw around with some debugging features and the win32 disassembler
-    windows git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    88 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Temporary workaround for forcing the cli keyboard mapping instead of
-    the gtk one. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    89 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Simply fps calculation. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Whitespace fixup. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fixup cflash handling in cli frontend, bug #2955684 The code is c&p
-    from gtk frontend to handle some addons stuff properly. Should fix
-    #2955684. [insert a rant here on patches without reporter feeedback]
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    92 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Cleanup resize code with opengl 2d Based on a patch submitted at
-    #2839785 by ramarren simplifies a lot the code. It removes so much
-    lines it can't be wrong :) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    93 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ wntrmute ]
-  * use correct address for argv git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    94 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * win32: straighten out the save slot 0 / F10 business git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    95 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * core: - fix timings in THUMB CPU mode (fix bug #2879374 and break
-    SW: CW JA intro :(, maybe mistake in WiFi emulation); git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    96 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: - fix some bugs in OAM viewer and add scale thumb viewer;
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    97 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: - sorry, I`m ignored last commit from zeromus :) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Make acl_check_access static and comment a variabile which is used
-    only in commented code. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * We can make validateIF_arm9 static. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Move declaration of nds_debug_* functions in header. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    01 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Remove unused variable and fix signed vs unsigned comparison
-    warning. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * colorAlpha is not used anymore. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Move unused functions under #if 0. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * core: - handle 32bit divnumer & divdenom (fix "Sonic Classic
-    Collection"); git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    05 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Let the wx frontend build without libagg, based on a patch by Yar-
-    Tour in bug #2969484. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    06 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Use Destroy() instead of Close() to exit from the controls dialog.
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    07 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fixup event enum Using straight standard wx defintion as values in
-    the enum for events is wrong because we end up reusing the already
-    defined standard values. Use the wx definitions directly in the code
-    so we start from 0 in the enum. This fix the funny random icons in
-    the menu. Slightly edited from patch #1 by yar-tour in bug #2969484
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    08 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Cleanup load / save states menu This cleanup the load and save
-    states menu by using EVT_MENU_RANGE. Slightly edited from patch #2
-    of yar-tour in bug #2969484 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+  * win32: add feature: dump all memory (new button in memory viewer;
+    inspect debug.cpp for a map of the file) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     09 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add audio to wxfrontend on !win32 I've verified that calling the
-    SPU_* functions without SPU_ChangeSoundCore() does not harm here.
-    Based on patch #3 by yar-tour in #2969484. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    10 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add rotation to wxwidgets frontend Add rotation to wxwidgets
-    frontend, code derived from gtk frontend. rm: my changes are mostly
-    cosmetics (how can you read multiple statements in one line? a
-    mistery to me :) and some tidy up for gpu_screen_to_rgb. Let me left
-    this quote in my defense: "If you want to go somewhere, goto is the
-    best way to  get there." Patch #4 by yar-tour from #2969484 git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    11 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add gap and resize support to wx frontend This patch adds gap up to
-    90px when the user resize vertically the window. Speaking of sizes
-    we are losing the last entry in the menu because it does not fit in
-    the 256 px limit. Patch #5 by yar-tour from #2969484 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    12 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ mtabachenko ]
-  * core: - fix matrix stack for Projection & Texture mode (fix bug
-    #2910405); - fix some typos; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    13 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * winport: - fix input feedback support; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    14 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * core: - fix LDR definitions in table of instructions; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    10 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ zeromus ]
-  * win32: add menu items for obj display toggle git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+  * fix spu loadstate crashes git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    11 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ gocha ]
+  * Imported resource file from 0.9.6 branch git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     15 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * gpu: fix 3d blending color effects being applied when they shouldnt
-    be git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    16 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * debug: add no$ message support git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    17 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * debug: get rid of excessive "Reading beyond end of cart" messages
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    18 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix swi 0x0E (crc16); your dawn of sorrow savefiles are invalidated.
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+  * Import resource file from 0.9.6 branch git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     19 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ mtabachenko ]
-  * core: - fix overflow in matrices, NDS using only 24 bits for fixed-
-    point numbers (fixed minigame with carrot :) and dialogs with star
-    in "M&L Bowser Inside Story"); tools: - add matrix stack test; git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    20 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
   [ zeromus ]
-  * rasterize: fix fog densities > 127 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    21 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * tweak around lcd line timing: make 3d vblank more generous (is still
-    unrealistically brutal since all the rendering happens
-    instantaneously, unlike real HW); give scanlines more time to render
-    (render at end of scanline instead of hblank begin); execute an
-    additional hblank dma on vcount=262 (speculative; fixes jittery nsmb
-    split-parallax clouds) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    22 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix dualscreen 3d frameskip screen cloning/flickering regression
-    from r3422 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+  * merge 3520-3522 from release branch, add reload rom hotkey, and
+    change label in control config dialog to no longer mention grayed
+    out keys since theyre now all supported. and, as usual,
+    unnecessarily touch 1000 files. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     23 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ yoshihiropsp ]
-  * Added xbox360 support by Yoshihiro git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    24 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * - x360 port directory; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+  * win32: fix start-paused commandline git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     25 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * - move xbox360 stuff to new directory; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    26 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ yoshihiropsp ]
-  * Added xbox360 support on desmume git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+  * return Z1 and Z2 from TSC (fix scummvm mouse); and fix a creepy
+    looking bug with IME setting in swi intrWaitARM git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     27 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+
+  [ dottorleo ]
+  * Updated italian and chinese strings of the lastest Hotkey added.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     28 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    29 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Added xbox360 support to desmume Yoshihiro git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    30 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
+
+  [ gocha ]
+  * windows: force update tool windows just after loading a savestate
+    (ported from 0.9.6 branch) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     31 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Added some define for the xbox360 support git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    32 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    33 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Version string fixed for XBox360 new def git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    34 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    35 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Big endian argb git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    36 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ yabause ]
-  * Reverting the whole tree to revision 3423, please test to make sure
-    everything is back :) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    37 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ yoshihiropsp ]
-  * Added XBOX360 support for compactflash git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    38 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add _XBOX undefined git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    39 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * #undef min max for XBOX360 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    40 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fixed GFX3D reset on xbox hardware #define _XBOX git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    41 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Added Forceinline fix on XBOX360 cannot be used with static git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    42 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Added XBOX include git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    43 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * #undef min max and fix forceinline for XBOX360 git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    44 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * check in all the xbox compile fixes after tweaking some things.
-    looks benign. need to test compilation in nix still git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    45 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ yoshihiropsp ]
-  * Xbox Project git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    46 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * dont checkin  suo git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    47 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix fog tables more correctly by throwing away top bit and making
-    write-only. add a new test for register tests git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    48 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ mtabachenko ]
-  * core: - add support for 16Mbit, 32Mbit, 64Mbit, 128Mbit, 256Mbit,
-    512Mbit flash memory card :) (NAND not implemented yet); - fix a
-    "div by zero" flag; winport: - now savetypes in menu create
-    dynamically; - fix x64 build; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    49 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * oops :( git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    50 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * continue tweaking scanline render timing (fix some parallax
-    regressions) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    51 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix interrupt handling to respond immediately when CPSR.I is
-    changed; also double buffer 3d configuration so that the settings in
-    place at the time of flush get used for rendering (important for
-    dual screen 3d games that use different settings for each screen);
-    and handle 3d clear color register more thoroughly git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    52 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * add emulation for spi power management device system power-off and
-    add power management device to savestates git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    53 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * oops i did that wrong git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    54 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * make swap_buffers parameter take effect for subsequent frame,
-    instead of previous frame, contrary to intuition and good sense.
-    fixes some dual screen games which have been w/z broken for ages
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    55 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * gfx3d: fiddle with poly sorting. break some things, fix more things.
-    broken things I think are due to floating point gfx3d math git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    56 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: add arm9 load average to ctrl+prtscr git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    57 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * default to soft rasterizer git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    58 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * changelog needed 2 months of updates git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    59 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * block 8bit vram writes (except from arm7 which gbatek says works)
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    60 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * remove alternate flush mode reminder label; add option for advanced
-    bus timing and add to emuconfig dialog; unhook 3d viewer temporarily
-    since it doesn't work yet git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    61 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Use WxConfig for config file No need to rewrite the handling of a
-    ini-like config file when wxwidgets have already one available.
-    These are patches 1 and 3 from yar-tour second series, at #2969484
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    62 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add recent menu to wx frontend Apply patch 2 series 2 from yar-tour,
-    #2969484 rm: The fact that we need to call NDSInitialize on rom
-    open is silly. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    63 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Pause the SPU when closing rom to avoid annoying sound loop git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    64 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Standardize on WIN32 for preprocessor directives. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    65 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * ...So there's no need to call NDSInitialize everytime we load a rom.
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    66 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * ROMfullName is already zero'ed before, no need to do it for each
-    entry. I swear, i was looking there for another issue. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    67 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Shutdown the machine before exiting, otherwise we can segfault if a
-    rom is playing. It also cleanups valgrind output when looking for
-    leaks. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    68 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * add --advanced-timing for nonwindows users git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    69 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: why wasnt the debug key enabled? git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    70 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ gocha ]
-  * Add new field 'rtcStart' to the movie. It specifies the time of RTC
-    at the beginning of the movie. (needs more test!) TODO: record
-    firmware settings as well. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    71 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Fixup movie.cpp compilation. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    72 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ gocha ]
-  * Add RTC display for movie recording, and small modifications. git-
+  * core: - fix single data transfer opcodes in ARM mode (fix UMK); git-
     svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    32 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ luigi__ ]
-  * ARM: fix a bug in the instruction table. Fixes issue #2977277
-    (undefined instruction 0x54F13001). git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ gocha ]
-  * Fix toBCD(), RTC read date should work right again. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add dirty dirty() calls for clearing Lua drawings even when no HUD
-    parts are displayed. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * tweak boot from card flag git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * oops typo git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ gocha ]
-  * Give movies firmware settings as well as bios settings. (For now,
-    it's write only!) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * add soundview toys git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    80 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ gocha ]
-  * Do not memcpy the destination itself git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    81 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * dont checkin debug code git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * spu: fix regression in some sound capture cases and support reverb
-    better git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Wifi: warning, possible awesomeness inside DeSmuME can now connect
+    to the WFC servers. Connections may be unstable though. (hint, MKDS
+    suffers from a timing problem when the race starts) Also it seems
+    safe to use the same fixed MAC. The only packets that contain the
+    MAC address of the DS are DHCP and ARP packets sent at the
+    beginning. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    33 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ riccardom ]
-  * Add missing cast. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Does this FASTCALL definition helps? how much? in the mean time just
-    don't enable it for clang since it breaks arm_instruction.cpp
-    compilation with that. clang finally compiles desmume \o/ git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Remove wx integration demo from gtk frontend It works but since we
-    have the 3d viewer available in the wx frontend it does little sense
-    to keep this here. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    86 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Remember to destroy the 3d dialog If we don't call Destroy() on
-    close event callback i'm not able to quit fully from wx frontend if
-    i've previously launched the 3d viewer. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    87 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Reorder initialization order of some classes to shut up gcc warnings
-    about having them in a different order where defined. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    88 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Make our stub code for not shipping lua a bit less lame. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    89 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Cleanup the code a bit wrt, unused functions and functions that can
-    be declared static. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * No need to include wx/isql.h (!) for a typedef. Brown paper bag for
-    me. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Move initialization stuff not strictly related with the wx frontend
-    in DesmumeFrame::NDSInitialize(). While at it add dummy firmware.
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    92 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Move CPRS flags helpers wheremakes sense to have them static. git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    34 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Avoid segfault without available interfaces On gnu/linux
+    pcap_findalldevs can return 0 but provide a NULL interfaces list.
+    This could be common on !windows because from what i can see normal
+    users can't list devices :|. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    35 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Comment a log message that references old code now gone to make it
+    compile with log level higher than 0. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    36 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Wifi: fix some silly error in SoftAP_RXHandler. I don't know but
+    that might have caused buffer overflows. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    37 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ zeromus ]
-  * and lo, the lies were abated and the untruth receded from the land
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    93 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * core: - fix CP15 register 1 (control register); - fix CP15 register
-    2 (TCM size); - remove CP15 from ARM7; - fix some CPU bugs in THUMB
-    mode (added comments from official reference); - added loops for HLE
-    BIOS exceptions; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    94 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add a crude technique to block connections only to WFC servers.
+    youll have to comment it to get any love. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    38 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * rasterizer: fix an occasional crash during loadstate git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    39 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ normmatt234 ]
-  * fix a couple of thumb opcode regressions. allow ds, ds/dsi hybrid
-    and dsi only nds files to be opened. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    95 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * THUMB: - fix Carry & Negative flags in ADC, SBC opcodes; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    96 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * spu: fix crash in loadstate with sound enabled git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: make layer toggling not so glitchy when switching roms or
-    loading states, and fix a spu related crash when opening a new rom
-    git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@34
-    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * - fix CPSR flags in ADC/SBC :P git-svn-id:
+  * add vs2010 project files. git-svn-id:
     https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Move cli frontend event processing to process_ctrls_event Unify the
-    switch Instead of evaluating sdl events both in ctrlsdl and cli
-    frontend. With this change now ctrlsdl gets in touch with both
-    GPU_osd and fake mic code. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    01 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Update wx frontend per GPU changes. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Correct menu layers widgets to be checked check item. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ luigi__ ]
-  * ARM: Add more missing opcodes to the table (it should be fine now).
-    Also, more clean formatting, each line has got its index shown in
-    binary to help looking for one particular opcode... git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Switch hud related switches to proper widget too. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    05 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ luigi__ ]
-  * Add more TODO, and nuke the useless OP_LDR_M_IMM_OFF_POSTIND2. git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    06 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ yabause ]
-  * Added missing agg flags. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    07 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * - again ADC/SBC :( git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
-    08 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * update to r3508.
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 08 Apr 2010 18:21:48 +0800
-
-desmume-trunk-pgo (svnr3371) karmic; urgency=low
-
-  [ riccardom ]
-  * Convert gtk-glade frontend to gtk config machinery git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    21 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Store config and save*s in user specific config directory Apply
-    patch #2936906 from Jan Steffens to save config, saves and
-    savestates in a common dir instead of having them in the current
-    dir. The config file is moved automagically but you need to move the
-    saves and savestates inside ~/.config/desmume/ by hand. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    22 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add a note about using a common place for config and saves. While at
-    it give credits to OpenAL patch author. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    23 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Iniatilize _spu_advanced othwerise we read uninitialized memory as
-    reported by valgrind. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    24 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * SoftAP_RXHandler may be static. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    25 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * gpu: fix some (all?) sprite priority regressions git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    26 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Oops, write config file in gtk-glade frontend instead of reading it
-    again. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    27 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Revert previous commit, should take a rest indeed. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    28 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Mode desmume_config.* in common dir Move desmume_config.* in src/
-    since we are now using it in three frontends. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    29 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Handle the B button again, fix bug #2942776. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    30 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ gocha ]
-  * add lua51.dll and lib git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    31 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * core: don't execute builtin SWI when intvec is relocated to an
-    abnormal location git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    32 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * forgot to checkin a file. also, add some little gpu speedups git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    33 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: use faster zlib with asm optimizations git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    34 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ mtabachenko ]
-  * core: - add support for patched firmwares; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    35 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ riccardom ]
-  * Fix indentation. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    36 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Cflash image file is handled by common code, remove unused
-    variables. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    37 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Convert cli frontend to common command line handling. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    38 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Whitespace cleanup. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    39 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * SDL_GL_DOUBLEBUFFER is not a valid SDL_SetVideoMode flag. git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    40 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * gpu: fix broken bg regression git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
     41 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ riccardom ]
-  * Don't link unconditionally against libosmesa fix cli frontend --
-    opengl-2d when libosmesa is available. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ luigi__ ]
+  * wifi: tiny mistake, shouldn't have broken much git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     42 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Does not need GTK_CFLAGS here. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    43 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ zeromus ]
-  * win32: fix x64 zlib link error git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  * gtk: merge r3543 from release branch to fix dsm recording git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     44 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ riccardom ]
-  * Move disable sound and disable limiter switches to common code. git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ luigi__ ]
+  * Wifi: put in some parsing of DNS requests, and a warning when a DNS
+    request to the WFC servers is detected, rather than just blocking
+    any packet that contains "nintendowifi". The user has to confirm he
+    wants to connect to WFC, otherwise SoftAP will deauthenticate
+    (therefore breaking the connection). Note on the warning, for those
+    who don't read warnings and just hit spacebar: I made the No button
+    selected by default. If someone really wants to just block WFC,
+    atleast we've got a more proper detector now... git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     45 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Remove some missing bits of disable limiter and sound in cli
-    frontend. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    46 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fix allocator / deallocator mismatch, found by cppcheck. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    47 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fix allocation / deallocation mismatch, found by cppcheck. git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    48 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fix a memory leak on error path, spottend by cppcheck. While at it
-    cleanup a static vs const misuse. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    49 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Plug file pointer leak, spotted by cppcheck. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    50 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Use memset to initialize data instead of a loop. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    51 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Avoid to link wxlibs with frontends that does not use them The only
-    frontend that may use wxwidgets library is the gtk one so there is
-    no need to link the others against a tons of wxwidgets libs when
-    calling configure with --enable-wxwidgets. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    52 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Show the view3d stuff and move it under tools. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    53 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * First batch to have wx stuff compiling This is mostyle missing
-    includes, includes with the wrong case and wrong path, also there is
-    that PanicAlert function that is not defined. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    54 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Tentative fix for "conversion from const char *  to const Wstring
-    ambiguos" error, please review. While at it define lstrlen as strlen
-    which is not available on !WIN32. Pretty sure it will not handle
-    unicode chars correctly but we can fix that issue later. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    55 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add a makefile for wx frontend The frontend will not build
-    automatically from top dir, you have to type make inside wx until it
-    starts to compile fine. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    56 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Rename switch and description for wxwidgets. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    57 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * A few more const char * to wxChar * cast. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    58 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Correctly use _T() to convert const char * to wxString instead of a
-    simple cast. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    59 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * More string fixup. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    60 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add missing files to wx build. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    61 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Fixup includes and add missing pieces needed for linkage. git-svn-
-    id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    62 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Rename binary to wxdesume to avoid name clash with gtk frontend. Add
-    icon and desktop file. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    63 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Oops, missed icon and desktop file. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    64 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Now that it build we can add the wx frontend, beware it will hurt
-    your kittens if you try to run it. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    65 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ wntrmute ]
-  * use __APPLE__ for OSX specifics git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ riccardom ]
+  * Update code for RXHWWriteCursor -> RXWriteCursor rename. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    46 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add hack to have an understandable device name on !WINDOWS (at least
+    linux :) and print the selected device name on log level 2. git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    47 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add missing parens, spotted by gcc. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    48 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Use different stubs for wifi on !WINDOWS, mostly is using plain
+    pcap. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    49 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Wifi: fix potential endian issues on bigendian in the DNS parsing
+    code. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    50 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Set infrastructure as default wifi mode. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    51 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Warn if --enable-wifi is set but libpcap is not available. git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    52 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Memview: prevent modification of wifi registers and RAM. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    53 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * MMU: wifi registers/RAM are only in range 04800000-0480FFFF, not
+    04800000-04FFFFFF. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    54 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * redefine elementary mathematics git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    55 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * RIP, WinPCap libs (using GetProcAddress() since a while now) git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    56 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * win32: clean up winpcap lib references (i.e. remove them) in all
+    vcproj git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    57 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Fix preprocessor check for xbox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    58 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fixup indentation. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    59 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Enjoy OO in driver instead of the same old boring ifdefery. git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    60 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * merge r3561 from release branch git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    62 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * merge r3563 to trunk and unnecessarily touch 1000 files git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    64 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * tweakin tha changelogs git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     66 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * use --enable-wxwidgets for wx build as per help text git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  * B I T git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     67 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix type error on OSX git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+
+  [ riccardom ]
+  * WIFI_WFCWarning is supposed to be false as default. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     68 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * emulate 8bit REG_AUXSPIDATA writes git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+
+  [ luigi__ ]
+  * r3550, again :P git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     69 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * fix about dialog git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  * tiny mistake again. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     70 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ zeromus ]
-  * wx port vcproj git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ normmatt234 ]
+  * update vs2010 project. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
     71 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ Ronmi Ren ]
-  * update to r3371
+  [ adelikat ]
+  * Win32 Drag & Drop - if .dsm file is dropped with no ROM loaded
+    prompt for one. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Mon, 08 Feb 2010 11:16:26 +0800
-
-desmume-trunk-pgo (svnr3320) karmic; urgency=low
+  [ riccardom ]
+  * Make log3D static and put it under the same ifdef which surround its
+    usage. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ zeromus ]
-  * win32: fix default command in pathconfig dialog to be OK instead of
-    Cancel git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  * rasterize: edge mark colors were too dark git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: add shift+ptrscrn to capture 256x384 to clipboard with no
+    extra info git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    76 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * more realistic exception handling git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * piano controller emulation. maybe youll want to use the mouse anyway
+    once you try the game... git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * commit whatever pokefan did to chinese translation git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    80 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * critical bugfix!@! git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    81 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * more chinese gobbledegook git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: save type menu was completely broken. awesome. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - a lot work on fix CPU emulation but not finished yet. Report
+    to bugtracker if it break something. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Fix "suggest parentheses around comparison in operand of ‘&’"
+    warnings. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    86 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * strdup needs string.h. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    87 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add missing include header. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    88 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add missing parens. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    89 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * - fix overflow flag in ADCS/SBCS/RSCS; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * fix obviously broken code in the RTC dayofweek calculation. Is it
+    correct now? Not sure, but i think it fixes animal crossing at least
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ mtabachenko ]
+  * core: - fix SMLABB instruction; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    97 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * core: - fix bug in Geometry Engine when in packed commands latest
+    command is undefined (bug #2973143); git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * core: - a bit fixes on THUMB opcodes; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@35
+    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * add libelf and libdwarf for potential fun times. none of the elf
+    examples were working for me so i didnt even get a chance to test
+    dwarf, but i dont think the problem is with the libs git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix gdb stub in trunk, make wifi warning more severe, fix some
+    occasional link errors, and some other cleanup git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ normmatt234 ]
+  * Add support for loading .srl files Fix a few bugs in spi handling.
+    Update vs2010 project file. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Fix compilation using the right variable name. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fix click and drag, patch #2998460 from noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     05 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * wifi: fix bugs in winpcap init; gdb: don't emulate hardware while
-    stalled git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+
+  [ mtabachenko ]
+  * - fix typo in MC READSTATUS register; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     06 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ riccardom ]
-  * Init glib threads We actually does not use them but there's a plan
-    to do so. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  * Remove write only variable old_val. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     07 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Make desmume_config.* frontend agnostic Remvoe references to gdk and
-    gtk frontend specific configurations. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  * Remove redundant declaration of void armcpu_exception(armcpu_t*,
+    u32) we already have in armcpu.h. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     08 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Read configuration from ini file Use gtk frontend desmume_config.*
-    machinery to read the ini file. This should fixup joystick not
-    working correctly as reported in #2897620. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    09 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Remove path for local includes We have src/ in our path so no need
-    all these ../ git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    10 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Whitespace fixup. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    11 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * win32: fix occasional race condition crash in subsequent rom loads
+  * Apply patch #2998037 from noodlebox: 1) Larger dead zone for analog
+    controls.  Also fixed possible  issue where negative side of dead
+    zone might not be applied.  (right bitwise shift applied to negative
+    integers, implementation seems to vary) 2) Analog controls can now
+    be assigned to buttons, and  non-analog controls can now be assigned
+    to the directional controls. 3) Differentiates between positive and
+    negative movement  for analog controls. 4) In the GTK and Glade
+    ports, directional buttons can now  be set independently of their
+    "twins". 5) Hat/POV/D-Pad controls are usable now. 6) Differentiates
+    between multiple controllers. 7) Slightly modified method of storing
+    joypad key codes, in  a way similar to VBA-M's method of configging
+    controls, though  I kept the codes as u16's.  The way it's arranged
+    now will allow  for up to 16 unique joypads, and up to 128 axes, 64
+    POV hats,  and 256 Buttons per joypad, which should probably be
+    enough.  The method of determining a key code is explained in
+    ctrlssdl.cpp.  Basically, it starts with 0x1000 * joypad_index.  For
+    buttons, add 0x200 + button_index.  For hats, add 0x100 + 4 *
+    hat_index + (0, 1, 2, or 3 for R, L, U, D).  For axes, add 2 *
+    axis_index + (0 or 1 for negative or positive).  Maybe there's a way
+    to get the config file to save these values in  a hexadecimal
+    representation for easier editing, but I didn't really  mess with
+    the configs. So, the reason I decided to try this was that I was
+    having some issues with my wired XBox 360 controller in the Linux
+    GTK, Glade, and CLI ports (The controller works fine otherwise). It
+    seemed to be very sensitive, so it was impossible to "zero" the
+    axes, which leads to constantly scrolling through menus, etc.  The
+    slightest touch would trigger the input.  Also wanted to be able to
+    use the D-Pad and Analog triggers for something useful. The
+    distinction between multiple "joypads" should also help anyone with
+    any other odd input devices being recognized, like accelerometers.
+    [rm: removed clear_events() from ctrlsdl.cpp since it is unused ]
     git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    09 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Cleanup REG_IME cases in MMU.cpp to have a correct coding style and
+    a bit more compact code. No functional changes, compiled object is
+    the same. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    10 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Cleanup the code a bit, make some loops more natural and merge two
+    duplicate functions. Again the compiler does not care about the
+    changes :) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    11 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Convert rotation menu to a GtkRadioActionEntry And one atoi less in
+    the wild :) Code change extracted from patch #2998869 by noodlebox.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     12 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: fix background pause menuitem git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    13 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ riccardom ]
-  * Cleanup ALSA mic initialization ALSA microphone code still suck but
-    now a little bit less. Cleanup the initialization: - use default
-    device - don't force a buffer size and a period which some drivers
-    can't support, instead query the driver for them The next step would
-    be to add use interrupt driven capturing on a separathe thread but
-    ALSA is a bitch... git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ nitsuja ]
+  * rasterize: hack to avoid obvious regression of edge mark quality
+    compared to in 0.9.5 (the transparency was not there to compensate
+    for the colors being too dark). should revisit this when working out
+    how antialiasing really works on the ds. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    13 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * typofix git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     14 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ zeromus ]
-  * gpu: fix sprite rendering order to be front to back git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ riccardom ]
+  * More housekeeping in sdl controller stuff, remove stuff that is not
+    used and make static if it is only used in ctrlssdl.cpp. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     15 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ riccardom ]
-  * Implement set_get_joy_key(), set_get_joy_axis() as wrapper around a
-    get only version of the same. These will be used in the gtk frontend
-    where we want to have the luxury of discarding changes. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+  [ mtabachenko ]
+  * GBA slot: - fix detect savetype; git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     16 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add joystick configuration gui for the gtk frontend There's no
-    reason why we can't have one too :) git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    17 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * gtk / cli frontends update. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    18 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Use DoQuit() when exiting. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
+
+  [ riccardom ]
+  * Merge r3618 from 0.9.6 release branch Remove wxdlg from DIST_SUBDIRS
+    to unbreak dist-gzip. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     19 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Add an entry about the OpenAL microphone support git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    20 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * update to r3320
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Sun, 31 Jan 2010 07:13:36 +0800
-
-desmume-trunk-pgo (svnr3304) karmic; urgency=low
-
-  [ mtabachenko ]
-  * core: - some fixes in PU and cleanup MMU; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    98 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * spu: overhaul register emulation; fixes a bunch of maxmod bugs git-
+  * Make sdl mandatory, build fails anyway as found by Guillame. git-
     svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    99 5577840e-afb3-4e59-9ef3-2b7f898b1952
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    21 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add Horizontal orientation to gtk frontend Code extracted and
+    cleaned up from patch #2998869 by noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    22 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Add option to swap screens to gtk frontend Code taken from patch
+    #2998869 by noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    23 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Don't crash taking a screenshot on non default rotation /
+    orientation Patch from #2998869 by noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    24 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * On glib > 2.14 save screenshots on XDG specified dir for pictures.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    26 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * gtk frontend: Ignore initial mouse clicks from outside the
+    touchscreen, but allow dragging outside of it once touch is started.
+    Patch from #2998869 by noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    27 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fix make distcheck Add wx to DIST_SUBDIRS as suggested by Guillaume.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    28 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * make distcheck does not like file supposed to be translated which
+    are not. So for now add wx frontend related strings to the skip
+    list. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    29 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * List enhancements from needlebox's patches. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    31 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * gtk frontend: nds_screen.size_ratio is not needed anymore. git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    32 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Make some global variable with a common name static to avoid
+    clashes. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    33 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ luigi__ ]
-  * Wifi: some cleanup/code refactoring. Nothing exciting. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    00 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ zeromus ]
-  * spu: proof of concept of sound capture. works in starfy and maxmod;
-    not yet in nsmb. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    01 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * spu: fix new bug in some sequenced music git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    02 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * core: change uninitialized save data to be 0xFF like it is supposed
-    to be git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    03 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * add capture registers to soundview; emulate remainder of spu mixing
-    functionality; add "advanced spu" sound configuration and --spu-
-    advanced=1 to unlock new features, since they are running a little
-    slow right now. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@33
-    04 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * update to r3304
-  * change git-buildpackage config
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 26 Jan 2010 05:28:07 +0800
-
-desmume-trunk-pgo (svnr3297) karmic; urgency=low
-
-  [ mtabachenko ]
-  * core: - add PU for ARM7 BIOS region (fixed #2598209, #2596062); git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    97 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * update to r3297
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 22 Jan 2010 07:06:56 +0800
-
-desmume-trunk-pgo (svnr3296-0ronmi1) karmic; urgency=low
-
-  [ zeromus ]
-  * fix some valground bugs git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * sdlports: fix bizarre occasional touchpad failure git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ luigi__ ]
-  * Wifi: rewrite SoftAP's packet receiver so that it can now receive up
-    to 64 packets per millisecond. Use nonblocking mode (speedup).
-    Connections to the internet are still wonky. Are packets still being
-    missed? Dunno. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    92 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Wifi: put PCap functions in the platform driver. Load WinPCap
-    symbols through GetProcAddress(), remove linking against WinPCap,
-    more graceful failing at GUI side when PCap is missing. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    93 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Oops. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    94 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Wifi: a few optimizations. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    95 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Luigi__ is stupid stupid stupid stupid stupid stupid pcap_open
-    without the promiscuous flag!!! git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    96 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * Update to r3296
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 21 Jan 2010 22:05:19 +0800
-
-desmume-trunk-pgo (svnr3285-0ronmi1) karmic; urgency=low
-
-  [ luigi__ ]
-  * Wifi: fix a bug due to the new POWCNT1/2 implementation. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * Wifi: some bugxifing. After that I've been able to use ClIRC (IRC
-    client for DS) and chat on #dolphin-emu! But I couldn't connect to
-    freenode.net for some reason. Also, I readded the WFC profile for
-    SoftAP, which would be needed by some homebrew. But I made the
-    connection ID field empty. Anyway WFC doesn't work, remember. git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * update to r3285
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 19 Jan 2010 07:51:48 +0800
-
-desmume-trunk-pgo (svnr3283-0ronmi1) karmic; urgency=low
+  * Add in default ARM7 binary from libnds, under both raw and ELF
+    format. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    35 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Fix WinPCap loading. No idea why zeromus made it load pcap_send()
+    instead of pcap_sendpacket(), but now it supports both, and if
+    pcap_send() can't be found, pcap_sendpacket() is loaded instead.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    36 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * screw default arm7 binary. The whole part about loading ELFs will be
+    done differently. This is unneeded. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    37 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ riccardom ]
-  * Fix OpenAL on Mac OS X (hopefully) Unfortunately we are not able to
-    check if OpenAL is available or not on mac os x so add it as
-    requirement. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * make compiler flags customizable
-  * chage make script from bash script to makefile
-
-  [ luigi__ ]
-  * Add an option to patch the DelayLoop SWI when loading BIOS images
-    (speed hack). Will work ONLY with Nintendo BIOS dumps! (the
-    addresses that are overwritten are hardcoded). git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * ARM: fix execution time for MUL/MLA opcodes. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * update to r3283
-
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 15 Jan 2010 07:24:12 +0800
-
-desmume-trunk-pgo (svnr3278-0ronmi1) karmic; urgency=low
+  * Window size bugfix from noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    38 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ zeromus ]
-  * core: properly emulate POWCNT1 and POWCNT2 (fix picross bootup) git-
-    svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * remove poopy hack git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    39 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ riccardom ]
-  * Cleanup the openal microphone code a bit. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Apply single screen patch from #2998869 by noodlebox. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    40 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Uh, it looks to me that we should unref the gdk pixbuf
+    unconditionally. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    41 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Cleanup ExposeDrawingArea a bit. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    42 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ Ronmi Ren ]
-  * update to r3278
+  [ zeromus ]
+  * maintenance on gdb stub (should work again); don't crash when
+    receiving invalid parameters for swi 0x1A-0x1C (and add a crude test
+    case for that) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    43 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * auto-select #DEVELOPER if #GDB_STUB git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    44 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 14 Jan 2010 11:14:56 +0800
+  [ gocha ]
+  * RAM Search: fix reset to update previous values RAM Search: redraw
+    the list when search size/format is changed. Probably those are
+    common bugs of the Gens-style RAM search dialog. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    46 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-desmume-trunk-pgo (svnr3276-0ronmi1) karmic; urgency=low
+  [ zeromus ]
+  * fix r3643 regression which broke arm7 on certain bios configurations
+    due to bug in the bios protection check git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    47 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix vs2010 x64 compilation git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    48 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * upgrade subwcrev.exe to a newer one which doesnt trip clamav git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    49 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix care of magical creatures (relies on invalid vram mapping
+    behaviour); maybe break other things? git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    50 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * oops debug prints git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    51 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ mtabachenko ]
-  * winport: - fix VS2008 x64 builds; git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+  [ yabause ]
+  * Applied patch by Guillaume Bedot to include missing files in
+    distribution. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    52 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ normmatt234 ]
+  * add vs2010 filters file git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    53 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ luigi__ ]
+  * Remove zeromus' stupid sabotaging. Completely block WFC. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    54 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * some cleanup of banner info handling, so bitbox 4k demo loads again
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    55 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * more cleanup of 0x08xxxxxx and 0x09xxxxxx along those same lines
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    56 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add version field to nds_header git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    57 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * gtk: don't segfault with not available files in recent list Instead
+    of segfault display an annoying window and remove it from the list.
+    Reported by tvtoon. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    58 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * fix use of uninitialized memory in compactflash leading to
+    unpredictable failures git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    59 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * convert heart of geometry engine to fixed point. some things will be
+    broken but it is hopefully only one cause which we'll fix when we
+    find it. but then again, maybe i broke everything. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    60 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * configured_features is a class and not a struct. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    61 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * what dont you guys like debug prints? git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    62 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * gpu: fix blinking cursor in estpolis. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    63 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Remove leftover, palette is already cleared some lines before. git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    64 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * random perk - auto-dldi patch git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    65 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * correctly emulate GX FIFO DMA of 0 words (why would anybody do
+    that?) by properly freaking out git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    66 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add --gbaslot-rom=self special value which mounts the current nds
+    rom as a gba game, and fix the win32 cflash configuration dialog
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    67 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Use strcasecmp instead of stricmp. On MSC_VER it's the same, see
+    types.h. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     68 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ zeromus ]
-  * gfx3d: fix a bug in vectest? git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * add a note about how to execute ideas printf git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
-  * win32: apply patch [2925555] to stop emu from crashing when no sound
-    device is available git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
-    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
-
-  [ Ronmi Ren ]
-  * add a make script; change flags
-  * change arch set
+  * try to handle slot1 motion pack commands without confusing it with
+    save memory access. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    69 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: lets try this to fix path configuration git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    70 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * dont crash when empty path configurations are specified git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    71 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
   [ riccardom ]
-  * Whitespace cleanup. git-svn-id:
-    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@32
+  * Fix compilation on !_WINDOWS. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    72 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * win32: mapview: fix crash bug which should have rendered it useless,
+    but was mysteriously not for anyone until just now for me git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    73 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: tileview: fix palette index display git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    74 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ riccardom ]
+  * Don't try to build OGLRender.cpp without GL headers, warn about it
+    instead. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    75 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ normmatt234 ]
+  * Fix a few FIFO bugs. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
     76 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  [ Ronmi Ren ]
-  * update to r3276
+  [ riccardom ]
+  * Remove comment that may suggest to use wxConfig instead of
+    wxFileConfig since on windows it would mean using wxRegConfig and we
+    don't want that. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    77 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Tue, 12 Jan 2010 09:16:37 +0800
+  [ luigi__ ]
+  * WX: little fix. Windows building still broken, working on it. (also
+    we should quit using stuff from other softwares because it can cause
+    problems like this little one) git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    78 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * WX: smash certain compilation errors. The remaining ones are because
+    the wxConfig stuff aren't in the WX .lib's for some reason. zeromus
+    gotta rebuild those properly and everything should work :) git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    79 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-desmume-trunk-pgo (svnr3267-0ronmi2) karmic; urgency=low
+  [ zeromus ]
+  * fix some stuff in wx windows, and add wxConfig to the wx lib git-
+    svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    80 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  Change compiling flags.
+  [ luigi__ ]
+  * WX: - put the WX libraries into the project settings. (I had to do
+    it with Notepad++ to be compatible with x64. Hoping I didn't fuck up
+    anything but everything should be ok). Start getting rid of those
+    #pragma comment's. - first attempt at implementing touchscreen.
+    Doesn't work, probably due to crossplatformness issues. >_< git-svn-
+    id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    81 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 08 Jan 2010 12:20:43 +0800
-desmume-trunk-pgo (svnr3267-0ronmi1) karmic; urgency=low
+  [ riccardom ]
+  * wx: Don't crash when loading from recent files a file which is gone.
+    git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    82 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  * r3267: Updated Traditional Chinese translation from Ronmi Ren
-           (riccardom) #2922635.
+  [ zeromus ]
+  * rasterizer: remove toon table caching. i thought of conditions where
+    it could fail and not recover. left it for ogl though since updating
+    toon table costs a texture update. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    83 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Fri, 08 Jan 2010 07:36:51 +0800
-desmume-trunk-pgo (svnr3266-0ronmi1) karmic; urgency=low
+  [ mtabachenko ]
+  * - add experimental control of bus (fix games with "--FIFO FULL--"
+    message) - a HACK!!! git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    84 5577840e-afb3-4e59-9ef3-2b7f898b1952
 
-  * First release. Detailed upstream changelog is placed in ChangeLog.SVN
- -- Ronmi Ren <ronmi@rmi.twbbs.org>  Thu, 07 Jan 2010 10:39:42 +0800
+  [ zeromus ]
+  * rasterize: simplify handling of non-textured polys: it seems that
+    everything is logical if the sampler returns opaque white and
+    everything else proceeds as normal. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    85 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * fix emulator memory corruption when a ridiculously large texture is
+    bound, such as one that might be defined by 0xFFFFFFFF git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    86 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * win32: fix huge executable size. now maybe certain people will pay
+    attention to less useless things git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    87 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ normmatt234 ]
+  * Fix the overflow flag on thumb SUB opcodes (this could also affect
+    other opcodes). git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    88 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ zeromus ]
+  * win32: show editbox in path config directory browser, so that it is
+    not evil anymore git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    89 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ normmatt234 ]
+  * Lets make SUB use the common OverflowFromSUB function. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    90 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * add armwrestler. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    91 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * opps wrong folder. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    92 5577840e-afb3-4e59-9ef3-2b7f898b1952
+  * Remove useless folders. git-svn-id:
+    https://desmume.svn.sourceforge.net/svnroot/desmume/trunk/desmume@36
+    93 5577840e-afb3-4e59-9ef3-2b7f898b1952
+
+  [ ronmi ren ]
+  * Change to new version number format. See ChangeLog.SVN for old
+    changelogs.
+
+ -- ronmi ren <ronmi@ronmi-nb>  Thu, 01 Jul 2010 14:39:35 +0800
+  

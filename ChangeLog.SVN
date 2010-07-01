@@ -1,4 +1,870 @@
 ------------------------------------------------------------------------
+r3693 | normmatt234 | 2010-07-01 12:35:47 +0800 (四, 01  7月 2010) | 2 lines
+
+Remove useless folders.
+
+------------------------------------------------------------------------
+r3692 | normmatt234 | 2010-07-01 12:34:41 +0800 (四, 01  7月 2010) | 2 lines
+
+opps wrong folder.
+
+------------------------------------------------------------------------
+r3691 | normmatt234 | 2010-07-01 12:29:46 +0800 (四, 01  7月 2010) | 2 lines
+
+add armwrestler.
+
+------------------------------------------------------------------------
+r3690 | normmatt234 | 2010-07-01 12:25:19 +0800 (四, 01  7月 2010) | 2 lines
+
+Lets make SUB use the common OverflowFromSUB function.
+
+------------------------------------------------------------------------
+r3689 | zeromus | 2010-07-01 05:39:07 +0800 (四, 01  7月 2010) | 2 lines
+
+win32: show editbox in path config directory browser, so that it is not evil anymore
+
+------------------------------------------------------------------------
+r3688 | normmatt234 | 2010-06-30 18:51:14 +0800 (三, 30  6月 2010) | 2 lines
+
+Fix the overflow flag on thumb SUB opcodes (this could also affect other opcodes).
+
+------------------------------------------------------------------------
+r3687 | zeromus | 2010-06-30 05:47:30 +0800 (三, 30  6月 2010) | 2 lines
+
+win32: fix huge executable size. now maybe certain people will pay attention to less useless things
+
+------------------------------------------------------------------------
+r3686 | zeromus | 2010-06-29 08:10:54 +0800 (二, 29  6月 2010) | 2 lines
+
+fix emulator memory corruption when a ridiculously large texture is bound, such as one that might be defined by 0xFFFFFFFF
+
+------------------------------------------------------------------------
+r3685 | zeromus | 2010-06-28 15:24:20 +0800 (一, 28  6月 2010) | 2 lines
+
+rasterize: simplify handling of non-textured polys: it seems that everything is logical if the sampler returns opaque white and everything else proceeds as normal.
+
+------------------------------------------------------------------------
+r3684 | mtabachenko | 2010-06-27 01:56:25 +0800 (日, 27  6月 2010) | 2 lines
+
+- add experimental control of bus (fix games with "--FIFO FULL--" message) - a HACK!!!
+
+------------------------------------------------------------------------
+r3683 | zeromus | 2010-06-26 15:01:51 +0800 (六, 26  6月 2010) | 2 lines
+
+rasterizer: remove toon table caching. i thought of conditions where it could fail and not recover. left it for ogl though since updating toon table costs a texture update.
+
+------------------------------------------------------------------------
+r3682 | riccardom | 2010-06-24 17:36:04 +0800 (四, 24  6月 2010) | 3 lines
+
+wx: Don't crash when loading from recent files a file
+which is gone.
+
+------------------------------------------------------------------------
+r3681 | luigi__ | 2010-06-24 06:11:53 +0800 (四, 24  6月 2010) | 4 lines
+
+WX:
+- put the WX libraries into the project settings. (I had to do it with Notepad++ to be compatible with x64. Hoping I didn't fuck up anything but everything should be ok). Start getting rid of those #pragma comment's.
+- first attempt at implementing touchscreen. Doesn't work, probably due to crossplatformness issues. >_<
+
+------------------------------------------------------------------------
+r3680 | zeromus | 2010-06-24 02:00:18 +0800 (四, 24  6月 2010) | 2 lines
+
+fix some stuff in wx windows, and add wxConfig to the wx lib
+
+------------------------------------------------------------------------
+r3679 | luigi__ | 2010-06-24 00:59:52 +0800 (四, 24  6月 2010) | 2 lines
+
+WX: smash certain compilation errors. The remaining ones are because the wxConfig stuff aren't in the WX .lib's for some reason. zeromus gotta rebuild those properly and everything should work :)
+
+------------------------------------------------------------------------
+r3678 | luigi__ | 2010-06-23 23:58:34 +0800 (三, 23  6月 2010) | 4 lines
+
+WX: little fix. Windows building still broken, working on it.
+
+(also we should quit using stuff from other softwares because it can cause problems like this little one)
+
+------------------------------------------------------------------------
+r3677 | riccardom | 2010-06-23 23:50:21 +0800 (三, 23  6月 2010) | 4 lines
+
+Remove comment that may suggest to use wxConfig instead
+of wxFileConfig since on windows it would mean using
+wxRegConfig and we don't want that.
+
+------------------------------------------------------------------------
+r3676 | normmatt234 | 2010-06-23 22:09:35 +0800 (三, 23  6月 2010) | 2 lines
+
+Fix a few FIFO bugs.
+
+------------------------------------------------------------------------
+r3675 | riccardom | 2010-06-23 05:59:29 +0800 (三, 23  6月 2010) | 3 lines
+
+Don't try to build OGLRender.cpp without GL headers, warn
+about it instead.
+
+------------------------------------------------------------------------
+r3674 | zeromus | 2010-06-22 11:15:36 +0800 (二, 22  6月 2010) | 2 lines
+
+win32: tileview: fix palette index display
+
+------------------------------------------------------------------------
+r3673 | zeromus | 2010-06-22 10:59:33 +0800 (二, 22  6月 2010) | 2 lines
+
+win32: mapview: fix crash bug which should have rendered it useless, but was mysteriously not for anyone until just now for me
+
+------------------------------------------------------------------------
+r3672 | riccardom | 2010-06-21 20:24:45 +0800 (一, 21  6月 2010) | 2 lines
+
+Fix compilation on !_WINDOWS.
+
+------------------------------------------------------------------------
+r3671 | zeromus | 2010-06-21 14:17:40 +0800 (一, 21  6月 2010) | 2 lines
+
+dont crash when empty path configurations are specified
+
+------------------------------------------------------------------------
+r3670 | zeromus | 2010-06-21 05:12:06 +0800 (一, 21  6月 2010) | 2 lines
+
+win32: lets try this to fix path configuration
+
+------------------------------------------------------------------------
+r3669 | zeromus | 2010-06-20 17:42:16 +0800 (日, 20  6月 2010) | 2 lines
+
+try to handle slot1 motion pack commands without confusing it with save memory access.
+
+------------------------------------------------------------------------
+r3668 | riccardom | 2010-06-17 23:55:59 +0800 (四, 17  6月 2010) | 3 lines
+
+Use strcasecmp instead of stricmp. On MSC_VER it's the
+same, see types.h.
+
+------------------------------------------------------------------------
+r3667 | zeromus | 2010-06-17 13:24:35 +0800 (四, 17  6月 2010) | 2 lines
+
+add --gbaslot-rom=self special value which mounts the current nds rom as a gba game, and fix the win32 cflash configuration dialog
+
+------------------------------------------------------------------------
+r3666 | zeromus | 2010-06-17 04:48:26 +0800 (四, 17  6月 2010) | 2 lines
+
+correctly emulate GX FIFO DMA of 0 words (why would anybody do that?) by properly freaking out
+
+------------------------------------------------------------------------
+r3665 | zeromus | 2010-06-15 11:16:17 +0800 (二, 15  6月 2010) | 2 lines
+
+random perk - auto-dldi patch
+
+------------------------------------------------------------------------
+r3664 | riccardom | 2010-06-14 19:31:52 +0800 (一, 14  6月 2010) | 2 lines
+
+Remove leftover, palette is already cleared some lines before.
+
+------------------------------------------------------------------------
+r3663 | zeromus | 2010-06-14 08:54:14 +0800 (一, 14  6月 2010) | 2 lines
+
+gpu: fix blinking cursor in estpolis.
+
+------------------------------------------------------------------------
+r3662 | zeromus | 2010-06-14 07:11:33 +0800 (一, 14  6月 2010) | 2 lines
+
+what dont you guys like debug prints?
+
+------------------------------------------------------------------------
+r3661 | riccardom | 2010-06-13 23:08:57 +0800 (日, 13  6月 2010) | 2 lines
+
+configured_features is a class and not a struct.
+
+------------------------------------------------------------------------
+r3660 | zeromus | 2010-06-13 11:20:14 +0800 (日, 13  6月 2010) | 2 lines
+
+convert heart of geometry engine to fixed point. some things will be broken but it is hopefully only one cause which we'll fix when we find it. but then again, maybe i broke everything.
+
+------------------------------------------------------------------------
+r3659 | zeromus | 2010-06-13 11:16:11 +0800 (日, 13  6月 2010) | 2 lines
+
+fix use of uninitialized memory in compactflash leading to unpredictable failures
+
+------------------------------------------------------------------------
+r3658 | riccardom | 2010-06-02 20:31:09 +0800 (三, 02  6月 2010) | 6 lines
+
+gtk: don't segfault with not available files in recent list
+
+Instead of segfault display an annoying window and remove it
+from the list.
+Reported by tvtoon.
+
+------------------------------------------------------------------------
+r3657 | zeromus | 2010-06-02 11:34:26 +0800 (三, 02  6月 2010) | 2 lines
+
+add version field to nds_header
+
+------------------------------------------------------------------------
+r3656 | zeromus | 2010-06-02 07:02:35 +0800 (三, 02  6月 2010) | 2 lines
+
+more cleanup of 0x08xxxxxx and 0x09xxxxxx along those same lines
+
+------------------------------------------------------------------------
+r3655 | zeromus | 2010-06-02 06:39:59 +0800 (三, 02  6月 2010) | 2 lines
+
+some cleanup of banner info handling, so bitbox 4k demo loads again
+
+------------------------------------------------------------------------
+r3654 | luigi__ | 2010-05-30 18:39:51 +0800 (日, 30  5月 2010) | 2 lines
+
+Remove zeromus' stupid sabotaging. Completely block WFC.
+
+------------------------------------------------------------------------
+r3653 | normmatt234 | 2010-05-27 10:14:37 +0800 (四, 27  5月 2010) | 2 lines
+
+add vs2010 filters file
+
+------------------------------------------------------------------------
+r3652 | yabause | 2010-05-26 03:22:12 +0800 (三, 26  5月 2010) | 3 lines
+
+Applied patch by Guillaume Bedot to include missing files
+in distribution.
+
+------------------------------------------------------------------------
+r3651 | zeromus | 2010-05-24 22:58:48 +0800 (一, 24  5月 2010) | 2 lines
+
+oops debug prints
+
+------------------------------------------------------------------------
+r3650 | zeromus | 2010-05-24 11:07:23 +0800 (一, 24  5月 2010) | 2 lines
+
+fix care of magical creatures (relies on invalid vram mapping behaviour); maybe break other things?
+
+------------------------------------------------------------------------
+r3649 | zeromus | 2010-05-19 10:23:22 +0800 (三, 19  5月 2010) | 2 lines
+
+upgrade subwcrev.exe to a newer one which doesnt trip clamav
+
+------------------------------------------------------------------------
+r3648 | zeromus | 2010-05-18 12:46:06 +0800 (二, 18  5月 2010) | 2 lines
+
+fix vs2010 x64 compilation
+
+------------------------------------------------------------------------
+r3647 | zeromus | 2010-05-18 03:22:34 +0800 (二, 18  5月 2010) | 2 lines
+
+fix r3643 regression which broke arm7 on certain bios configurations due to bug in the bios protection check
+
+------------------------------------------------------------------------
+r3646 | gocha | 2010-05-16 16:40:45 +0800 (日, 16  5月 2010) | 4 lines
+
+RAM Search: fix reset to update previous values
+RAM Search: redraw the list when search size/format is changed.
+Probably those are common bugs of the Gens-style RAM search dialog.
+
+------------------------------------------------------------------------
+r3644 | zeromus | 2010-05-16 12:04:31 +0800 (日, 16  5月 2010) | 2 lines
+
+auto-select #DEVELOPER if #GDB_STUB
+
+------------------------------------------------------------------------
+r3643 | zeromus | 2010-05-16 07:23:10 +0800 (日, 16  5月 2010) | 2 lines
+
+maintenance on gdb stub (should work again); don't crash when receiving invalid parameters for swi 0x1A-0x1C (and add a crude test case for that)
+
+------------------------------------------------------------------------
+r3642 | riccardom | 2010-05-16 00:02:56 +0800 (日, 16  5月 2010) | 2 lines
+
+Cleanup ExposeDrawingArea a bit.
+
+------------------------------------------------------------------------
+r3641 | riccardom | 2010-05-15 23:59:16 +0800 (六, 15  5月 2010) | 3 lines
+
+Uh, it looks to me that we should unref the gdk pixbuf
+unconditionally.
+
+------------------------------------------------------------------------
+r3640 | riccardom | 2010-05-15 23:22:40 +0800 (六, 15  5月 2010) | 2 lines
+
+Apply single screen patch from #2998869 by noodlebox.
+
+------------------------------------------------------------------------
+r3639 | zeromus | 2010-05-15 22:32:26 +0800 (六, 15  5月 2010) | 2 lines
+
+remove poopy hack
+
+------------------------------------------------------------------------
+r3638 | riccardom | 2010-05-14 16:28:28 +0800 (五, 14  5月 2010) | 2 lines
+
+Window size bugfix from noodlebox.
+
+------------------------------------------------------------------------
+r3637 | luigi__ | 2010-05-14 00:41:38 +0800 (五, 14  5月 2010) | 2 lines
+
+screw default arm7 binary. The whole part about loading ELFs will be done differently. This is unneeded.
+
+------------------------------------------------------------------------
+r3636 | luigi__ | 2010-05-14 00:12:12 +0800 (五, 14  5月 2010) | 2 lines
+
+Fix WinPCap loading. No idea why zeromus made it load pcap_send() instead of pcap_sendpacket(), but now it supports both, and if pcap_send() can't be found, pcap_sendpacket() is loaded instead.
+
+------------------------------------------------------------------------
+r3635 | luigi__ | 2010-05-13 22:54:34 +0800 (四, 13  5月 2010) | 2 lines
+
+Add in default ARM7 binary from libnds, under both raw and ELF format.
+
+------------------------------------------------------------------------
+r3633 | riccardom | 2010-05-13 21:43:24 +0800 (四, 13  5月 2010) | 3 lines
+
+Make some global variable with a common name static to
+avoid clashes.
+
+------------------------------------------------------------------------
+r3632 | riccardom | 2010-05-13 19:52:56 +0800 (四, 13  5月 2010) | 2 lines
+
+gtk frontend: nds_screen.size_ratio is not needed anymore.
+
+------------------------------------------------------------------------
+r3631 | riccardom | 2010-05-13 03:11:46 +0800 (四, 13  5月 2010) | 2 lines
+
+List enhancements from needlebox's patches.
+
+------------------------------------------------------------------------
+r3629 | riccardom | 2010-05-13 00:33:58 +0800 (四, 13  5月 2010) | 4 lines
+
+make distcheck does not like file supposed to be
+translated which are not. So for now add wx frontend
+related strings to the skip list.
+
+------------------------------------------------------------------------
+r3628 | riccardom | 2010-05-13 00:24:03 +0800 (四, 13  5月 2010) | 4 lines
+
+Fix make distcheck
+
+Add wx to DIST_SUBDIRS as suggested by Guillaume.
+
+------------------------------------------------------------------------
+r3627 | riccardom | 2010-05-13 00:11:10 +0800 (四, 13  5月 2010) | 6 lines
+
+gtk frontend: Ignore initial mouse clicks from outside the
+touchscreen, but allow dragging outside of it once touch
+is started.
+
+Patch from #2998869 by noodlebox.
+
+------------------------------------------------------------------------
+r3626 | riccardom | 2010-05-13 00:02:08 +0800 (四, 13  5月 2010) | 3 lines
+
+On glib > 2.14 save screenshots on XDG specified dir for
+pictures.
+
+------------------------------------------------------------------------
+r3624 | riccardom | 2010-05-12 23:20:11 +0800 (三, 12  5月 2010) | 4 lines
+
+Don't crash taking a screenshot on non default rotation / orientation
+
+Patch from #2998869 by noodlebox.
+
+------------------------------------------------------------------------
+r3623 | riccardom | 2010-05-12 22:55:11 +0800 (三, 12  5月 2010) | 4 lines
+
+Add option to swap screens to gtk frontend
+
+Code taken from patch #2998869 by noodlebox.
+
+------------------------------------------------------------------------
+r3622 | riccardom | 2010-05-12 22:44:44 +0800 (三, 12  5月 2010) | 4 lines
+
+Add Horizontal orientation to gtk frontend
+
+Code extracted and cleaned up from patch #2998869 by noodlebox.
+
+------------------------------------------------------------------------
+r3621 | riccardom | 2010-05-12 22:23:56 +0800 (三, 12  5月 2010) | 2 lines
+
+Make sdl mandatory, build fails anyway as found by Guillame.
+
+------------------------------------------------------------------------
+r3619 | riccardom | 2010-05-12 07:15:59 +0800 (三, 12  5月 2010) | 4 lines
+
+Merge r3618 from 0.9.6 release branch
+
+Remove wxdlg from DIST_SUBDIRS to unbreak dist-gzip.
+
+------------------------------------------------------------------------
+r3616 | mtabachenko | 2010-05-12 00:59:04 +0800 (三, 12  5月 2010) | 3 lines
+
+GBA slot:
+- fix detect savetype;
+
+------------------------------------------------------------------------
+r3615 | riccardom | 2010-05-10 06:35:48 +0800 (一, 10  5月 2010) | 4 lines
+
+More housekeeping in sdl controller stuff, remove stuff
+that is not used and make static if it is only used in
+ctrlssdl.cpp.
+
+------------------------------------------------------------------------
+r3614 | nitsuja | 2010-05-10 03:05:10 +0800 (一, 10  5月 2010) | 2 lines
+
+typofix
+
+------------------------------------------------------------------------
+r3613 | nitsuja | 2010-05-10 02:51:23 +0800 (一, 10  5月 2010) | 2 lines
+
+rasterize: hack to avoid obvious regression of edge mark quality compared to in 0.9.5 (the transparency was not there to compensate for the colors being too dark). should revisit this when working out how antialiasing really works on the ds.
+
+------------------------------------------------------------------------
+r3612 | riccardom | 2010-05-10 00:24:35 +0800 (一, 10  5月 2010) | 6 lines
+
+Convert rotation menu to a GtkRadioActionEntry
+
+And one atoi less in the wild :)
+
+Code change extracted from patch #2998869 by noodlebox.
+
+------------------------------------------------------------------------
+r3611 | riccardom | 2010-05-09 23:42:40 +0800 (日, 09  5月 2010) | 5 lines
+
+Cleanup the code a bit, make some loops more natural and
+merge two duplicate functions.
+
+Again the compiler does not care about the changes :)
+
+------------------------------------------------------------------------
+r3610 | riccardom | 2010-05-09 23:29:52 +0800 (日, 09  5月 2010) | 4 lines
+
+Cleanup REG_IME cases in MMU.cpp to have a correct coding
+style and a bit more compact code. No functional changes,
+compiled object is the same.
+
+------------------------------------------------------------------------
+r3609 | riccardom | 2010-05-09 23:21:17 +0800 (日, 09  5月 2010) | 39 lines
+
+Apply patch #2998037 from noodlebox:
+
+1) Larger dead zone for analog controls.  Also fixed possible
+ issue where negative side of dead zone might not be applied.
+ (right bitwise shift applied to negative integers, implementation seems to vary)
+2) Analog controls can now be assigned to buttons, and
+ non-analog controls can now be assigned to the directional controls.
+3) Differentiates between positive and negative movement
+ for analog controls.
+4) In the GTK and Glade ports, directional buttons can now
+ be set independently of their "twins".
+5) Hat/POV/D-Pad controls are usable now.
+6) Differentiates between multiple controllers.
+7) Slightly modified method of storing joypad key codes, in
+ a way similar to VBA-M's method of configging controls, though
+ I kept the codes as u16's.  The way it's arranged now will allow
+ for up to 16 unique joypads, and up to 128 axes, 64 POV hats,
+ and 256 Buttons per joypad, which should probably be enough.
+ The method of determining a key code is explained in ctrlssdl.cpp.
+ Basically, it starts with 0x1000 * joypad_index.
+ For buttons, add 0x200 + button_index.
+ For hats, add 0x100 + 4 * hat_index + (0, 1, 2, or 3 for R, L, U, D).
+ For axes, add 2 * axis_index + (0 or 1 for negative or positive).
+ Maybe there's a way to get the config file to save these values in
+ a hexadecimal representation for easier editing, but I didn't really
+ mess with the configs.
+
+So, the reason I decided to try this was that I was having some issues
+with my wired XBox 360 controller in the Linux GTK, Glade, and CLI ports
+(The controller works fine otherwise).
+It seemed to be very sensitive, so it was impossible to "zero" the axes,
+which leads to constantly scrolling through menus, etc.  The slightest
+touch would trigger the input.  Also wanted to be able to use the D-Pad
+and Analog triggers for something useful. The distinction between multiple
+"joypads" should also help anyone with any other odd input devices being
+recognized, like accelerometers.
+
+[rm: removed clear_events() from ctrlsdl.cpp since it is unused ]
+
+------------------------------------------------------------------------
+r3608 | riccardom | 2010-05-09 23:10:12 +0800 (日, 09  5月 2010) | 3 lines
+
+Remove redundant declaration of void armcpu_exception(armcpu_t*, u32)
+we already have in armcpu.h.
+
+------------------------------------------------------------------------
+r3607 | riccardom | 2010-05-09 22:50:49 +0800 (日, 09  5月 2010) | 2 lines
+
+Remove write only variable old_val.
+
+------------------------------------------------------------------------
+r3606 | mtabachenko | 2010-05-09 01:26:57 +0800 (日, 09  5月 2010) | 2 lines
+
+- fix typo in MC READSTATUS register;
+
+------------------------------------------------------------------------
+r3605 | riccardom | 2010-05-09 00:35:48 +0800 (日, 09  5月 2010) | 2 lines
+
+Fix click and drag, patch #2998460 from noodlebox.
+
+------------------------------------------------------------------------
+r3604 | riccardom | 2010-05-09 00:27:54 +0800 (日, 09  5月 2010) | 2 lines
+
+Fix compilation using the right variable name.
+
+------------------------------------------------------------------------
+r3603 | normmatt234 | 2010-05-07 17:57:41 +0800 (五, 07  5月 2010) | 4 lines
+
+Add support for loading .srl files
+Fix a few bugs in spi handling.
+Update vs2010 project file.
+
+------------------------------------------------------------------------
+r3602 | zeromus | 2010-05-05 03:44:38 +0800 (三, 05  5月 2010) | 2 lines
+
+fix gdb stub in trunk, make wifi warning more severe, fix some occasional link errors, and some other cleanup
+
+------------------------------------------------------------------------
+r3600 | zeromus | 2010-04-30 04:12:21 +0800 (五, 30  4月 2010) | 2 lines
+
+add libelf and libdwarf for potential fun times. none of the elf examples were working for me so i didnt even get a chance to test dwarf, but i dont think the problem is with the libs
+
+------------------------------------------------------------------------
+r3599 | mtabachenko | 2010-04-27 06:33:08 +0800 (二, 27  4月 2010) | 3 lines
+
+core:
+- a bit fixes on THUMB opcodes;
+
+------------------------------------------------------------------------
+r3598 | mtabachenko | 2010-04-26 01:53:47 +0800 (一, 26  4月 2010) | 3 lines
+
+core:
+- fix bug in Geometry Engine when in packed commands latest command is undefined (bug #2973143);
+
+------------------------------------------------------------------------
+r3597 | mtabachenko | 2010-04-26 00:02:18 +0800 (一, 26  4月 2010) | 3 lines
+
+core:
+- fix SMLABB instruction;
+
+------------------------------------------------------------------------
+r3591 | zeromus | 2010-04-25 04:10:24 +0800 (日, 25  4月 2010) | 2 lines
+
+fix obviously broken code in the RTC dayofweek calculation. Is it correct now? Not sure, but i think it fixes animal crossing at least
+
+------------------------------------------------------------------------
+r3590 | mtabachenko | 2010-04-25 00:47:53 +0800 (日, 25  4月 2010) | 2 lines
+
+- fix overflow flag in ADCS/SBCS/RSCS;
+
+------------------------------------------------------------------------
+r3589 | riccardom | 2010-04-24 23:55:21 +0800 (六, 24  4月 2010) | 2 lines
+
+Add missing parens.
+
+------------------------------------------------------------------------
+r3588 | riccardom | 2010-04-24 23:46:40 +0800 (六, 24  4月 2010) | 2 lines
+
+Add missing include header.
+
+------------------------------------------------------------------------
+r3587 | riccardom | 2010-04-24 22:31:42 +0800 (六, 24  4月 2010) | 2 lines
+
+strdup needs string.h.
+
+------------------------------------------------------------------------
+r3586 | riccardom | 2010-04-24 22:28:16 +0800 (六, 24  4月 2010) | 3 lines
+
+Fix "suggest parentheses around comparison in operand of ‘&’"
+warnings.
+
+------------------------------------------------------------------------
+r3585 | mtabachenko | 2010-04-24 21:37:29 +0800 (六, 24  4月 2010) | 3 lines
+
+core:
+- a lot work on fix CPU emulation but not finished yet. Report to bugtracker if it break something.
+
+------------------------------------------------------------------------
+r3583 | zeromus | 2010-04-24 15:24:18 +0800 (六, 24  4月 2010) | 2 lines
+
+win32: save type menu was completely broken. awesome.
+
+------------------------------------------------------------------------
+r3582 | zeromus | 2010-04-24 15:23:37 +0800 (六, 24  4月 2010) | 2 lines
+
+more chinese gobbledegook
+
+------------------------------------------------------------------------
+r3581 | zeromus | 2010-04-24 14:23:06 +0800 (六, 24  4月 2010) | 2 lines
+
+critical bugfix!@!
+
+------------------------------------------------------------------------
+r3580 | zeromus | 2010-04-24 13:50:01 +0800 (六, 24  4月 2010) | 2 lines
+
+commit whatever pokefan did to chinese translation
+
+------------------------------------------------------------------------
+r3579 | zeromus | 2010-04-24 08:54:44 +0800 (六, 24  4月 2010) | 2 lines
+
+piano controller emulation. maybe youll want to use the mouse anyway once you try the game...
+
+------------------------------------------------------------------------
+r3577 | zeromus | 2010-04-23 11:31:55 +0800 (五, 23  4月 2010) | 2 lines
+
+more realistic exception handling
+
+------------------------------------------------------------------------
+r3576 | zeromus | 2010-04-23 05:10:12 +0800 (五, 23  4月 2010) | 2 lines
+
+win32: add shift+ptrscrn to capture 256x384 to clipboard with no extra info
+
+------------------------------------------------------------------------
+r3575 | zeromus | 2010-04-23 04:45:12 +0800 (五, 23  4月 2010) | 2 lines
+
+rasterize: edge mark colors were too dark
+
+------------------------------------------------------------------------
+r3574 | riccardom | 2010-04-22 04:18:56 +0800 (四, 22  4月 2010) | 3 lines
+
+Make log3D static and put it under the same ifdef which
+surround its usage.
+
+------------------------------------------------------------------------
+r3573 | adelikat | 2010-04-21 22:41:43 +0800 (三, 21  4月 2010) | 2 lines
+
+Win32 Drag & Drop - if .dsm file is dropped with no ROM loaded prompt for one.
+
+------------------------------------------------------------------------
+r3571 | normmatt234 | 2010-04-21 19:04:30 +0800 (三, 21  4月 2010) | 2 lines
+
+update vs2010 project.
+
+------------------------------------------------------------------------
+r3570 | luigi__ | 2010-04-21 18:27:25 +0800 (三, 21  4月 2010) | 2 lines
+
+tiny mistake again.
+
+------------------------------------------------------------------------
+r3569 | luigi__ | 2010-04-21 18:20:12 +0800 (三, 21  4月 2010) | 2 lines
+
+r3550, again :P
+
+------------------------------------------------------------------------
+r3568 | riccardom | 2010-04-21 17:08:49 +0800 (三, 21  4月 2010) | 2 lines
+
+WIFI_WFCWarning is supposed to be false as default.
+
+------------------------------------------------------------------------
+r3567 | zeromus | 2010-04-21 15:01:39 +0800 (三, 21  4月 2010) | 2 lines
+
+B I T
+
+------------------------------------------------------------------------
+r3566 | zeromus | 2010-04-21 14:55:16 +0800 (三, 21  4月 2010) | 2 lines
+
+tweakin tha changelogs
+
+------------------------------------------------------------------------
+r3564 | zeromus | 2010-04-21 14:34:19 +0800 (三, 21  4月 2010) | 2 lines
+
+merge r3563 to trunk and unnecessarily touch 1000 files
+
+------------------------------------------------------------------------
+r3562 | zeromus | 2010-04-21 12:32:19 +0800 (三, 21  4月 2010) | 2 lines
+
+merge r3561 from release branch
+
+------------------------------------------------------------------------
+r3560 | riccardom | 2010-04-21 06:42:50 +0800 (三, 21  4月 2010) | 2 lines
+
+Enjoy OO in driver instead of the same old boring ifdefery.
+
+------------------------------------------------------------------------
+r3559 | riccardom | 2010-04-21 06:40:13 +0800 (三, 21  4月 2010) | 2 lines
+
+Fixup indentation.
+
+------------------------------------------------------------------------
+r3558 | riccardom | 2010-04-21 06:34:27 +0800 (三, 21  4月 2010) | 2 lines
+
+Fix preprocessor check for xbox.
+
+------------------------------------------------------------------------
+r3557 | zeromus | 2010-04-21 05:36:41 +0800 (三, 21  4月 2010) | 2 lines
+
+win32: clean up winpcap lib references (i.e. remove them) in all vcproj
+
+------------------------------------------------------------------------
+r3556 | luigi__ | 2010-04-21 05:35:27 +0800 (三, 21  4月 2010) | 2 lines
+
+RIP, WinPCap libs (using GetProcAddress() since a while now)
+
+------------------------------------------------------------------------
+r3555 | zeromus | 2010-04-21 05:06:45 +0800 (三, 21  4月 2010) | 2 lines
+
+redefine elementary mathematics
+
+------------------------------------------------------------------------
+r3554 | luigi__ | 2010-04-21 03:52:04 +0800 (三, 21  4月 2010) | 2 lines
+
+MMU: wifi registers/RAM are only in range 04800000-0480FFFF, not 04800000-04FFFFFF.
+
+------------------------------------------------------------------------
+r3553 | luigi__ | 2010-04-21 03:33:41 +0800 (三, 21  4月 2010) | 2 lines
+
+Memview: prevent modification of wifi registers and RAM.
+
+------------------------------------------------------------------------
+r3552 | riccardom | 2010-04-21 02:58:38 +0800 (三, 21  4月 2010) | 2 lines
+
+Warn if --enable-wifi is set but libpcap is not available.
+
+------------------------------------------------------------------------
+r3551 | riccardom | 2010-04-21 01:29:35 +0800 (三, 21  4月 2010) | 2 lines
+
+Set infrastructure as default wifi mode.
+
+------------------------------------------------------------------------
+r3550 | luigi__ | 2010-04-21 01:21:31 +0800 (三, 21  4月 2010) | 2 lines
+
+Wifi: fix potential endian issues on bigendian in the DNS parsing code.
+
+------------------------------------------------------------------------
+r3549 | riccardom | 2010-04-21 01:18:24 +0800 (三, 21  4月 2010) | 3 lines
+
+Use different stubs for wifi on !WINDOWS, mostly is using
+plain pcap.
+
+------------------------------------------------------------------------
+r3548 | riccardom | 2010-04-21 01:16:36 +0800 (三, 21  4月 2010) | 2 lines
+
+Add missing parens, spotted by gcc.
+
+------------------------------------------------------------------------
+r3547 | riccardom | 2010-04-21 01:10:35 +0800 (三, 21  4月 2010) | 4 lines
+
+Add hack to have an understandable device name on
+!WINDOWS (at least linux :) and print the selected
+device name on log level 2.
+
+------------------------------------------------------------------------
+r3546 | riccardom | 2010-04-21 01:00:16 +0800 (三, 21  4月 2010) | 2 lines
+
+Update code for RXHWWriteCursor -> RXWriteCursor rename.
+
+------------------------------------------------------------------------
+r3545 | luigi__ | 2010-04-21 00:38:21 +0800 (三, 21  4月 2010) | 4 lines
+
+Wifi: put in some parsing of DNS requests, and a warning when a DNS request to the WFC servers is detected, rather than just blocking any packet that contains "nintendowifi".
+The user has to confirm he wants to connect to WFC, otherwise SoftAP will deauthenticate (therefore breaking the connection). Note on the warning, for those who don't read warnings and just hit spacebar: I made the No button selected by default.
+If someone really wants to just block WFC, atleast we've got a more proper detector now...
+
+------------------------------------------------------------------------
+r3544 | zeromus | 2010-04-20 10:34:45 +0800 (二, 20  4月 2010) | 2 lines
+
+gtk: merge r3543 from release branch to fix dsm recording
+
+------------------------------------------------------------------------
+r3542 | luigi__ | 2010-04-19 19:39:50 +0800 (一, 19  4月 2010) | 2 lines
+
+wifi: tiny mistake, shouldn't have broken much
+
+------------------------------------------------------------------------
+r3541 | normmatt234 | 2010-04-19 07:39:40 +0800 (一, 19  4月 2010) | 2 lines
+
+add vs2010 project files.
+
+------------------------------------------------------------------------
+r3539 | zeromus | 2010-04-19 07:10:53 +0800 (一, 19  4月 2010) | 2 lines
+
+rasterizer: fix an occasional crash during loadstate
+
+------------------------------------------------------------------------
+r3538 | zeromus | 2010-04-19 02:34:23 +0800 (一, 19  4月 2010) | 2 lines
+
+add a crude technique to block connections only to WFC servers.  youll have to comment it to get any love.
+
+------------------------------------------------------------------------
+r3537 | luigi__ | 2010-04-19 01:38:21 +0800 (一, 19  4月 2010) | 2 lines
+
+Wifi: fix some silly error in SoftAP_RXHandler. I don't know but that might have caused buffer overflows.
+
+------------------------------------------------------------------------
+r3536 | riccardom | 2010-04-19 00:15:11 +0800 (一, 19  4月 2010) | 4 lines
+
+Comment a log message that references old
+code now gone to make it compile with log level
+higher than 0.
+
+------------------------------------------------------------------------
+r3535 | riccardom | 2010-04-18 23:59:27 +0800 (日, 18  4月 2010) | 7 lines
+
+Avoid segfault without available interfaces
+
+On gnu/linux pcap_findalldevs can return 0 but
+provide a NULL interfaces list. This could be
+common on !windows because from what i can see
+normal users can't list devices :|.
+
+------------------------------------------------------------------------
+r3534 | riccardom | 2010-04-18 19:51:47 +0800 (日, 18  4月 2010) | 3 lines
+
+Move CPRS flags helpers wheremakes sense to
+have them static.
+
+------------------------------------------------------------------------
+r3533 | luigi__ | 2010-04-18 18:59:04 +0800 (日, 18  4月 2010) | 5 lines
+
+Wifi: warning, possible awesomeness inside
+DeSmuME can now connect to the WFC servers.
+Connections may be unstable though. (hint, MKDS suffers from a timing problem when the race starts)
+Also it seems safe to use the same fixed MAC. The only packets that contain the MAC address of the DS are DHCP and ARP packets sent at the beginning.
+
+------------------------------------------------------------------------
+r3532 | mtabachenko | 2010-04-18 01:11:21 +0800 (日, 18  4月 2010) | 3 lines
+
+core:
+- fix single data transfer opcodes in ARM mode (fix UMK);
+
+------------------------------------------------------------------------
+r3531 | gocha | 2010-04-17 07:50:17 +0800 (六, 17  4月 2010) | 2 lines
+
+windows: force update tool windows just after loading a savestate (ported from 0.9.6 branch)
+
+------------------------------------------------------------------------
+r3528 | dottorleo | 2010-04-14 22:02:57 +0800 (三, 14  4月 2010) | 2 lines
+
+Updated italian and chinese strings of the lastest Hotkey added.
+
+------------------------------------------------------------------------
+r3527 | zeromus | 2010-04-14 14:12:19 +0800 (三, 14  4月 2010) | 2 lines
+
+return Z1 and Z2 from TSC (fix scummvm mouse); and fix a creepy looking bug with IME setting in swi intrWaitARM
+
+------------------------------------------------------------------------
+r3525 | zeromus | 2010-04-14 11:59:27 +0800 (三, 14  4月 2010) | 2 lines
+
+win32: fix start-paused commandline
+
+------------------------------------------------------------------------
+r3523 | zeromus | 2010-04-14 11:31:43 +0800 (三, 14  4月 2010) | 2 lines
+
+merge 3520-3522 from release branch, add reload rom hotkey, and change label in control config dialog to no longer mention grayed out keys since theyre now all supported. and, as usual, unnecessarily touch 1000 files.
+
+------------------------------------------------------------------------
+r3519 | gocha | 2010-04-12 21:16:18 +0800 (一, 12  4月 2010) | 2 lines
+
+Import resource file from 0.9.6 branch
+
+------------------------------------------------------------------------
+r3515 | gocha | 2010-04-11 13:55:31 +0800 (日, 11  4月 2010) | 2 lines
+
+Imported resource file from 0.9.6 branch
+
+------------------------------------------------------------------------
+r3511 | zeromus | 2010-04-10 04:34:03 +0800 (六, 10  4月 2010) | 2 lines
+
+fix spu loadstate crashes
+
+------------------------------------------------------------------------
+r3510 | mtabachenko | 2010-04-10 00:58:33 +0800 (六, 10  4月 2010) | 3 lines
+
+core:
+- fix LDR definitions in table of instructions;
+
+------------------------------------------------------------------------
+r3509 | zeromus | 2010-04-09 04:33:12 +0800 (五, 09  4月 2010) | 2 lines
+
+win32: add feature: dump all memory (new button in memory viewer; inspect debug.cpp for a map of the file)
+
+------------------------------------------------------------------------
 r3508 | mtabachenko | 2010-04-08 05:11:24 +0800 (四, 08  4月 2010) | 2 lines
 
 - again ADC/SBC :(

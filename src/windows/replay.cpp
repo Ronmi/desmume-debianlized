@@ -1,4 +1,5 @@
-/*	Copyright (C) 2008-2009 DeSmuME team
+/*	windows/replay.cpp
+	Copyright (C) 2008-2010 DeSmuME team
 
     This file is part of DeSmuME
 
@@ -17,7 +18,10 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
 
-
+#include "types.h"
+#include <winsock2.h>
+#include <windows.h>
+#include <commdlg.h>
 #include <io.h>
 #include <fstream>
 #include <time.h>
@@ -28,6 +32,7 @@
 #include "movie.h"
 #include "rtc.h"
 #include "utils/xstring.h"
+#include "utils/mkgmtime.h"
 
 bool replayreadonly=1;
 
@@ -271,8 +276,10 @@ static INT_PTR CALLBACK RecordDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			DateTime_SetSystemtime(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDT_VALID, &systime);
 			DateTime_SetSystemtime(GetDlgItem(hwndDlg, IDC_DTP_TIME), GDT_VALID, &systime);
 
-			SYSTEMTIME rtcMin;
-			SYSTEMTIME rtcMax;
+			union {
+				struct { SYSTEMTIME rtcMin, rtcMax; };
+				SYSTEMTIME rtcMinMax[2];
+			};
 			ZeroMemory(&rtcMin, sizeof(SYSTEMTIME));
 			ZeroMemory(&rtcMax, sizeof(SYSTEMTIME));
 			rtcMin.wYear = 2000;
@@ -283,8 +290,8 @@ static INT_PTR CALLBACK RecordDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			rtcMax.wMonth = 12;
 			rtcMax.wDay = 31;
 			rtcMax.wDayOfWeek = 4;
-			DateTime_SetRange(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDTR_MIN, &rtcMin);
-			DateTime_SetRange(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDTR_MAX, &rtcMax);
+			DateTime_SetRange(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDTR_MIN, &rtcMinMax);
+			DateTime_SetRange(GetDlgItem(hwndDlg, IDC_DTP_DATE), GDTR_MAX, &rtcMinMax);
 			return false;
 		}
 
@@ -310,7 +317,7 @@ static INT_PTR CALLBACK RecordDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 					t.tm_min  = systime.wMinute;
 					t.tm_sec  = systime.wSecond;
 					t.tm_isdst= -1;
-					rtcstart = gmmktime(&t);
+					rtcstart = mkgmtime(&t);
 
 					FCEUI_SaveMovie(fname.c_str(), author, flag, sramfname, rtcstart);
 					EndDialog(hwndDlg, 0);

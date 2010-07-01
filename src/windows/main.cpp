@@ -106,6 +106,102 @@
 #include "aviout.h"
 #include "soundView.h"
 
+//#include <libelf/libelf.h>
+//#include <libelf/gelf.h> 
+//#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <fcntl.h>
+//#include <io.h>
+//void testelf()
+//{
+//	//http://webcache.googleusercontent.com/search?q=cache:XeQF6AILcrkJ:chris.rohlf.googlepages.com/libelf-howto.c+libelf+example&cd=2&hl=en&ct=clnk&gl=us
+//Elf32_Ehdr *elf_header;  /* ELF header */
+//Elf *elf;                       /* Our Elf pointer for libelf */
+//Elf_Scn *scn;                   /* Section Descriptor */
+//Elf_Data *edata;                /* Data Descriptor */
+//GElf_Sym sym;   /* Symbol */
+//GElf_Shdr shdr;                 /* Section Header */ 
+//int fd;   // File Descriptor
+//const char* file = "d:\\devkitPro\\examples\\nds\\hello_world\\hello_world.elf";
+//struct stat elf_stats; // fstat struct 
+//char *base_ptr;  // ptr to our object in memory
+//#define ERR -1 
+//    if((fd = open(file, O_RDWR)) == ERR)
+//        {
+//             printf("couldnt open %s\n", file);
+//             return;
+//        } 
+//        if((fstat(fd, &elf_stats)))
+//        {
+//             printf("could not fstat %s\n", file);
+//                close(fd);
+//             return ;
+//        } 
+//        if((base_ptr = (char *) malloc(elf_stats.st_size)) == NULL)
+//        {
+//             printf("could not malloc\n");
+//                close(fd);
+//             return ;
+//        } 
+//        if((read(fd, base_ptr, elf_stats.st_size)) < elf_stats.st_size)
+//        {
+//             printf("could not read %s\n", file);
+//                free(base_ptr);
+//                close(fd);
+//             return ;
+//        }
+//      /* Check libelf version first */
+//      if(elf_version(EV_CURRENT) == EV_NONE)
+//      {
+//             printf("WARNING Elf Library is out of date!\n");
+//      } 
+//elf_header = (Elf32_Ehdr *) base_ptr; // point elf_header at our object in memory
+//elf = elf_begin(fd, ELF_C_READ, NULL); // Initialize 'elf' pointer to our file descriptor 
+///* Iterate through section headers */
+//while((scn = elf_nextscn(elf, scn)) != 0)
+//{
+//      gelf_getshdr(scn, &shdr); 
+//             // print the section header type
+//                printf("Type: "); 
+//                switch(shdr.sh_type)
+//                {
+//                        case SHT_NULL: printf( "SHT_NULL\t");               break;
+//                        case SHT_PROGBITS: printf( "SHT_PROGBITS");       break;
+//                        case SHT_SYMTAB: printf( "SHT_SYMTAB");           break;
+//                        case SHT_STRTAB: printf( "SHT_STRTAB");           break;
+//                        case SHT_RELA: printf( "SHT_RELA\t");               break;
+//                        case SHT_HASH: printf( "SHT_HASH\t");               break;
+//                        case SHT_DYNAMIC: printf( "SHT_DYNAMIC");         break;
+//                        case SHT_NOTE: printf( "SHT_NOTE\t");               break;
+//                        case SHT_NOBITS: printf( "SHT_NOBITS");           break;
+//                        case SHT_REL: printf( "SHT_REL\t");                 break;
+//                        case SHT_SHLIB: printf( "SHT_SHLIB");             break;
+//                        case SHT_DYNSYM: printf( "SHT_DYNSYM");           break;
+//                        case SHT_INIT_ARRAY: printf( "SHT_INIT_ARRAY");   break;
+//                        case SHT_FINI_ARRAY: printf( "SHT_FINI_ARRAY");   break;
+//                        case SHT_PREINIT_ARRAY: printf( "SHT_PREINIT_ARRAY"); break;
+//                        case SHT_GROUP: printf( "SHT_GROUP");             break;
+//                        case SHT_SYMTAB_SHNDX: printf( "SHT_SYMTAB_SHNDX"); break;
+//                        case SHT_NUM: printf( "SHT_NUM\t");                 break;
+//                        case SHT_LOOS: printf( "SHT_LOOS\t");               break;
+//                        case SHT_GNU_verdef: printf( "SHT_GNU_verdef");   break;
+//                        case SHT_GNU_verneed: printf( "SHT_VERNEED");     break;
+//                        case SHT_GNU_versym: printf( "SHT_GNU_versym");   break;
+//                        default: printf( "(none) ");                      break;
+//                } 
+//             // print the section header flags
+//             printf("\t(");
+//                if(shdr.sh_flags & SHF_WRITE) { printf("W"); }
+//                if(shdr.sh_flags & SHF_ALLOC) { printf("A"); }
+//                if(shdr.sh_flags & SHF_EXECINSTR) { printf("X"); }
+//                if(shdr.sh_flags & SHF_STRINGS) { printf("S"); }
+//             printf(")\t"); 
+//      // the shdr name is in a string table, libelf uses elf_strptr() to find it
+//      // using the e_shstrndx value from the elf_header
+//      printf("%s\n", elf_strptr(elf, elf_header->e_shstrndx, shdr.sh_name));
+//} 
+//}
+
 using namespace std;
 
 #ifdef EXPERIMENTAL_WIFI_COMM
@@ -1942,6 +2038,7 @@ static BOOL LoadROM(const char * filename, const char * logicalName)
 void OpenRecentROM(int listNum)
 {
 	if (listNum > MAX_RECENT_ROMS) return; //Just in case
+	if (listNum >= (int)RecentRoms.size()) return;
 	char filename[MAX_PATH];
 	strcpy(filename, RecentRoms[listNum].c_str());
 	//LOG("Attempting to load %s\n",filename);
@@ -2005,8 +2102,9 @@ int MenuInit()
 		memset(&mm, 0, sizeof(MENUITEMINFO));
 		
 		mm.cbSize = sizeof(MENUITEMINFO);
-		mm.fMask = MIIM_TYPE;
+		mm.fMask = MIIM_TYPE | MIIM_ID;
 		mm.fType = MFT_STRING;
+		mm.wID = IDC_SAVETYPE+i+1;
 		mm.dwTypeData = (LPSTR)save_names[i];
 
 		MainWindow->addMenuItem(IDC_SAVETYPE, false, &mm);
@@ -2097,6 +2195,35 @@ class WinDriver : public BaseDriver
 #ifdef EXPERIMENTAL_WIFI_COMM
 	virtual bool WIFI_SocketsAvailable() { return bSocketsAvailable; }
 	virtual bool WIFI_PCapAvailable() { return bWinPCapAvailable; }
+
+	virtual bool WIFI_WFCWarning()
+	{
+		return MessageBox(NULL,	"You are trying to connect to the Nintendo WFC servers.\n"
+								"\n"
+								"Please don't do this."
+								"\n"
+								"DeSmuME is not perfect yet, and connecting to WFC will cause unexpected problems\n"
+								"for Nintendo, and for DeSmuME, which neither of us want.\n"
+								"\n"
+								"And you don't want that either, right?\n"
+								"\n"
+								"You may get your IP blocked and then you won't even be able to use your real DS.\n"
+								"You may cause DeSmuME to get blocked, which would be a shame since we wouldn't even\n"
+								"be able to work on it any more.\n"
+								"\n"
+								"By the time you read this, it may have already happened due to irresponsible individuals\n"
+								"ignoring this message.\n"
+								"\n"
+								"So please don't do it.\n"
+								"\n"
+								"We aren't going to try to stop you, since someone will just make a hacked build and you\n"
+								"won't get a chance to read this. So please, stop yourself.\n"
+								"\n"
+								"Do you still want to connect?",
+								"DeSmuME - WFC warning",
+								MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING
+								) == IDYES;
+	}
 
 	virtual int PCAP_findalldevs(pcap_if_t** alldevs, char* errbuf) {
 		return _pcap_findalldevs(alldevs, errbuf); }
@@ -2279,7 +2406,7 @@ static void RefreshMicSettings()
 DWORD wmTimerRes;
 int _main()
 {
-	//7zup initialization
+	//7zip initialization
 	InitDecoder();
 
 #ifdef HAVE_WX
@@ -2329,6 +2456,8 @@ int _main()
 	char text[80];
 
 	GetINIPath();
+
+	path.ReadPathSettings();
 
 	CommonSettings.cheatsDisable = GetPrivateProfileBool("General", "cheatsDisable", false, IniName);
 
@@ -2481,6 +2610,7 @@ int _main()
 	input_init();
 
 	if (addon_type == NDS_ADDON_GUITARGRIP) Guitar.Enabled = true;
+	if (addon_type == NDS_ADDON_PIANO) Piano.Enabled = true;
 
 	LOG("Init NDS\n");
 
@@ -2534,6 +2664,8 @@ int _main()
 	case NDS_ADDON_GUITARGRIP:
 		break;
 	case NDS_ADDON_EXPMEMORY:
+		break;
+	case NDS_ADDON_PIANO:
 		break;
 	default:
 		addon_type = NDS_ADDON_NONE;
@@ -2717,8 +2849,11 @@ int _main()
 		if(OpenCore(cmdline.nds_file.c_str()))
 		{
 			romloaded = TRUE;
-			if(!cmdline.start_paused)
-				NDS_UnPause();
+			if(cmdline.start_paused)
+			{
+				NDS_Pause();
+				cmdline.start_paused = 0;
+			}
 		}
 	}
 
@@ -2730,7 +2865,6 @@ int _main()
 	}
 
 	MainWindow->Show(SW_NORMAL);
-
 
 	//DEBUG TEST HACK
 	//driver->VIEW3D_Init();
@@ -2795,6 +2929,8 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
 					int nFunsterStil)
 
 {
+//	testelf();
+
 	TIMECAPS tc;
 	if (timeGetDevCaps(&tc, sizeof(TIMECAPS))== TIMERR_NOERROR)
 	{
@@ -3068,6 +3204,15 @@ void WavEnd()
 	NDS_UnPause();
 }
 
+void UpdateToolWindows()
+{
+	Update_RAM_Search();	//Update_RAM_Watch() is also called; hotkey.cpp - HK_StateLoadSlot & State_Load also call these functions
+
+	if(SoundView_IsOpened()) SoundView_Refresh();
+	RefreshAllToolWindows();
+	mainLoopData.toolframecount = 0;
+}
+
 //Shows an Open File menu and starts recording an WAV
 void WavRecordTo(int wavmode)
 {
@@ -3132,7 +3277,7 @@ static BOOL OpenCore(const char* filename)
 	{
 		romloaded = TRUE;
 		if(movieMode == MOVIEMODE_INACTIVE)
-		Unpause();
+			Unpause();
 
 		// Update the toolbar
 		MainWindowToolbar->EnableButton(IDM_PAUSE, true);
@@ -3160,8 +3305,8 @@ LRESULT OpenFile()
 	ofn.hwndOwner = hwnd;
 
 	ofn.lpstrFilter = 
-		"All Usable Files (*.nds, *.ds.gba, *.zip, *.7z, *.rar, *.bz2)\0*.nds;*.ds.gba;*.zip;*.7z;*.rar;*.bz2\0"
-		"NDS ROM file (*.nds)\0*.nds\0"
+		"All Usable Files (*.nds, *.ds.gba, *.srl, *.zip, *.7z, *.rar, *.bz2)\0*.nds;*.ds.gba;*.srl;*.zip;*.7z;*.rar;*.bz2\0"
+		"NDS ROM file (*.nds,*.srl)\0*.nds;*.srl\0"
 		"NDS/GBA ROM File (*.ds.gba)\0*.ds.gba\0"
 		"Zipped NDS ROM file (*.zip)\0*.zip\0"
 		"7Zipped NDS ROM file (*.7z)\0*.7z\0"
@@ -3389,7 +3534,7 @@ void FrameAdvance(bool state)
 //   Put screenshot in clipboard
 //-----------------------------------------------------------------------------
 
-void ScreenshotToClipboard()
+void ScreenshotToClipboard(bool extraInfo)
 {
 	const char* nameandver = EMU_DESMUME_NAME_AND_VERSION();
 	bool twolinever = strlen(nameandver) > 32;
@@ -3397,13 +3542,20 @@ void ScreenshotToClipboard()
 	HFONT hFont = CreateFont(14, 8, 0, 0, FW_MEDIUM, FALSE, FALSE, FALSE, DEFAULT_CHARSET, 
 		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FIXED_PITCH, "Lucida Console");
 
+	int exHeight = 0;
+	if(extraInfo)
+	{
+		exHeight = (14 * (twolinever ? 6:5));
+	}
+
 	HDC hScreenDC = GetDC(NULL);
 	HDC hMemDC = CreateCompatibleDC(hScreenDC);
-	HBITMAP hMemBitmap = CreateCompatibleBitmap(hScreenDC, 256, 384 + (14 * (twolinever ? 6:5)));
+	HBITMAP hMemBitmap = CreateCompatibleBitmap(hScreenDC, 256, 384 + exHeight);
 	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hMemBitmap);
 	HFONT hOldFont = (HFONT)SelectObject(hMemDC, hFont);
 
-	RECT rc; SetRect(&rc, 0, 0, 256, 384 + (14 * (twolinever ? 6:5)));
+
+	RECT rc; SetRect(&rc, 0, 0, 256, 384 + exHeight);
 
 	BITMAPV4HEADER bmi;
 	memset(&bmi, 0, sizeof(bmi));
@@ -3420,34 +3572,37 @@ void ScreenshotToClipboard()
 	FillRect(hMemDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 	SetDIBitsToDevice(hMemDC, 0, 0, 256, 384, 0, 0, 0, 384, &GPU_screen[0], (BITMAPINFO*)&bmi, DIB_RGB_COLORS);
 	
-	SetBkColor(hMemDC, RGB(255, 255, 255));
-	SetTextColor(hMemDC, RGB(64, 64, 130));
-
-	if (twolinever)
+	if(extraInfo)
 	{
-		int i;
-		for (i = 31; i > 0; i--)
-			if (nameandver[i] == ' ')
-				break;
+		SetBkColor(hMemDC, RGB(255, 255, 255));
+		SetTextColor(hMemDC, RGB(64, 64, 130));
 
-		TextOut(hMemDC, 0, 384 + 14, &nameandver[0], i+1);
-		TextOut(hMemDC, 8, 384 + 14*2, &nameandver[i+1], strlen(nameandver) - (i+1));
+		if (twolinever)
+		{
+			int i;
+			for (i = 31; i > 0; i--)
+				if (nameandver[i] == ' ')
+					break;
+
+			TextOut(hMemDC, 0, 384 + 14, &nameandver[0], i+1);
+			TextOut(hMemDC, 8, 384 + 14*2, &nameandver[i+1], strlen(nameandver) - (i+1));
+		}
+		else
+			TextOut(hMemDC, 0, 384 + 14, nameandver, strlen(nameandver));
+
+		char str[32];
+		memcpy(&str[0], &MMU.CART_ROM[0], 12); str[12] = '\0';
+		int titlelen = strlen(str); 
+		str[titlelen] = ' ';
+		memcpy(&str[titlelen+1], &MMU.CART_ROM[12], 6); str[titlelen+1+6] = '\0';
+		TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 3:2), str, strlen(str));
+
+		sprintf(str, "FPS: %i/%i (%02d%%) | %s", mainLoopData.fps, mainLoopData.fps3d, Hud.arm9load, paused ? "Paused":"Running");
+		TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 4:3), str, strlen(str));
+
+		sprintf(str, "3D Render: %s", core3DList[cur3DCore]->name);
+		TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 5:4), str, strlen(str));
 	}
-	else
-		TextOut(hMemDC, 0, 384 + 14, nameandver, strlen(nameandver));
-
-	char str[32];
-	memcpy(&str[0], &MMU.CART_ROM[0], 12); str[12] = '\0';
-	int titlelen = strlen(str); 
-	str[titlelen] = ' ';
-	memcpy(&str[titlelen+1], &MMU.CART_ROM[12], 6); str[titlelen+1+6] = '\0';
-	TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 3:2), str, strlen(str));
-
-	sprintf(str, "FPS: %i/%i (%02d%%) | %s", mainLoopData.fps, mainLoopData.fps3d, Hud.arm9load, paused ? "Paused":"Running");
-	TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 4:3), str, strlen(str));
-
-	sprintf(str, "3D Render: %s", core3DList[cur3DCore]->name);
-	TextOut(hMemDC, 8, 384 + 14 * (twolinever ? 5:4), str, strlen(str));
 
 	OpenClipboard(NULL);
 	EmptyClipboard();
@@ -3790,7 +3945,6 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 	case WM_CREATE:
 		{
-			path.ReadPathSettings();
 			pausedByMinimize = FALSE;
 			UpdateScreenRects();
 
@@ -4051,7 +4205,14 @@ DOKEYDOWN:
 		if (wParam == VK_SNAPSHOT) { 
 			if(GetKeyState(VK_CONTROL)&0x8000)
 			{
-				ScreenshotToClipboard();
+				//include extra info
+				ScreenshotToClipboard(true);
+				return 0;
+			}
+			else if(GetKeyState(VK_SHIFT)&0x8000)
+			{
+				//exclude extra info
+				ScreenshotToClipboard(false);
 				return 0;
 			}
 		}
@@ -4160,6 +4321,8 @@ DOKEYDOWN:
 			//-------------------------------------------------------
 			if (!(fileDropped.find(".dsm") == string::npos) && (fileDropped.find(".dsm") == fileDropped.length()-4))	 //ROM is already loaded and .dsm in filename
 			{
+				if (!romloaded)
+					OpenFile();
 				if (romloaded && !(fileDropped.find(".dsm") == string::npos))	//.dsm is at the end of the filename so that must be the extension		
 					FCEUI_LoadMovie(fileDropped.c_str(), 1, false, false);		 //We are convinced it is a movie file, attempt to load it
 			}
@@ -4175,8 +4338,7 @@ DOKEYDOWN:
 					if ((fileDropped[extIndex+3] >= '0' && fileDropped[extIndex+3] <= '9') || fileDropped[extIndex+3] == '-' || fileDropped[extIndex+3] == 't')	//If last character is 0-9 (making .ds0 - .ds9) or .dst
 					{
 						savestate_load(filename);
-													//adelikat: TODO this should be a single function call in main, that way we can expand as future dialogs need updating
-						Update_RAM_Search();		//Update_RAM_Watch() is also called; hotkey.cpp - HK_StateLoadSlot & State_Load also call these functions
+						UpdateToolWindows();
 					}
 				}
 			}
@@ -4557,8 +4719,7 @@ DOKEYDOWN:
 				}
 
 				savestate_load(SavName);
-											//adelikat: TODO this should be a single function call in main, that way we can expand as future dialogs need updating
-				Update_RAM_Search();		//Update_RAM_Watch() is also called; hotkey.cpp - HK_StateLoadSlot also calls these functions
+				UpdateToolWindows();
 				NDS_UnPause();
 			}
 			return 0;

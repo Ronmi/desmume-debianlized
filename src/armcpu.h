@@ -24,10 +24,20 @@
 #include "types.h"
 #include "bits.h"
 #include "MMU.h"
+#include "common.h"
 
 #define CODE(i)     (((i)>>25)&0x7)
 #define OPCODE(i)   (((i)>>21)&0xF)
 #define SIGNEBIT(i) BIT_N(i,20)
+
+#define EXCEPTION_RESET 0x00
+#define EXCEPTION_UNDEFINED_INSTRUCTION 0x04
+#define EXCEPTION_SWI 0x08
+#define EXCEPTION_PREFETCH_ABORT 0x0C
+#define EXCEPTION_DATA_ABORT 0x10
+#define EXCEPTION_RESERVED_0x14 0x14
+#define EXCEPTION_IRQ 0x18
+#define EXCEPTION_FAST_IRQ 0x1C
 
 #define INSTRUCTION_INDEX(i) ((((i)>>16)&0xFF0)|(((i)>>4)&0xF))
 
@@ -46,25 +56,25 @@ template<typename T>
 inline T SIGNED_UNDERFLOW(T a,T b,T c) { return BIT31(((a)&(~(b))&(~c)) | ((~a)&(b)&(c))); }
 
 // ============================= CPRS flags funcs
-static bool CarryFrom(s32 left, s32 right)
+inline bool CarryFrom(s32 left, s32 right)
 {
-  u32 res  = (0xFFFFFFFF - (u32)left);
+  u32 res  = (0xFFFFFFFFU - (u32)left);
 
   return ((u32)right > res);
 }
 
-static bool BorrowFrom(s32 left, s32 right)
+inline bool BorrowFrom(s32 left, s32 right)
 {
   return ((u32)right > (u32)left);
 }
 
-static bool OverflowFromADD(s32 alu_out, s32 left, s32 right)
+inline bool OverflowFromADD(s32 alu_out, s32 left, s32 right)
 {
     return ((left >= 0 && right >= 0) || (left < 0 && right < 0))
 			&& ((left < 0 && alu_out >= 0) || (left >= 0 && alu_out < 0));
 }
 
-static bool OverflowFromSUB(s32 alu_out, s32 left, s32 right)
+inline bool OverflowFromSUB(s32 alu_out, s32 left, s32 right)
 {
     return ((left < 0 && right >= 0) || (left >= 0 && right < 0))
 			&& ((left < 0 && alu_out >= 0) || (left >= 0 && alu_out < 0));
@@ -241,6 +251,8 @@ template<int PROCNUM> u32 armcpu_exec();
 
 BOOL armcpu_irqException(armcpu_t *armcpu);
 BOOL armcpu_flagIrq( armcpu_t *armcpu);
+void armcpu_exception(armcpu_t *cpu, u32 number);
+u32 TRAPUNDEF(armcpu_t* cpu);
 
 extern armcpu_t NDS_ARM7;
 extern armcpu_t NDS_ARM9;
@@ -284,6 +296,24 @@ static INLINE void NDS_makeInt(u8 proc_ID,u32 num)
 			NDS_makeARM7Int(num) ;
 			break ;
 	}
+}
+
+
+static INLINE char *decodeIntruction(bool thumb_mode, u32 instr)
+{
+	char txt[20] = {0};
+	u32 tmp = 0;
+	if (thumb_mode == true)
+	{
+		tmp = (instr >> 6);
+		strcpy(txt, intToBin((u16)tmp)+6);
+	}
+	else
+	{
+		tmp = ((instr >> 16) & 0x0FF0) | ((instr >> 4) & 0x0F);
+		strcpy(txt, intToBin((u32)tmp)+20);
+	}
+	return strdup(txt);
 }
 
 #endif

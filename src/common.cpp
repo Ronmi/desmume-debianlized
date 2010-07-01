@@ -37,27 +37,16 @@ const u8 logo_data[156] = {
 	0x78,0x00,0x90,0xCB,0x88,0x11,0x3A,0x94,0x65,0xC0,0x7C,0x63,0x87,0xF0,0x3C,0xAF,
 	0xD6,0x25,0xE4,0x8B,0x38,0x0A,0xAC,0x72,0x21,0xD4,0xF8,0x07};
 
-u8 reverseBitsInByte(u8 x)
-{
-	u8 h = 0;
-	u8 i = 0;
-
-	for (i = 0; i < 8; i++)
-	{
-		h = (h << 1) + (x & 1); 
-		x >>= 1; 
-	}
-
-	return h;
-}
-
-char *trim(char *s)
+char *trim(char *s, int len)
 {
 	char *ptr = NULL;
 	if (!s) return NULL;
 	if (!*s) return s;
 	
-	for (ptr = s + strlen(s) - 1; (ptr >= s) && isspace(*ptr); ptr--);
+	if(len==-1)
+		ptr = s + strlen(s) - 1;
+	else ptr = s+len - 1;
+	for (; (ptr >= s) && (!*ptr || isspace((u8)*ptr)) ; ptr--);
 	ptr[1] = '\0';
 	return s;
 }

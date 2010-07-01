@@ -8,7 +8,7 @@ SUBDIRS = . gdbstub $(UI_DIR)
 else
 SUBDIRS = . $(UI_DIR)
 endif
-DIST_SUBDIRS = . gdbstub cli cocoa gtk gtk-glade wxdlg
+DIST_SUBDIRS = . gdbstub cli cocoa gtk gtk-glade wx
 noinst_LIBRARIES = libdesmume.a
 libdesmume_a_SOURCES = \
 	armcpu.cpp armcpu.h \
@@ -28,7 +28,7 @@ libdesmume_a_SOURCES = \
 	wifi.cpp wifi.h \
 	mic.h \
 	MMU.cpp MMU.h MMU_timing.h NDSSystem.cpp NDSSystem.h registers.h \
-	OGLRender.cpp OGLRender.h \
+	OGLRender.h \
 	ROMReader.cpp ROMReader.h \
 	render3D.cpp render3D.h \
 	rtc.cpp rtc.h \
@@ -41,18 +41,24 @@ libdesmume_a_SOURCES = \
 	shaders.h \
 	movie.cpp movie.h \
 	PACKED.h PACKED_END.h \
+	utils/mkgmtime.cpp utils/mkgmtime.h \
 	utils/ConvertUTF.c utils/ConvertUTF.h utils/guid.cpp utils/guid.h \
 	utils/md5.cpp utils/md5.h utils/valuearray.h utils/xstring.cpp utils/xstring.h \
 	utils/decrypt/crc.cpp utils/decrypt/crc.h utils/decrypt/decrypt.cpp \
 	utils/decrypt/decrypt.h utils/decrypt/header.cpp utils/decrypt/header.h \
 	utils/task.cpp utils/task.h \
+	utils/dlditool.cpp \
 	addons.cpp addons.h \
-	addons/compactFlash.cpp addons/gbagame.cpp addons/none.cpp addons/rumblepak.cpp addons/guitarGrip.cpp addons/expMemory.cpp fs.h \
+	addons/compactFlash.cpp addons/gbagame.cpp addons/none.cpp addons/rumblepak.cpp addons/guitarGrip.cpp addons/expMemory.cpp addons/piano.cpp fs.h \
 	cheatSystem.cpp cheatSystem.h \
 	texcache.cpp texcache.h rasterize.cpp rasterize.h \
 	metaspu/metaspu.cpp metaspu/metaspu.h \
 	version.cpp version.h \
 	desmume_config.cpp desmume_config.h
+
+if HAVE_GL
+libdesmume_a_SOURCES += OGLRender.cpp
+endif
 
 if HAVE_OPENAL
 libdesmume_a_SOURCES += mic_openal.cpp

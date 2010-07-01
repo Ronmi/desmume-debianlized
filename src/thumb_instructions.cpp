@@ -41,11 +41,10 @@
 //-----------------------------------------------------------------------------
 //   Undefined instruction
 //-----------------------------------------------------------------------------
-
 TEMPLATE static  u32 FASTCALL OP_UND_THUMB(const u32 i)
 {
-	INFO("THUMB%c: Undefined instruction: 0x%08X PC=0x%08X. Stopped!!!\n", cpu->proc_ID?'7':'9', cpu->instruction, cpu->instruct_adr);
-	emu_halt();
+	INFO("THUMB%c: Undefined instruction: 0x%08X (%s) PC=0x%08X\n", cpu->proc_ID?'7':'9', cpu->instruction, decodeIntruction(true, cpu->instruction), cpu->instruct_adr);
+	TRAPUNDEF(cpu);
 	return 1;
 }
 
@@ -303,12 +302,13 @@ TEMPLATE static  u32 FASTCALL OP_SUB_IMM3(const u32 i)
 {
 	u32 imm3 = (i>>6) & 0x07;
 	u32 Rn = cpu->R[REG_NUM(i, 3)];
+	u32 tmp = Rn - imm3;
 
-	cpu->R[REG_NUM(i, 0)] = Rn - imm3;
-	cpu->CPSR.bits.N = BIT31(cpu->R[REG_NUM(i, 0)]);
-	cpu->CPSR.bits.Z = cpu->R[REG_NUM(i, 0)] == 0;
+	cpu->R[REG_NUM(i, 0)] = tmp;
+	cpu->CPSR.bits.N = BIT31(tmp);
+	cpu->CPSR.bits.Z = (tmp == 0);
 	cpu->CPSR.bits.C = !BorrowFrom(Rn, imm3);
-	cpu->CPSR.bits.V = OverflowFromSUB(REG_NUM(i, 0), Rn, imm3);
+	cpu->CPSR.bits.V = OverflowFromSUB(tmp, Rn, imm3);
 
 	return 1;
 }
@@ -317,12 +317,13 @@ TEMPLATE static  u32 FASTCALL OP_SUB_IMM8(const u32 i)
 {
 	u32 imm8 = (i & 0xFF);
 	u32 Rd = cpu->R[REG_NUM(i, 8)];
+	u32 tmp = Rd - imm8;
 
-	cpu->R[REG_NUM(i, 8)] = Rd - imm8;
-	cpu->CPSR.bits.N = BIT31(cpu->R[REG_NUM(i, 8)]);
-	cpu->CPSR.bits.Z = (cpu->R[REG_NUM(i, 8)] == 0);
+	cpu->R[REG_NUM(i, 8)] = tmp;
+	cpu->CPSR.bits.N = BIT31(tmp);
+	cpu->CPSR.bits.Z = (tmp == 0);
 	cpu->CPSR.bits.C = !BorrowFrom(Rd, imm8);
-	cpu->CPSR.bits.V = OverflowFromSUB(cpu->R[REG_NUM(i, 8)], Rd, imm8);
+	cpu->CPSR.bits.V = OverflowFromSUB(tmp, Rd, imm8);
 
 	return 1;
 }
@@ -331,12 +332,13 @@ TEMPLATE static  u32 FASTCALL OP_SUB_REG(const u32 i)
 {
 	u32 Rn = cpu->R[REG_NUM(i, 3)];
 	u32 Rm = cpu->R[REG_NUM(i, 6)];
+	u32 tmp = Rn - Rm;
 
-	cpu->R[REG_NUM(i, 0)] = Rn - Rm;
-	cpu->CPSR.bits.N = BIT31(cpu->R[REG_NUM(i, 0)]);
-	cpu->CPSR.bits.Z = (cpu->R[REG_NUM(i, 0)] == 0);
+	cpu->R[REG_NUM(i, 0)] = tmp;
+	cpu->CPSR.bits.N = BIT31(tmp);
+	cpu->CPSR.bits.Z = (tmp == 0);
 	cpu->CPSR.bits.C = !BorrowFrom(Rn, Rm);
-	cpu->CPSR.bits.V = OverflowFromSUB(cpu->R[REG_NUM(i, 0)], Rn, Rm);
+	cpu->CPSR.bits.V = OverflowFromSUB(tmp, Rn, Rm);
 
 	return 1;
 }
@@ -404,8 +406,8 @@ TEMPLATE static  u32 FASTCALL OP_CMP_SPE(const u32 i)
 	
 	cpu->CPSR.bits.N = BIT31(tmp);
 	cpu->CPSR.bits.Z = tmp == 0;
-	cpu->CPSR.bits.C = !BorrowFrom(cpu->R[Rn], cpu->R[REG_NUM(i, 3)]);
-	cpu->CPSR.bits.V = OverflowFromSUB(tmp, cpu->R[Rn], cpu->R[REG_NUM(i, 3)]);
+	cpu->CPSR.bits.C = !BorrowFrom(cpu->R[Rn], cpu->R[REG_POS(i, 3)]);
+	cpu->CPSR.bits.V = OverflowFromSUB(tmp, cpu->R[Rn], cpu->R[REG_POS(i, 3)]);
 	
 	return 1;
 }
@@ -444,12 +446,19 @@ TEMPLATE static  u32 FASTCALL OP_ADC_REG(const u32 i)
 	u32 Rd = cpu->R[REG_NUM(i, 0)];
 	u32 Rm = cpu->R[REG_NUM(i, 3)];
 
-	cpu->R[REG_NUM(i, 0)] = Rd + Rm + cpu->CPSR.bits.C;
-
+	if (!cpu->CPSR.bits.C)
+	{
+		cpu->R[REG_NUM(i, 0)] = Rd + Rm;
+		cpu->CPSR.bits.C = cpu->R[REG_NUM(i, 0)] < Rm;
+	}
+	else
+	{
+		cpu->R[REG_NUM(i, 0)] = Rd + Rm + 1;
+		cpu->CPSR.bits.C =  cpu->R[REG_NUM(i, 0)] <= Rm;
+	}
 	cpu->CPSR.bits.N = BIT31(cpu->R[REG_NUM(i, 0)]);
 	cpu->CPSR.bits.Z = (cpu->R[REG_NUM(i, 0)] == 0);
-	cpu->CPSR.bits.V = OverflowFromADD(cpu->R[REG_NUM(i, 0)], Rd, Rm + cpu->CPSR.bits.C);
-	cpu->CPSR.bits.C = CarryFrom(Rd, Rm + cpu->CPSR.bits.C);
+	cpu->CPSR.bits.V = BIT31((Rd ^ Rm ^ -1) & (Rd ^ cpu->R[REG_NUM(i, 0)]));
 	
 	return 1;
 }
@@ -457,18 +466,25 @@ TEMPLATE static  u32 FASTCALL OP_ADC_REG(const u32 i)
 //-----------------------------------------------------------------------------
 //   SBC
 //-----------------------------------------------------------------------------
-
 TEMPLATE static  u32 FASTCALL OP_SBC_REG(const u32 i)
 {
 	u32 Rd = cpu->R[REG_NUM(i, 0)];
 	u32 Rm = cpu->R[REG_NUM(i, 3)];
 
-	cpu->R[REG_NUM(i, 0)] = Rd - Rm - !cpu->CPSR.bits.C;
+	if (!cpu->CPSR.bits.C)
+	{
+		cpu->R[REG_NUM(i, 0)] = Rd - Rm - 1;
+		cpu->CPSR.bits.C = Rd > Rm;
+	}
+	else
+	{
+		cpu->R[REG_NUM(i, 0)] = Rd - Rm;
+		cpu->CPSR.bits.C = Rd >= Rm;
+	}
 
 	cpu->CPSR.bits.N = BIT31(cpu->R[REG_NUM(i, 0)]);
 	cpu->CPSR.bits.Z = (cpu->R[REG_NUM(i, 0)] == 0);
-	cpu->CPSR.bits.V = OverflowFromSUB(cpu->R[REG_NUM(i, 0)], Rd, Rm - !cpu->CPSR.bits.C);
-	cpu->CPSR.bits.C = !BorrowFrom(Rd, Rm - !cpu->CPSR.bits.C);
+	cpu->CPSR.bits.V = BIT31((Rd ^ Rm) & (Rd ^ cpu->R[REG_NUM(i, 0)]));
 	
 	return 1;
 }
@@ -542,13 +558,11 @@ TEMPLATE static  u32 FASTCALL OP_NEG(const u32 i)
 TEMPLATE static  u32 FASTCALL OP_CMN(const u32 i)
 {
 	u32 tmp = cpu->R[REG_NUM(i, 0)] + cpu->R[REG_NUM(i, 3)];
-	
-	//emu_halt();
-	//log::ajouter("OP_CMN THUMB");
+
 	cpu->CPSR.bits.N = BIT31(tmp);
 	cpu->CPSR.bits.Z = tmp == 0;
-	cpu->CPSR.bits.C = UNSIGNED_OVERFLOW(cpu->R[REG_NUM(i, 0)], cpu->R[REG_NUM(i, 3)], tmp);
-	cpu->CPSR.bits.V = SIGNED_OVERFLOW(cpu->R[REG_NUM(i, 0)], cpu->R[REG_NUM(i, 3)], tmp);
+	cpu->CPSR.bits.C = CarryFrom(cpu->R[REG_NUM(i, 0)], cpu->R[REG_NUM(i, 3)]);
+	cpu->CPSR.bits.V = OverflowFromADD(tmp, cpu->R[REG_NUM(i, 0)], cpu->R[REG_NUM(i, 3)]);
 	
 	return 1;
 }
@@ -877,6 +891,13 @@ TEMPLATE static  u32 FASTCALL OP_POP(const u32 i)
 	 return MMU_aluMemCycles<PROCNUM>(2, c);
 }
 
+// In ARMv5 and above, bit[0] of the loaded value
+// determines whether execution continues after this branch in ARM state or in Thumb state, as though the
+// following instruction had been executed:
+// BX (loaded_value)
+// In T variants of ARMv4, bit[0] of the loaded value is ignored and execution continues in Thumb state, as
+// though the following instruction had been executed:
+// MOV PC,(loaded_value)
 TEMPLATE static  u32 FASTCALL OP_POP_PC(const u32 i)
 {
 	u32 adr = cpu->R[13];
@@ -1129,9 +1150,9 @@ TEMPLATE static  u32 FASTCALL OP_BLX_THUMB(const u32 i)
 	u32 Rm = cpu->R[REG_POS(i, 3)];
 	
 	cpu->CPSR.bits.T = BIT0(Rm);
-	cpu->R[14] = cpu->next_instruction | 1;
 	//cpu->R[15] = (Rm & (0xFFFFFFFC|(1<<cpu->CPSR.bits.T)));
-	cpu->R[15] = (Rm & (0xFFFFFFFC|(1<<cpu->CPSR.bits.T)));
+	cpu->R[15] = Rm & 0xFFFFFFFE;
+	cpu->R[14] = cpu->next_instruction | 1;
 	cpu->next_instruction = cpu->R[15];
 	
 	return 4;

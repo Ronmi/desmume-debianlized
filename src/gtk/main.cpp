@@ -122,8 +122,10 @@ static void ToggleAudio (GtkToggleAction *action);
 #ifdef FAKE_MIC
 static void ToggleMicNoise (GtkToggleAction *action);
 #endif
+static void ToggleSwapScreens(GtkToggleAction *action);
 static void ToggleGap (GtkToggleAction *action);
-static void SetRotation (GtkAction *action);
+static void SetRotation(GtkAction *action, GtkRadioAction *current);
+static void SetOrientation(GtkAction *action, GtkRadioAction *current);
 static void ToggleLayerVisibility(GtkToggleAction* action, gpointer data);
 #ifdef DESMUME_GTK_FIRMWARE_BROKEN
 static void SelectFirmwareFile();
@@ -223,6 +225,13 @@ static const char *ui_description =
 "        <menuitem action='rotate_180'/>"
 "        <menuitem action='rotate_270'/>"
 "      </menu>"
+"      <menu action='OrientationMenu'>"
+"        <menuitem action='orient_vertical'/>"
+"        <menuitem action='orient_horizontal'/>"
+"        <menuitem action='orient_single'/>"
+"        <separator/>"
+"        <menuitem action='orient_swapscreens'/>"
+"      </menu>"
 "      <menu action='InterpolationMenu'>"
 "        <menuitem action='interp_nearest'/>"
 "        <menuitem action='interp_bilinear'/>"
@@ -285,10 +294,7 @@ static const GtkActionEntry action_entries[] = {
       { "editctrls",  NULL,        "_Edit controls",NULL,    NULL,   Edit_Controls },
       { "editjoyctrls",  NULL,     "Edit _Joystick controls",NULL,       NULL,   Edit_Joystick_Controls },
       { "RotationMenu", NULL, "_Rotation" },
-        { "rotate_0",   "gtk-orientation-portrait",          "_0",  NULL, NULL, G_CALLBACK(SetRotation) },
-        { "rotate_90",  "gtk-orientation-landscape",         "_90", NULL, NULL, G_CALLBACK(SetRotation) },
-        { "rotate_180", "gtk-orientation-reverse-portrait",  "_180",NULL, NULL, G_CALLBACK(SetRotation) },
-        { "rotate_270", "gtk-orientation-reverse-landscape", "_270",NULL, NULL, G_CALLBACK(SetRotation) },
+      { "OrientationMenu", NULL, "_Orientation" },
       { "InterpolationMenu", NULL, "_Interpolation" },
       { "ViewMenu", NULL, "_View" },
 
@@ -306,12 +312,46 @@ static const GtkToggleActionEntry toggle_entries[] = {
     { "gap", NULL, "_Gap", NULL, NULL, G_CALLBACK(ToggleGap), FALSE},
     { "view_menu", NULL, "View _menu", NULL, NULL, G_CALLBACK(ToggleMenuVisible), TRUE},
     { "view_toolbar", NULL, "View _toolbar", NULL, NULL, G_CALLBACK(ToggleToolbarVisible), TRUE},
-    { "view_statusbar", NULL, "View _statusbar", NULL, NULL, G_CALLBACK(ToggleStatusbarVisible), TRUE}
+    { "view_statusbar", NULL, "View _statusbar", NULL, NULL, G_CALLBACK(ToggleStatusbarVisible), TRUE},
+    { "orient_swapscreens", NULL, "S_wap screens", NULL, NULL, G_CALLBACK(ToggleSwapScreens), FALSE}
 };
 
 static const GtkRadioActionEntry interpolation_entries[] = {
     { "interp_nearest", NULL, "_Nearest", NULL, NULL, 0},
     { "interp_bilinear", NULL, "_Bilinear", NULL, NULL, 1},
+};
+
+static const GtkRadioActionEntry rotation_entries[] = {
+    { "rotate_0",   "gtk-orientation-portrait",          "_0",  NULL, NULL, 0 },
+    { "rotate_90",  "gtk-orientation-landscape",         "_90", NULL, NULL, 90 },
+    { "rotate_180", "gtk-orientation-reverse-portrait",  "_180",NULL, NULL, 180 },
+    { "rotate_270", "gtk-orientation-reverse-landscape", "_270",NULL, NULL, 270 },
+};
+
+
+/* When adding modes here remember to add the relevent entry to screen_size */
+enum orientation_enum {
+    ORIENT_VERTICAL = 0,
+    ORIENT_HORIZONTAL = 1,
+    ORIENT_SINGLE = 2,
+    ORIENT_N
+};
+
+static const GtkRadioActionEntry orientation_entries[] = {
+    { "orient_vertical",   NULL, "_Vertical",   NULL, NULL, ORIENT_VERTICAL },
+    { "orient_horizontal", NULL, "_Horizontal", NULL, NULL, ORIENT_HORIZONTAL },
+    { "orient_single",     NULL, "_Single screen", NULL, NULL, ORIENT_SINGLE },
+};
+
+struct screen_size_t {
+   gint width;
+   gint height;
+};
+
+const struct screen_size_t screen_size[ORIENT_N] = {
+    {256, 384},
+    {512, 192},
+    {256, 192}
 };
 
 enum frameskip_enum {
@@ -398,7 +438,7 @@ public:
 };
 
 static void
-init_configured_features( struct configured_features *config)
+init_configured_features( class configured_features *config)
 {
   config->engine_3d = 1;
 
@@ -413,7 +453,7 @@ init_configured_features( struct configured_features *config)
 }
 
 static int
-fill_configured_features( struct configured_features *config,
+fill_configured_features( class configured_features *config,
                           int argc, char ** argv)
 {
   GOptionEntry options[] = {
@@ -530,12 +570,21 @@ GdkInterpType Interpolation = GDK_INTERP_BILINEAR;
 static GtkWidget *pWindow;
 static GtkWidget *pStatusBar;
 static GtkWidget *pDrawingArea;
-GtkActionGroup * action_group;
-GtkUIManager *ui_manager;
+static GtkActionGroup * action_group;
+static GtkUIManager *ui_manager;
 
-guint nds_gap_size = 0;
-float nds_screen_size_ratio = 1.0f;
-int nds_screen_rotation_angle = 0;
+struct nds_screen_t {
+    guint gap_size;
+    gint rotation_angle;
+    guint orientation;
+    gint touch_x;
+    gint touch_y;
+    gint touch_width;
+    gint touch_height;
+    gboolean swap;
+};
+
+struct nds_screen_t nds_screen;
 
 static BOOL regMainLoop = FALSE;
 
@@ -734,7 +783,7 @@ static void RecordMovieDialog()
     switch(gtk_dialog_run(GTK_DIALOG(pFileSelection))) {
     case GTK_RESPONSE_OK:
         sPath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(pFileSelection));
-        FCEUI_SaveMovie(sPath,L"",0,NULL, FCEUI_MovieGetRTCDefault());
+        FCEUI_SaveMovie(sPath,L"",0,"", FCEUI_MovieGetRTCDefault());
         g_free(sPath);
         break;
     default:
@@ -948,9 +997,28 @@ static void OpenNdsDialog()
 #ifdef HAVE_RECENT_FILES
 static void OpenRecent(GtkRecentChooser *chooser, gpointer user_data)
 {
-    Open(g_filename_from_uri(gtk_recent_chooser_get_current_uri(chooser), NULL, NULL));
+    GtkRecentManager *recent_manager = gtk_recent_manager_get_default();
+    gchar *uri, *romname;
+    int ret;
 
-    gtk_action_set_sensitive(gtk_action_group_get_action(action_group, "run"), TRUE);
+    uri = gtk_recent_chooser_get_current_uri(chooser);
+    romname = g_filename_from_uri(uri, NULL, NULL);
+    ret = Open(romname);
+    if (ret > 0) {
+        gtk_action_set_sensitive(gtk_action_group_get_action(action_group, "run"), TRUE);
+    } else {
+        gtk_recent_manager_remove_item(recent_manager, uri, NULL);
+        GtkWidget *pDialog = gtk_message_dialog_new(GTK_WINDOW(pWindow),
+                GTK_DIALOG_MODAL,
+                GTK_MESSAGE_ERROR,
+                GTK_BUTTONS_OK,
+                "Unable to load :\n%s", uri);
+        gtk_dialog_run(GTK_DIALOG(pDialog));
+        gtk_widget_destroy(pDialog);
+    }
+
+    g_free(uri);
+    g_free(romname);
 }
 #endif
 
@@ -967,24 +1035,22 @@ static void Reset()
 static void UpdateDrawingAreaAspect()
 {
     gint H, W;
-    switch (nds_screen_rotation_angle) {
-    case 0:
-    case 180:
-        W = 256;
-        H = 384 + nds_gap_size;
-        break;
-    case 90:
-    case 270:
-        W = 384 + nds_gap_size;
-        H = 256;
-        break;
-    default:
-        g_printerr("Congratulations, you've managed to set unsupported screen rotation angle (%d), resetting angle to 0\n", 
-                nds_screen_rotation_angle);
-        nds_screen_rotation_angle = 0;
-        W = 256;
-        H = 384 + nds_gap_size;
-        break;
+
+    if (nds_screen.rotation_angle == 0 || nds_screen.rotation_angle == 180) {
+        W = screen_size[nds_screen.orientation].width;
+        H = screen_size[nds_screen.orientation].height;
+    } else {
+        W = screen_size[nds_screen.orientation].height;
+        H = screen_size[nds_screen.orientation].width;
+    }
+
+    if (nds_screen.orientation != ORIENT_SINGLE) {
+        if ((nds_screen.rotation_angle == 0 || nds_screen.rotation_angle == 180) ^
+        (nds_screen.orientation == ORIENT_HORIZONTAL)) {
+            H += nds_screen.gap_size;
+        } else {
+            W += nds_screen.gap_size;
+        }
     }
 
     gtk_widget_set_size_request(GTK_WIDGET(pDrawingArea), W, H);
@@ -992,17 +1058,24 @@ static void UpdateDrawingAreaAspect()
 
 static void ToggleGap(GtkToggleAction* action)
 {
-    nds_gap_size = gtk_toggle_action_get_active(action) ? GAP_SIZE : 0;
+    nds_screen.gap_size = gtk_toggle_action_get_active(action) ? GAP_SIZE : 0;
     UpdateDrawingAreaAspect();
 }
 
-static void SetRotation(GtkAction* action)
+static void SetRotation(GtkAction *action, GtkRadioAction *current)
 {
-    const gchar *angle;
-
-    angle = gtk_action_get_name(GTK_ACTION(action)) + strlen("rotate_");
-    nds_screen_rotation_angle = atoi(angle);
+    nds_screen.rotation_angle = gtk_radio_action_get_current_value(current);
     UpdateDrawingAreaAspect();
+}
+
+static void SetOrientation(GtkAction *action, GtkRadioAction *current)
+{
+    nds_screen.orientation = gtk_radio_action_get_current_value(current);
+    UpdateDrawingAreaAspect();
+}
+
+static void ToggleSwapScreens(GtkToggleAction *action) {
+    nds_screen.swap = gtk_toggle_action_get_active(action);
 }
 
 static int ConfigureDrawingArea(GtkWidget *widget, GdkEventConfigure *event, gpointer data)
@@ -1010,51 +1083,57 @@ static int ConfigureDrawingArea(GtkWidget *widget, GdkEventConfigure *event, gpo
     return TRUE;
 }
 
+
 static inline void gpu_screen_to_rgb(guchar * rgb, int size)
 {
+    gint rot = nds_screen.rotation_angle;
+    gint height, width;
     u16 gpu_pixel;
-    int rot = nds_screen_rotation_angle;
+    u32 offset;
+
+    width = screen_size[nds_screen.orientation].width;
+    height = screen_size[nds_screen.orientation].height;
 
     memset(rgb, 0, size);
-    for (int i = 0; i < 256; i++) {
-        for (int j = 0; j < 384; j++) {
+    for (gint i = 0; i < width; i++) {
+        for (gint j = 0; j < height; j++) {
+            gint row = j, col = i;
 
-            gpu_pixel = *((u16 *) & GPU_screen[(i + j * 256) << 1]);
-            u32 offset;
-            if(rot == 0 || rot == 180)
-              offset = i * 3 + j * 3 * 256;
-            else
-              offset = j * 3 + (255 - i) * 3 * 384;
-            switch (rot) {
-            case 0:
-            case 270:
-                *(rgb + offset + 0) = ((gpu_pixel >> 0) & 0x1f) << 3;
-                *(rgb + offset + 1) = ((gpu_pixel >> 5) & 0x1f) << 3;
-                *(rgb + offset + 2) = ((gpu_pixel >> 10) & 0x1f) << 3;
-                break;
-            case 180:
-            case 90:
-                *(rgb + size - offset - 3) =
-                    ((gpu_pixel >> 0) & 0x1f) << 3;
-                *(rgb + size - offset - 2) =
-                    ((gpu_pixel >> 5) & 0x1f) << 3;
-                *(rgb + size - offset - 1) =
-                    ((gpu_pixel >> 10) & 0x1f) << 3;
-                break;
+            if (i >= 256) {
+                col = i - 256;
+                row = j + 192;
             }
+            if (nds_screen.swap)
+                 row = (row + 192) % 384;
+
+            gpu_pixel = *((u16 *) & GPU_screen[(col + row * 256) << 1]);
+
+            if (rot == 0 || rot == 180)
+                offset = i * 3 + j * 3 * width;
+            else
+                offset = j * 3 + (width - i - 1) * 3 * height;
+
+            if (rot == 90 || rot == 180)
+                offset = size - offset - 3;
+              
+            *(rgb + offset + 0) = ((gpu_pixel >> 0) & 0x1f) << 3;
+            *(rgb + offset + 1) = ((gpu_pixel >> 5) & 0x1f) << 3;
+            *(rgb + offset + 2) = ((gpu_pixel >> 10) & 0x1f) << 3;
         }
     }
 }
 
 /* Drawing callback */
-static int ExposeDrawingArea (GtkWidget *widget, GdkEventExpose *event, gpointer data)
+static gboolean ExposeDrawingArea (GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
-    GdkPixbuf *origPixbuf, *resizedPixbuf = NULL, *drawPixbuf;
+    GdkPixbuf *resizedPixbuf, *drawPixbuf;
     guchar rgb[SCREENS_PIXEL_SIZE*SCREEN_BYTES_PER_PIXEL];
 
-    float ssize, vratio, hratio;
-    gint daW, daH, imgH, imgW, xoff, yoff, xsize, ysize, xs, ys, xd, yd;
-    int rot = (nds_screen_rotation_angle % 180 == 90);
+    gfloat vratio, hratio, nscreen_ratio;
+    gint daW, daH, imgW, imgH, screenW, screenH, gapW, gapH;
+    gint primaryOffsetX, primaryOffsetY, secondaryOffsetX, secondaryOffsetY;
+    gint secondaryPixbufOffsetX, secondaryPixbufOffsetY;
+    const gboolean gap_vertical = ((nds_screen.orientation == ORIENT_VERTICAL) ^ (nds_screen.rotation_angle == 90 || nds_screen.rotation_angle == 270));
   
 #if GTK_CHECK_VERSION(2,14,0)
     gdk_drawable_get_size(
@@ -1064,104 +1143,128 @@ static int ExposeDrawingArea (GtkWidget *widget, GdkEventExpose *event, gpointer
             (GTK_WIDGET(pDrawingArea))->window, &daW, &daH);
 #endif
 
-    if(!rot){
-        imgW = 256; imgH = 384;
-        daH -= nds_gap_size;
-    }else{
-        imgH = 256; imgW = 384;
-        daW -= nds_gap_size;
+    if (nds_screen.rotation_angle == 0 || nds_screen.rotation_angle == 180) {
+        imgW = screen_size[nds_screen.orientation].width;
+        imgH = screen_size[nds_screen.orientation].height;
+    } else {
+        imgH = screen_size[nds_screen.orientation].width;
+        imgW = screen_size[nds_screen.orientation].height;
     }
 
-    hratio = (float)daW / (float)imgW;
-    vratio = (float)daH / (float)imgH;
-    ssize = MIN(hratio, vratio);
-    nds_screen_size_ratio = 1 / (float)ssize;
-    xoff = (daW-ssize*imgW)/2;
-    yoff = (daH-ssize*imgH)/2;
-    if(!rot){
-        xsize = ssize*imgW;
-        ysize = ssize*imgH/2;
-        xs = 0;
-        ys = ysize;
-        xd = xoff;
-        yd = yoff+ysize+nds_gap_size;
+    if (nds_screen.orientation == ORIENT_SINGLE) {
+        gapH = 0;
+        gapW = 0;
+    } else if (gap_vertical) {
+        gapH = nds_screen.gap_size;
+        gapW = 0;
     } else {
-        xsize = ssize*imgW/2;
-        ysize = ssize*imgH;
-        xs = xsize;
-        ys = 0;
-        xd = xoff+xsize+nds_gap_size;
-        yd = yoff;
+        gapH = 0;
+        gapW = nds_screen.gap_size;
     }
+
+    hratio = (float)(daW - gapW) / (float)imgW;
+    vratio = (float)(daH - gapH) / (float)imgH;
+    hratio = MIN(hratio, vratio);
+    vratio = hratio;
+
+    primaryOffsetX = (daW-(int)(hratio*(float)imgW)-gapW)/2;
+    primaryOffsetY = (daH-(int)(vratio*(float)imgH)-gapH)/2;
+
+    nscreen_ratio = nds_screen.orientation == ORIENT_SINGLE ? 1 : 0.5;
+    if (gap_vertical) {
+        screenW = (int)(hratio*(float)imgW);
+        screenH = (int)(vratio*(float)imgH*nscreen_ratio);
+        secondaryOffsetX = primaryOffsetX;
+        secondaryOffsetY = primaryOffsetY + screenH + gapH;
+        secondaryPixbufOffsetX = 0;
+        secondaryPixbufOffsetY = screenH;
+    } else {
+        screenW = (int)(hratio*(float)imgW*nscreen_ratio);
+        screenH = (int)(vratio*(float)imgH);
+        secondaryOffsetX = primaryOffsetX + screenW + gapW;
+        secondaryOffsetY = primaryOffsetY;
+        secondaryPixbufOffsetX = screenW;
+        secondaryPixbufOffsetY = 0;
+    }
+
+    if ((nds_screen.swap) ^
+            ((nds_screen.orientation == ORIENT_VERTICAL && (nds_screen.rotation_angle == 90 || nds_screen.rotation_angle == 180)) ||
+            (nds_screen.orientation == ORIENT_HORIZONTAL && (nds_screen.rotation_angle == 180 || nds_screen.rotation_angle == 270)))) {
+        nds_screen.touch_x = primaryOffsetX;
+        nds_screen.touch_y = primaryOffsetY;
+    } else if (nds_screen.orientation != ORIENT_SINGLE) {
+        nds_screen.touch_x = secondaryOffsetX;
+        nds_screen.touch_y = secondaryOffsetY;
+    } else {
+        nds_screen.touch_x = -1;
+        nds_screen.touch_y = -1;
+    }
+    nds_screen.touch_width = screenW;
+    nds_screen.touch_height = screenH;
 
     osd->update();
     DrawHUD();
-    gpu_screen_to_rgb(rgb, SCREENS_PIXEL_SIZE*SCREEN_BYTES_PER_PIXEL);
-    origPixbuf = gdk_pixbuf_new_from_data(rgb, GDK_COLORSPACE_RGB, 
-            0, 8, imgW, imgH, imgW*SCREEN_BYTES_PER_PIXEL, NULL, NULL);
-    drawPixbuf = origPixbuf;
+    gpu_screen_to_rgb(rgb, imgW*imgH*SCREEN_BYTES_PER_PIXEL);
+    drawPixbuf = gdk_pixbuf_new_from_data(rgb, GDK_COLORSPACE_RGB, 
+            FALSE, 8, imgW, imgH, imgW*SCREEN_BYTES_PER_PIXEL, NULL, NULL);
 
-    if(nds_screen_size_ratio != 1.0) {
-        resizedPixbuf = gdk_pixbuf_scale_simple (origPixbuf, ssize*imgW, ssize*imgH,
+    if ((hratio != 1.0) || (vratio != 1.0)) {
+        resizedPixbuf = gdk_pixbuf_scale_simple (drawPixbuf, hratio*imgW, vratio*imgH,
                 Interpolation);
+        g_object_unref(drawPixbuf);
         drawPixbuf = resizedPixbuf;
     }
 
-    gdk_draw_pixbuf(widget->window, NULL, drawPixbuf, 0,0, xoff, yoff, xsize, ysize,
+    gdk_draw_pixbuf(widget->window, NULL, drawPixbuf, 0, 0, primaryOffsetX, primaryOffsetY, screenW, screenH,
             GDK_RGB_DITHER_NONE, 0,0);
 
-    gdk_draw_pixbuf(widget->window, NULL, drawPixbuf, xs, ys, xd, yd, xsize,ysize,
+    if (nds_screen.orientation != ORIENT_SINGLE) {
+        gdk_draw_pixbuf(widget->window, NULL, drawPixbuf, secondaryPixbufOffsetX, secondaryPixbufOffsetY, secondaryOffsetX, secondaryOffsetY, screenW, screenH,
             GDK_RGB_DITHER_NONE, 0,0);
-
-    drawPixbuf = NULL;
-    if(nds_screen_size_ratio != 1.0) {
-        g_object_unref(resizedPixbuf);
     }
-    g_object_unref(origPixbuf);
+
+    g_object_unref(drawPixbuf);
 
     return TRUE;
 }
 
 /////////////////////////////// KEYS AND STYLUS UPDATE ///////////////////////////////////////
 
-static inline void rotoscaled_touchpos(gint x, gint y)
+static gboolean rotoscaled_touchpos(gint x, gint y, gboolean start)
 {
-    int X, Y, rot, inv, dah, daw, gap_corr;
     u16 EmuX, EmuY;
+    gint X, Y;
 
-    rot = ( nds_screen_rotation_angle == 90 || nds_screen_rotation_angle == 270);
-    inv = ( nds_screen_rotation_angle == 180 || nds_screen_rotation_angle == 90);
-    gap_corr = inv ? 0 : nds_gap_size;
-    dah = GTK_WIDGET(pDrawingArea)->allocation.height;
-    daw = GTK_WIDGET(pDrawingArea)->allocation.width;
-    if(!rot){
-        X = x - (daw-256/nds_screen_size_ratio)/2; 
-        Y = y - (dah-nds_gap_size-384/nds_screen_size_ratio)/2-gap_corr;
+    if (nds_screen.touch_x == -1 || nds_screen.touch_y == -1) {
+        return FALSE;
+    }
+
+    if (nds_screen.rotation_angle == 0 || nds_screen.rotation_angle == 180) {
+        X = (x - nds_screen.touch_x) * 256 / nds_screen.touch_width;
+        Y = (y - nds_screen.touch_y) * 192 / nds_screen.touch_height;
     } else {
-        X = y - (dah-256/nds_screen_size_ratio)/2; 
-        Y = x - (daw-nds_gap_size-384/nds_screen_size_ratio)/2-gap_corr;
+        X = (y - nds_screen.touch_y) * 256 / nds_screen.touch_height;
+        Y = (x - nds_screen.touch_x) * 192 / nds_screen.touch_width;
     }
-    X = int (X * nds_screen_size_ratio);
-    Y = int (Y * nds_screen_size_ratio)-192;
 
-    if(inv){
-        Y = -Y;
-    }
-    
-    if((inv && !rot) || (!inv && rot)){
+    if (nds_screen.rotation_angle == 180 || nds_screen.rotation_angle == 270) {
         X = 255 - X;
     }
 
-    LOG("X=%d, Y=%d\n", x,y);
+    if (nds_screen.rotation_angle == 90 || nds_screen.rotation_angle == 180) {
+        Y = 191 - Y;
+    }
 
-    // FIXME: should ignore events only when STARTING touched-position 
-    //        was outside touchscreen - desmume window does not have physical band
-    //        to limit movement of stylus
-    if ( Y >= 0 ) {
+    LOG("X=%d, Y=%d\n",x,y);
+
+    if (!start || (X >= 0 && Y >= 0 && X < 256 && Y < 192)) {
         EmuX = CLAMP(X, 0, 255);
         EmuY = CLAMP(Y, 0, 191);
         NDS_setTouchPos(EmuX, EmuY);
+        return TRUE;
     }
+
+    return FALSE;
 }
 
 static gboolean Stylus_Move(GtkWidget *w, GdkEventMotion *e, gpointer data)
@@ -1179,7 +1282,7 @@ static gboolean Stylus_Move(GtkWidget *w, GdkEventMotion *e, gpointer data)
         }
 
         if(state & GDK_BUTTON1_MASK)
-            rotoscaled_touchpos(x,y);
+            rotoscaled_touchpos(x, y, FALSE);
     }
 
     return TRUE;
@@ -1201,12 +1304,11 @@ static gboolean Stylus_Press(GtkWidget * w, GdkEventButton * e,
         return TRUE;
 
     if (e->button == 1) {
-        click = TRUE;
-
         gdk_window_get_pointer(w->window, &x, &y, &state);
 
         if(state & GDK_BUTTON1_MASK)
-            rotoscaled_touchpos(x, y);
+            if (rotoscaled_touchpos(x, y, TRUE))
+                click = TRUE;
     }
 
     return TRUE;
@@ -1402,19 +1504,7 @@ static void AcceptNewJoyKey(GtkWidget *w, GdkEventFocus *e, struct modify_key_ct
 {
     gchar *YouPressed;
 
-    switch (ctx->key_id) {
-    case KEY_RIGHT:
-    case KEY_LEFT:
-        ctx->mk_key_chosen = get_joy_axis(KEY_LEFT, KEY_RIGHT);
-        break;
-    case KEY_UP:
-    case KEY_DOWN:
-        ctx->mk_key_chosen = get_joy_axis(KEY_UP, KEY_DOWN);
-        break;
-    default:
-        ctx->mk_key_chosen = get_joy_key(ctx->key_id);
-        break;
-    }
+    ctx->mk_key_chosen = get_joy_key(ctx->key_id);
 
     YouPressed = g_strdup_printf("You pressed : %d\nClick OK to keep this key.", ctx->mk_key_chosen);
     gtk_label_set(GTK_LABEL(ctx->label), YouPressed);
@@ -1450,16 +1540,7 @@ static void Modify_JoyKey(GtkWidget* widget, gpointer data)
    
     switch(gtk_dialog_run(GTK_DIALOG(mkDialog))) {
     case GTK_RESPONSE_OK:
-        switch (ctx.key_id) {
-        case KEY_RIGHT:
-        case KEY_LEFT:
-          Keypad_Temp[KEY_RIGHT-1] = Keypad_Temp[KEY_LEFT-1] = ctx.mk_key_chosen;
-        case KEY_UP:
-        case KEY_DOWN:
-          Keypad_Temp[KEY_UP-1] = Keypad_Temp[KEY_DOWN-1] = ctx.mk_key_chosen;
-        default:
-          Keypad_Temp[Key] = ctx.mk_key_chosen;
-        }
+        Keypad_Temp[Key] = ctx.mk_key_chosen;
         Key_Label = g_strdup_printf("%s (%d)", key_names[Key], Keypad_Temp[Key]);
         gtk_button_set_label(GTK_BUTTON(widget), Key_Label);
         g_free(Key_Label);
@@ -1555,27 +1636,42 @@ static void ToggleLayerVisibility(GtkToggleAction* action, gpointer data)
 static void Printscreen()
 {
     GdkPixbuf *screenshot;
-    gchar *filename;
+    gchar *filename, *filen;
     GError *error = NULL;
     u8 *rgb;
     static int seq = 0;
+    gint H, W;
 
-    rgb = (u8 *) malloc(SCREENS_PIXEL_SIZE*3);
+    rgb = (u8 *) malloc(SCREENS_PIXEL_SIZE*SCREEN_BYTES_PER_PIXEL);
     if (!rgb)
         return;
 
-    gpu_screen_to_rgb(rgb, SCREENS_PIXEL_SIZE);
+    if (nds_screen.rotation_angle == 0 || nds_screen.rotation_angle == 180) {
+        W = screen_size[nds_screen.orientation].width;
+        H = screen_size[nds_screen.orientation].height;
+    } else {
+        W = screen_size[nds_screen.orientation].height;
+        H = screen_size[nds_screen.orientation].width;
+    }
+
+    gpu_screen_to_rgb(rgb, W*H*SCREEN_BYTES_PER_PIXEL);
     screenshot = gdk_pixbuf_new_from_data(rgb,
                           GDK_COLORSPACE_RGB,
                           FALSE,
                           8,
-                          256,
-                          192*2,
-                          256*3, 
+                          W,
+                          H,
+                          W*SCREEN_BYTES_PER_PIXEL,
                           NULL,
                           NULL);
 
-    filename = g_strdup_printf("./desmume-screenshot-%d.png", seq);
+    filen = g_strdup_printf("desmume-screenshot-%d.png", seq);
+#if GLIB_CHECK_VERSION(2,14,0)
+    filename = g_build_filename(g_get_user_special_dir(G_USER_DIRECTORY_PICTURES), filen, NULL);
+#else
+    filename = g_build_filename("./", filen, NULL);
+#endif
+
     gdk_pixbuf_save(screenshot, filename, "png", &error, NULL);
     if (error) {
         g_error_free (error);
@@ -1587,6 +1683,7 @@ static void Printscreen()
     free(rgb);
     g_object_unref(screenshot);
     g_free(filename);
+    g_free(filen);
 }
 
 #ifdef DESMUME_GTK_FIRMWARE_BROKEN
@@ -1693,7 +1790,7 @@ static inline void _updateDTools()
 
 /////////////////////////////// MAIN EMULATOR LOOP ///////////////////////////////
 
-class GtkDriver : public BaseDriver
+class GtkDriver : public UnixDriver
 {
 public:
     virtual void EMU_DebugIdleUpdate()
@@ -1909,7 +2006,7 @@ static gboolean timeout_exit_cb(gpointer data)
 
 
 static int
-common_gtk_main( struct configured_features *my_config)
+common_gtk_main( class configured_features *my_config)
 {
     driver = new GtkDriver();
 
@@ -2033,6 +2130,9 @@ common_gtk_main( struct configured_features *my_config)
 
     keyfile = desmume_config_read_file(gtk_kb_cfg);
 
+    memset(&nds_screen, 0, sizeof(nds_screen));
+    nds_screen.orientation = ORIENT_VERTICAL;
+
     /* Create the window */
     pWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(pWindow), "Desmume");
@@ -2062,6 +2162,10 @@ common_gtk_main( struct configured_features *my_config)
             1, G_CALLBACK(Modify_Interpolation), NULL);
     gtk_action_group_add_radio_actions(action_group, frameskip_entries, G_N_ELEMENTS(frameskip_entries), 
             0, G_CALLBACK(Modify_Frameskip), NULL);
+    gtk_action_group_add_radio_actions(action_group, rotation_entries, G_N_ELEMENTS(rotation_entries), 
+            0, G_CALLBACK(SetRotation), NULL);
+    gtk_action_group_add_radio_actions(action_group, orientation_entries, G_N_ELEMENTS(orientation_entries), 
+            0, G_CALLBACK(SetOrientation), NULL);
     {
         GList * list = gtk_action_group_list_actions(action_group);
         g_list_foreach(list, dui_set_accel_group, accel_group);

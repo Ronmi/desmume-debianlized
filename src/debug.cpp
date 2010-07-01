@@ -36,6 +36,8 @@
 #include "lua-engine.h"
 #endif
 
+armcpu_t* TDebugEventData::cpu() { return procnum==0?&NDS_ARM9:&NDS_ARM7; }
+
 TDebugEventData DebugEventData;
 u32 debugFlag;
 
@@ -43,25 +45,30 @@ u32 debugFlag;
 const bool debug_acl = false;
 
 static bool acl_check_access(u32 adr, u32 access) {
-	//tweak the access value with the execution mode.
-	//user code is USR and every other mode is SYS.
-	//this is weird logic, but I didn't want to change..
-	access |= 1;
-	if ((NDS_ARM9.CPSR.val & 0x1F) == 0x10) {
-		// is user mode access
-		access ^= 1;
-	}
+
+	//non-user modes get separate access handling, so check that here
+	if(NDS_ARM9.CPSR.bits.mode != USR)
+		access |= 1;
+	
 	if (armcp15_isAccessAllowed((armcp15_t *)NDS_ARM9.coproc[15],adr,access)==FALSE) {
 		HandleDebugEvent(DEBUG_EVENT_ACL_EXCEPTION);
 	}
 	return true;
 }
 
-
 void HandleDebugEvent_ACL_Exception()
 {
 	printf("ACL EXCEPTION!\n");
-	emu_halt();
+	if(DebugEventData.memAccessType == MMU_AT_CODE)
+		armcpu_exception(DebugEventData.cpu(),EXCEPTION_PREFETCH_ABORT);
+	else if(DebugEventData.memAccessType == MMU_AT_DATA)
+		armcpu_exception(DebugEventData.cpu(),EXCEPTION_DATA_ABORT);
+}
+
+
+static bool CheckRange(u32 adr, u32 min, u32 len)
+{
+	return (adr>=min && adr<min+len);
 }
 
 void HandleDebugEvent_Read()
@@ -206,6 +213,26 @@ void DEBUG_reset()
 	DEBUG_Notify = DebugNotify();
 	DEBUG_statistics = DebugStatistics();
 	printf("DEBUG_reset: %08X\n",&DebugStatistics::print); //force a reference to this function
+}
+
+static void DEBUG_dumpMemory_fill(EMUFILE *fp, u32 size)
+{
+	static std::vector<u8> buf;
+	buf.resize(size);
+	memset(&buf[0],0,size);
+	fp->fwrite(&buf[0],size);
+}
+
+void DEBUG_dumpMemory(EMUFILE* fp)
+{
+	fp->fseek(0x000000,SEEK_SET); fp->fwrite(MMU.MAIN_MEM,0x800000); //arm9 main mem (8192K)
+	fp->fseek(0x900000,SEEK_SET); fp->fwrite(MMU.ARM9_DTCM,0x4000); //arm9 DTCM (16K)
+	fp->fseek(0xA00000,SEEK_SET); fp->fwrite(MMU.ARM9_ITCM,0x8000); //arm9 ITCM (32K)
+	fp->fseek(0xB00000,SEEK_SET); fp->fwrite(MMU.ARM9_LCD,0xA4000); //LCD mem 656K
+	fp->fseek(0xC00000,SEEK_SET); fp->fwrite(MMU.ARM9_VMEM,0x800); //OAM
+	fp->fseek(0xD00000,SEEK_SET); fp->fwrite(MMU.ARM7_ERAM,0x10000); //arm7 WRAM (64K)
+	fp->fseek(0xE00000,SEEK_SET); fp->fwrite(MMU.ARM7_WIRAM,0x10000); //arm7 wifi RAM ?
+	fp->fseek(0xF00000,SEEK_SET); fp->fwrite(MMU.SWIRAM,0x8000); //arm9/arm7 shared WRAM (32KB)
 }
 
 //----------------------------------------------------
@@ -371,7 +398,7 @@ void DebugNotify::ReadBeyondEndOfCart(u32 addr, u32 romsize)
 {
 #ifdef DEVELOPER
 	if(!ping(DEBUG_NOTIFY_READ_BEYOND_END_OF_CART)) return;
-	INFO("Reading beyond end of cart! ... %08X > %08X\n",addr,romsize);
+	INFO("Reading beyond end of cart! ... %08X >= %08X\n",addr,romsize);
 #endif
 }
 

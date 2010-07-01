@@ -218,8 +218,8 @@ u32 MMU_struct::MMU_MASK[2][256] = {
 		/* 5X*/	DUP16(0x000007FF),
 		/* 6X*/	DUP16(0x00FFFFFF),
 		/* 7X*/	DUP16(0x000007FF),
-		/* 8X*/	DUP16(ROM_MASK),
-		/* 9X*/	DUP16(ROM_MASK),
+		/* 8X*/	DUP16(0x00000003),
+		/* 9X*/	DUP16(0x00000003),
 		/* AX*/	DUP16(0x0000FFFF),
 		/* BX*/	DUP16(0x00000003),
 		/* CX*/	DUP16(0x00000003),
@@ -239,8 +239,8 @@ u32 MMU_struct::MMU_MASK[2][256] = {
 		/* 5X*/	DUP16(0x00000003),
 		/* 6X*/	DUP16(0x00FFFFFF),
 		/* 7X*/	DUP16(0x00000003),
-		/* 8X*/	DUP16(ROM_MASK),
-		/* 9X*/	DUP16(ROM_MASK),
+		/* 8X*/	DUP16(0x00000003),
+		/* 9X*/	DUP16(0x00000003),
 		/* AX*/	DUP16(0x0000FFFF),
 		/* BX*/	DUP16(0x00000003),
 		/* CX*/	DUP16(0x00000003),
@@ -443,13 +443,6 @@ static inline u8* MMU_vram_physical(const int page)
 }
 
 //todo - templateize
-//note: it doesnt seem right to me to map LCDC whenever a bank is allocated to BG/OBJ but thats how it is
-//(in FF4, when entering a town from worldmap, the subscreen tiles are via LCDC while mapped to sub BG)
-//UPDATED: i had to take them out in order to fix tetris DS music mode.
-//since then, other issues fixed FF4's problems, so they are staying out for now
-//as further, almost definitive proof that these should remain unmapped,
-//making them mapped permit's spiderman2's legal screens / intro FMV to render garbage
-//on top of the studio logo if you interrupt it by pressing enter. 
 static inline void MMU_VRAMmapRefreshBank(const int bank)
 {
 	int block = bank;
@@ -476,7 +469,6 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				break;
 			case 1: //ABG
 				vramConfiguration.banks[bank].purpose = VramConfiguration::ABG;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_ABG+ofs*8);
 				break;
 			case 2: //AOBJ
@@ -484,7 +476,6 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				switch(ofs) {
 				case 0:
 				case 1:
-					//MMU_vram_lcdc(bank);
 					MMU_vram_arm9(bank,VRAM_PAGE_AOBJ+ofs*8);
 					break;
 				default:
@@ -512,7 +503,6 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				break;
 			case 1: //ABG
 				vramConfiguration.banks[bank].purpose = VramConfiguration::ABG;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_ABG+ofs*8);
 				break;
 			case 2: //arm7
@@ -534,7 +524,6 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				MMU.texInfo.textureSlotAddr[ofs] = MMU_vram_physical(vram_bank_info[bank].page_addr);
 				break;
 			case 4: //BGB or BOBJ
-				//MMU_vram_lcdc(bank);
 				if(bank == VRAM_BANK_C)  {
 					vramConfiguration.banks[bank].purpose = VramConfiguration::BBG;
 					MMU_vram_arm9(bank,VRAM_PAGE_BBG); //BBG
@@ -558,11 +547,9 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				break;
 			case 1: //ABG
 				vramConfiguration.banks[bank].purpose = VramConfiguration::ABG;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_ABG);
 				break;
 			case 2: //AOBJ
-				//MMU_vram_lcdc(bank);
 				vramConfiguration.banks[bank].purpose = VramConfiguration::AOBJ;
 				MMU_vram_arm9(bank,VRAM_PAGE_AOBJ);
 				break;
@@ -599,13 +586,11 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				break;
 			case 1: //ABG
 				vramConfiguration.banks[bank].purpose = VramConfiguration::ABG;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_ABG+pageofs);
 				MMU_vram_arm9(bank,VRAM_PAGE_ABG+pageofs+2); //unexpected mirroring (required by spyro eternal night)
 				break;
 			case 2: //AOBJ
 				vramConfiguration.banks[bank].purpose = VramConfiguration::AOBJ;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_AOBJ+pageofs);
 				MMU_vram_arm9(bank,VRAM_PAGE_AOBJ+pageofs+2); //unexpected mirroring - I have no proof, but it is inferred from the ABG above
 				break;
@@ -649,7 +634,6 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				break;
 			case 1: //BBG
 				vramConfiguration.banks[bank].purpose = VramConfiguration::BBG;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_BBG);
 				MMU_vram_arm9(bank,VRAM_PAGE_BBG + 4); //unexpected mirroring
 				break;
@@ -675,13 +659,11 @@ static inline void MMU_VRAMmapRefreshBank(const int bank)
 				break;
 			case 1: //BBG
 				vramConfiguration.banks[bank].purpose = VramConfiguration::BBG;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_BBG+2);
 				MMU_vram_arm9(bank,VRAM_PAGE_BBG+3); //unexpected mirroring
 				break;
 			case 2: //BOBJ
 				vramConfiguration.banks[bank].purpose = VramConfiguration::BOBJ;
-				//MMU_vram_lcdc(bank);
 				MMU_vram_arm9(bank,VRAM_PAGE_BOBJ);
 				break;
 			case 3: //B OBJ extended palette
@@ -757,8 +739,22 @@ static inline void MMU_VRAMmapControl(u8 block, u8 VRAMBankCnt)
 	T1WriteByte(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x240 + block, VRAMBankCnt);
 
 	//refresh all bank settings
-	for(int i=0;i<VRAM_BANKS;i++)
-		MMU_VRAMmapRefreshBank(i);
+	//these are enumerated so that we can tune the order they get applied
+	//in order to emulate prioritization rules for memory regions
+	//with multiple banks mapped.
+	//We're probably still not mapping things 100% correctly, but this helped us get closer:
+	//goblet of fire "care of magical creatures" maps I and D to BOBJ (the I is an accident)
+	//and requires A to override it.
+	//This may create other bugs....
+	MMU_VRAMmapRefreshBank(VRAM_BANK_I);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_H);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_G);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_F);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_E);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_D);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_C);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_B);
+	MMU_VRAMmapRefreshBank(VRAM_BANK_A);
 
 	//printf(vramConfiguration.describe().c_str());
 	//printf("vram remapped at vcount=%d\n",nds.VCount);
@@ -833,8 +829,6 @@ static inline void MMU_VRAMmapControl(u8 block, u8 VRAMBankCnt)
 
 
 void MMU_Init(void) {
-	int i;
-
 	LOG("MMU init\n");
 
 	memset(&MMU, 0, sizeof(MMU_struct));
@@ -842,13 +836,9 @@ void MMU_Init(void) {
 	MMU.CART_ROM = MMU.UNUSED_RAM;
 	MMU.CART_ROM_MASK = 3;
 
-    for(i = 0x80; i<0xA0; ++i)
-    {
-		MMU_struct::MMU_MEM[0][i] = MMU.CART_ROM;
-		MMU_struct::MMU_MEM[1][i] = MMU.CART_ROM;
-    }
-
-	MMU.DTCMRegion = 0x027C0000;
+	//MMU.DTCMRegion = 0x027C0000;
+	//even though apps may change dtcm immediately upon startup, this is the correct hardware starting value:
+	MMU.DTCMRegion = 0x08000000;
 	MMU.ITCMRegion = 0x00000000;
 
 	IPC_FIFOinit(ARMCPU_ARM9);
@@ -989,36 +979,17 @@ void MMU_Reset()
 
 void MMU_setRom(u8 * rom, u32 mask)
 {
-	unsigned int i;
 	MMU.CART_ROM = rom;
 	MMU.CART_ROM_MASK = mask;
-	
-	for(i = 0x80; i<0xA0; ++i)
-	{
-		MMU_struct::MMU_MEM[0][i] = rom;
-		MMU_struct::MMU_MEM[1][i] = rom;
-		MMU_struct::MMU_MASK[0][i] = mask;
-		MMU_struct::MMU_MASK[1][i] = mask;
-	}
 	rom_mask = mask;
 }
 
 void MMU_unsetRom()
 {
-	unsigned int i;
 	MMU.CART_ROM=MMU.UNUSED_RAM;
 	MMU.CART_ROM_MASK = 3;
-	
-	for(i = 0x80; i<0xA0; ++i)
-	{
-		MMU_struct::MMU_MEM[0][i] = MMU.UNUSED_RAM;
-		MMU_struct::MMU_MEM[1][i] = MMU.UNUSED_RAM;
-		MMU_struct::MMU_MASK[0][i] = ROM_MASK;
-		MMU_struct::MMU_MASK[1][i] = ROM_MASK;
-	}
 	rom_mask = ROM_MASK;
 }
-char txt[80];	
 
 static void execsqrt() {
 	u32 ret;
@@ -1429,7 +1400,7 @@ u32 MMU_readFromGC()
 		// --- Ninja SD commands end ---------------------------------
 
 		default:
-			INFO("READ CARD command: %02X%02X%02X%02X%02X%02X%02X%02X\t", 
+			INFO("READ CARD command: %02X%02X%02X%02X% 02X%02X%02X%02X\t", 
 					card.command[0], card.command[1], card.command[2], card.command[3],
 					card.command[4], card.command[5], card.command[6], card.command[7]);
 			INFO("FROM: %08X\n", (PROCNUM ? NDS_ARM7:NDS_ARM9).instruct_adr);
@@ -2029,7 +2000,7 @@ void DmaController::doCopy()
 	if(todo == 0) todo = 0x200000; //according to gbatek.. //TODO - this should not work this way for arm7 according to gbatek
 	if(startmode == EDMAMode_MemDisplay) todo = 128; //this is a hack. maybe an alright one though. it should be 4 words at a time. this is a whole scanline
 	if(startmode == EDMAMode_Card) todo *= 0x80;
-	if(startmode == EDMAMode_GXFifo) todo = std::min(wordcount,(u32)112);
+	if(startmode == EDMAMode_GXFifo) todo = std::min(todo,(u32)112);
 
 	//determine how we're going to copy
 	bool bogarted = false;
@@ -2398,6 +2369,7 @@ void FASTCALL _MMU_ARM9_write08(u32 adr, u8 val)
 			case REG_AUXSPIDATA:
 				if(val!=0) MMU.AUX_SPI_CMD = val & 0xFF;
 				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM9][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM9));
+				MMU.AUX_SPI_CNT &= ~0x80; //remove busy flag
 				return;
 
 			case REG_WRAMCNT:	
@@ -2741,6 +2713,7 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 
 				//T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, bm_transfer(&MMU.bupmem, val));
 				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM9][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM9));
+				MMU.AUX_SPI_CNT &= ~0x80; //remove busy flag
 				return;
 
 			case REG_DISPA_BG0CNT :
@@ -2801,14 +2774,10 @@ void FASTCALL _MMU_ARM9_write16(u32 adr, u16 val)
 				break;
 
 			case REG_IME:
-				{
-					NDS_Reschedule();
-					u32 old_val = MMU.reg_IME[ARMCPU_ARM9];
-					u32 new_val = val & 0x01;
-					MMU.reg_IME[ARMCPU_ARM9] = new_val;
-					T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x208, val);
-					return;
-				}
+				NDS_Reschedule();
+				MMU.reg_IME[ARMCPU_ARM9] = val & 0x01;
+				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x208, val);
+				return;
 			case REG_IE :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM9] = (MMU.reg_IE[ARMCPU_ARM9]&0xFFFF0000) | val;
@@ -3004,6 +2973,9 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 			case 0x40005A:
 			case 0x40005B:
 			case 0x40005C:		// Individual Commands
+				if (gxFIFO.size > 254)
+					nds.freezeBus = TRUE;
+
 				((u32 *)(MMU.MMU_MEM[ARMCPU_ARM9][0x40]))[(adr & 0xFFF) >> 2] = val;
 				gfx3d_sendCommand(adr, val);
 				return;
@@ -3214,13 +3186,9 @@ void FASTCALL _MMU_ARM9_write32(u32 adr, u32 val)
 				break;
 
 			case REG_IME : 
-				{
-					NDS_Reschedule();
-			        u32 old_val = MMU.reg_IME[ARMCPU_ARM9];
-					u32 new_val = val & 0x01;
-					MMU.reg_IME[ARMCPU_ARM9] = new_val;
-					T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x208, val);
-				}
+				NDS_Reschedule();
+				MMU.reg_IME[ARMCPU_ARM9] = val & 0x01;
+				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x208, val);
 				return;
 				
 			case REG_IE :
@@ -3642,7 +3610,7 @@ void FASTCALL _MMU_ARM7_write08(u32 adr, u8 val)
 		return;
     }
 
-	if ((adr & 0xFF800000) == 0x04800000)
+	if ((adr & 0xFFFF0000) == 0x04800000)
 	{
 		/* is wifi hardware, dont intermix with regular hardware registers */
 		// 8-bit writes to wifi I/O and RAM are ignored
@@ -3691,6 +3659,7 @@ void FASTCALL _MMU_ARM7_write08(u32 adr, u8 val)
 			case REG_AUXSPIDATA:
 				if(val!=0) MMU.AUX_SPI_CMD = val & 0xFF;
 				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM7));
+				MMU.AUX_SPI_CNT &= ~0x80; //remove busy flag
 				return;
 		}
 		MMU.MMU_MEM[ARMCPU_ARM7][adr>>20][adr&MMU.MMU_MASK[ARMCPU_ARM7][adr>>20]]=val;
@@ -3721,7 +3690,7 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 	}
 
 	//wifi mac access
-	if ((adr>=0x04800000)&&(adr<0x05000000))
+	if ((adr & 0xFFFF0000) == 0x04800000)
 	{
 		WIFI_write16(adr,val);
 		T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][0x48], adr&MMU.MMU_MASK[ARMCPU_ARM7][0x48], val);
@@ -3774,6 +3743,7 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 
 				//T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, bm_transfer(&MMU.bupmem, val));
 				T1WriteWord(MMU.MMU_MEM[ARMCPU_ARM7][(REG_AUXSPIDATA >> 20) & 0xff], REG_AUXSPIDATA & 0xfff, MMU_new.backupDevice.data_command((u8)val,ARMCPU_ARM7));
+				MMU.AUX_SPI_CNT &= ~0x80; //remove busy flag
 			return;
 
 			case REG_SPICNT :
@@ -3897,13 +3867,16 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 								case 0x20 :
 									val = 0;
 									break;
-								case 0x30 :
-									val = 0;
+								case 0x30: //Z1
+									//used for pressure calculation - must be nonzero or else some softwares will think the stylus is up.
+									if(nds.isTouch) val = 2048;
+									else val = 0;
 									break;
-								case 0x40 :
-									val = 0;
+								case 0x40: //Z2
+									//used for pressure calculation. we dont support pressure calculation so just return something.
+									val = 2048;
 									break;
-								case 0x50 :
+								case 0x50:
 									if(spicnt & 0x800)
 									{
 										if(partie)
@@ -3943,14 +3916,10 @@ void FASTCALL _MMU_ARM7_write16(u32 adr, u16 val)
 				/* NOTICE: Perhaps we have to use gbatek-like reg names instead of libnds-like ones ...*/
 				
 			case REG_IME : 
-				{
-					NDS_Reschedule();
-					u32 old_val = MMU.reg_IME[ARMCPU_ARM7];
-					u32 new_val = val & 1;
-					MMU.reg_IME[ARMCPU_ARM7] = new_val;
-					T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM7][0x40], 0x208, val);
-					return;
-				}
+				NDS_Reschedule();
+				MMU.reg_IME[ARMCPU_ARM7] = val & 0x01;
+				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM7][0x40], 0x208, val);
+				return;
 			case REG_IE :
 				NDS_Reschedule();
 				MMU.reg_IE[ARMCPU_ARM7] = (MMU.reg_IE[ARMCPU_ARM7]&0xFFFF0000) | val;
@@ -4023,10 +3992,8 @@ void FASTCALL _MMU_ARM7_write32(u32 adr, u32 val)
 		return;
 	}
 
-	if ((adr & 0xFF800000) == 0x04800000) 
+	if ((adr & 0xFFFF0000) == 0x04800000)
 	{
-		// access to non regular hw registers
-		// return to not overwrite valid data
 		WIFI_write16(adr, val & 0xFFFF);
 		WIFI_write16(adr+2, val >> 16);
 		T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM7][0x48], adr&MMU.MMU_MASK[ARMCPU_ARM7][0x48], val);
@@ -4050,14 +4017,10 @@ void FASTCALL _MMU_ARM7_write32(u32 adr, u32 val)
 				break;
 
 			case REG_IME : 
-			{
 				NDS_Reschedule();
-				u32 old_val = MMU.reg_IME[ARMCPU_ARM7];
-				u32 new_val = val & 1;
-				MMU.reg_IME[ARMCPU_ARM7] = new_val;
+				MMU.reg_IME[ARMCPU_ARM7] = val & 0x01;
 				T1WriteLong(MMU.MMU_MEM[ARMCPU_ARM7][0x40], 0x208, val);
 				return;
-			}
 				
 			case REG_IE :
 				NDS_Reschedule();
@@ -4117,12 +4080,15 @@ u8 FASTCALL _MMU_ARM7_read08(u32 adr)
 	{
 		//u32 prot = T1ReadLong_guaranteedAligned(MMU.MMU_MEM[ARMCPU_ARM7][0x40], 0x04000308 & MMU.MMU_MASK[ARMCPU_ARM7][0x40]);
 		//if (prot) INFO("MMU7 read 08 at 0x%08X (PC 0x%08X) BIOSPROT address 0x%08X\n", adr, NDS_ARM7.R[15], prot);
+		
+		//How accurate is this? our R[15] may not be exactly what the hardware uses (may use something less by up to 0x08)
+		//This may be inaccurate at the very edge cases.
 		if (NDS_ARM7.R[15] > 0x3FFF)
 			return 0xFF;
 	}
 
 	// wifi mac access 
-	if ((adr>=0x04800000)&&(adr<0x05000000))
+	if ((adr & 0xFFFF0000) == 0x04800000)
 	{
 		if (adr & 1)
 			return (WIFI_read16(adr-1) >> 8) & 0xFF;
@@ -4171,7 +4137,7 @@ u16 FASTCALL _MMU_ARM7_read16(u32 adr)
 	}
 
 	//wifi mac access
-	if ((adr>=0x04800000)&&(adr<0x05000000))
+	if ((adr & 0xFFFF0000) == 0x04800000)
 		return WIFI_read16(adr) ;
 
 	if ( (adr >= 0x08000000) && (adr < 0x0A010000) )
@@ -4264,7 +4230,7 @@ u32 FASTCALL _MMU_ARM7_read32(u32 adr)
 	}
 
 	//wifi mac access
-	if ((adr>=0x04800000)&&(adr<0x05000000))
+	if ((adr & 0xFFFF0000) == 0x04800000)
 		return (WIFI_read16(adr) | (WIFI_read16(adr+2) << 16));
 
 	if ( (adr >= 0x08000000) && (adr < 0x0A010000) )

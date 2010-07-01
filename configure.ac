@@ -62,14 +62,18 @@ if test ! "x$SDLCONFIG" = "x" ; then
   SDL_LIBS=`$SDLCONFIG --libs`
   AC_SUBST(SDL_CFLAGS)
   AC_SUBST(SDL_LIBS)
-  HAVE_SDL="yes"
 else
-  HAVE_SDL="no"
+  AC_MSG_ERROR([sdl is required to build desmume])
 fi
 
 dnl - Check for the OpenGL includes
-AC_CHECK_HEADERS([GL/gl.h])
-AC_CHECK_HEADERS([GL/glu.h])
+AC_CHECK_HEADERS([GL/gl.h],
+		 [AC_CHECK_HEADERS([GL/glu.h], [have_gl_h=yes], [have_gl_h=no])],
+		 [have_gl_h=no])
+if test "have_gl_h" = "no" ; then
+	AC_MSG_WARN([Building without GL support because of missing headers.])
+fi
+AM_CONDITIONAL([HAVE_GL], [test "${have_gl_h}" = "yes"])
 
 dnl - if --enable-osmesa is used, check for it
 AC_ARG_ENABLE([osmesa],
@@ -230,32 +234,29 @@ AM_CONDITIONAL([HAVE_WX], [test "x$wxwidgets" = "xyes"])
 
 dnl - Determine which UIs to build and if po/ should be included
 PO_DIR=""
-if test "x$HAVE_SDL" = "xyes"; then
-  UI_DIR="cli $UI_DIR"
-  if test "x$HAVE_GTK" = "xyes"; then
-    UI_DIR="gtk $UI_DIR"
-  fi
-  if test "x$wxwin" = "xyes"; then
-    UI_DIR="wx $UI_DIR"
-  fi
+UI_DIR="cli $UI_DIR"
+if test "x$HAVE_GTK" = "xyes"; then
+  UI_DIR="gtk $UI_DIR"
+fi
+if test "x$wxwin" = "xyes"; then
+  UI_DIR="wx $UI_DIR"
+fi
 
-  if test "x$HAVE_LIBGLADE" = "xyes"; then
-    AC_PROVIDE_IFELSE([IT_PROG_INTLTOOL],[
-      # libglade requires SDL too
-      UI_DIR="gtk-glade $UI_DIR"
+if test "x$HAVE_LIBGLADE" = "xyes"; then
+  AC_PROVIDE_IFELSE([IT_PROG_INTLTOOL],[
+    UI_DIR="gtk-glade $UI_DIR"
 
-      dnl -- localization for gtk-glade UI
-      GETTEXT_PACKAGE=desmume
-      AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Define to the gettext package name])
-      AC_SUBST(GETTEXT_PACKAGE)
-      ALL_LINGUAS="fr nb pt_BR sv zh_CN zh_TW"
-      AM_GLIB_GNU_GETTEXT
-      PO_DIR="po"
-      PO_MAKEFILE="po/Makefile.in"
-    ],[
-      echo "WARNING: intltool and/or gettext are not available therefore the gtk-glade interface won't be installed. The gtk-glade UI requires intltool and gettext."
-    ])
-  fi
+    dnl -- localization for gtk-glade UI
+    GETTEXT_PACKAGE=desmume
+    AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Define to the gettext package name])
+    AC_SUBST(GETTEXT_PACKAGE)
+    ALL_LINGUAS="fr nb pt_BR sv zh_CN zh_TW"
+    AM_GLIB_GNU_GETTEXT
+    PO_DIR="po"
+    PO_MAKEFILE="po/Makefile.in"
+  ],[
+    echo "WARNING: intltool and/or gettext are not available therefore the gtk-glade interface won't be installed."
+  ])
 fi
 
 dnl - wifi support
@@ -264,8 +265,8 @@ AC_ARG_ENABLE(wifi,
 	      [
 		AC_CHECK_LIB(pcap, main,[
 		  AC_DEFINE(EXPERIMENTAL_WIFI_COMM)
-		  LIBS="$LIBS -lpcap"
-		])
+		  LIBS="$LIBS -lpcap"],
+		  [AC_MSG_WARN([pcap library not found, wifi will not work])])
 	      ])
 
 dnl Set compiler library flags per target.

@@ -45,7 +45,7 @@
 
 //#define LOG_ARM9
 //#define LOG_ARM7
-bool dolog = true;
+//bool dolog = true;
 //#define LOG_TO_FILE
 //#define LOG_TO_FILE_REGS
 
@@ -78,6 +78,11 @@ int lastLag;
 int TotalLagFrames;
 
 TSCalInfo TSCal;
+
+namespace DLDI
+{
+	bool tryPatch(void* data, size_t size);
+}
 
 void Desmume_InitOnce()
 {
@@ -194,6 +199,7 @@ NDS_header * NDS_getROMHeader(void)
 	header->cardSize = MMU.CART_ROM[20];
 	memcpy(header->cardInfo, MMU.CART_ROM + 21, 8);
 	header->flags = MMU.CART_ROM[29];
+	header->romversion = MMU.CART_ROM[30];
 	header->ARM9src = T1ReadLong(MMU.CART_ROM, 32);
 	header->ARM9exe = T1ReadLong(MMU.CART_ROM, 36);
 	header->ARM9cpy = T1ReadLong(MMU.CART_ROM, 40);
@@ -288,6 +294,39 @@ static u32 ones32(u32 x)
 }
 #endif
 
+RomBanner::RomBanner(bool defaultInit)
+{
+	if(!defaultInit) return;
+	version = 1; //Version  (0001h)
+	crc16 = 0; //CRC16 across entries 020h..83Fh
+	memset(reserved,0,sizeof(reserved));
+	memset(bitmap,0,sizeof(bitmap));
+	memset(palette,0,sizeof(palette));
+	memset(titles,0,sizeof(titles));
+	for(int i=0;i<NUM_TITLES;i++)
+		wcscpy(titles[i],L"None");
+	memset(end0xFF,0,sizeof(end0xFF));
+}
+
+bool GameInfo::hasRomBanner()
+{
+	if(header.IconOff + sizeof(RomBanner) > romsize)
+		return false;
+	else return true;
+}
+
+const RomBanner& GameInfo::getRomBanner()
+{
+	//we may not have a valid banner. return a default one
+	if(!hasRomBanner())
+	{
+		static RomBanner defaultBanner(true);
+		return defaultBanner;
+	}
+	
+	return *(RomBanner*)(romdata+header.IconOff);
+}
+
 void GameInfo::populate()
 {
 	const char *regions[] = {	"JPFSEDIRKH",
@@ -310,16 +349,17 @@ void GameInfo::populate()
 
 	memset(ROMserial, 0, sizeof(ROMserial));
 	memset(ROMname, 0, sizeof(ROMname));
-	memset(ROMfullName, 0, sizeof(ROMfullName));
 
 	if (
-		// ??? in all Homebrews game title have is 2E0000EA
-		//(
+		//Option 1. - look for this instruction in the game title
+		//(did this ever work?)
 		//(header->gameTile[0] == 0x2E) && 
 		//(header->gameTile[1] == 0x00) && 
 		//(header->gameTile[2] == 0x00) && 
 		//(header->gameTile[3] == 0xEA)
 		//) &&
+		//option 2. - look for gamecode #### (default for ndstool)
+		//or an invalid gamecode
 		(
 			((header.gameCode[0] == 0x23) && 
 			(header.gameCode[1] == 0x23) && 
@@ -332,6 +372,7 @@ void GameInfo::populate()
 			header.makerCode == 0x0
 		)
 	{
+		//we can't really make a serial for a homebrew game that hasnt set a game code
 		strcpy(ROMserial, "Homebrew");
 	}
 	else
@@ -344,18 +385,24 @@ void GameInfo::populate()
 			strcat(ROMserial, regions[region]);
 		else
 			strcat(ROMserial, "Unknown");
-		memset(ROMname, 0, sizeof(ROMname));
-		memcpy(ROMname, header.gameTile, 12);
-		trim(ROMname);
-
-		u8 num = (T1ReadByte((u8*)romdata, header.IconOff) == 1)?6:7;
-		for (int i = 0; i < num; i++)
-		{
-			wcstombs(ROMfullName[i], (wchar_t *)(romdata+header.IconOff+0x240+(i*0x100)), 0x100);
-			trim(ROMfullName[i]);
-		}
-
 	}
+
+	//rom name is probably set even in homebrew
+	memset(ROMname, 0, sizeof(ROMname));
+	memcpy(ROMname, header.gameTile, 12);
+	trim(ROMname,20);
+
+		/*if(header.IconOff < romsize)
+		{
+			u8 num = (T1ReadByte((u8*)romdata, header.IconOff) == 1)?6:7;
+			for (int i = 0; i < num; i++)
+			{
+				wcstombs(ROMfullName[i], (wchar_t *)(romdata+header.IconOff+0x240+(i*0x100)), 0x100);
+				trim(ROMfullName[i]);
+			}
+		}*/
+
+	
 }
 #ifdef _WINDOWS
 
@@ -417,7 +464,8 @@ int NDS_LoadROM(const char *filename, const char *logicalFilename)
 		return -1;
 	}
 
-
+	//try auto-patching DLDI. should be benign if there is no DLDI or if it fails
+	DLDI::tryPatch((void*)gameInfo.romdata, gameInfo.romsize);
 
 	//decrypt if necessary..
 	//but this is untested and suspected to fail on big endian, so lets not support this on big endian
@@ -1142,6 +1190,8 @@ template<int procnum, int chan> struct TSequenceItem_DMA : public TSequenceItem
 	{
 		IF_DEVELOPER(DEBUG_statistics.sequencerExecutionCounters[5+procnum*4+chan]++);
 
+		//if (nds.freezeBus) return;
+
 		//printf("exec from TSequenceItem_DMA: %d %d\n",procnum,chan);
 		controller->exec();
 //		//give gxfifo dmas a chance to re-trigger
@@ -1509,7 +1559,7 @@ static void execHardware_hstart()
 	//this should be 214, but we are going to be generous for games with tight timing
 	//they shouldnt be changing any textures at 262 but they might accidentally still be at 214
 	//so..
-	if(CommonSettings.rigorous_timing && nds.VCount==214 || !CommonSettings.rigorous_timing && nds.VCount==262)
+	if((CommonSettings.rigorous_timing && nds.VCount==214) || (!CommonSettings.rigorous_timing && nds.VCount==262))
 	{
 		gfx3d_VBlankEndSignal(frameSkipper.ShouldSkip3D());
 	}
@@ -1799,7 +1849,7 @@ static /*donotinline*/ std::pair<s32,s32> armInnerLoop(
 	{
 		if(doarm9 && (!doarm7 || arm9 <= timer))
 		{
-			if(!NDS_ARM9.waitIRQ)
+			if(!NDS_ARM9.waitIRQ&&!nds.freezeBus)
 			{
 				arm9log();
 				arm9 += armcpu_exec<ARMCPU_ARM9>();
@@ -1812,11 +1862,12 @@ static /*donotinline*/ std::pair<s32,s32> armInnerLoop(
 				s32 temp = arm9;
 				arm9 = min(s32next, arm9 + kIrqWait);
 				nds.idleCycles += arm9-temp;
+				if (gxFIFO.size < 255) nds.freezeBus = FALSE;
 			}
 		}
 		if(doarm7 && (!doarm9 || arm7 <= timer))
 		{
-			if(!NDS_ARM7.waitIRQ)
+			if(!NDS_ARM7.waitIRQ&&!nds.freezeBus)
 			{
 				arm7log();
 				arm7 += (armcpu_exec<ARMCPU_ARM7>()<<1);
@@ -1895,7 +1946,7 @@ void NDS_exec(s32 nb)
 			//trap the debug-stalled condition
 			#ifdef DEVELOPER
 				singleStep = false;
-				//(gbd stub doesnt yet know how to trigger these immediately by calling reschedule)
+				//(gdb stub doesnt yet know how to trigger these immediately by calling reschedule)
 				while((NDS_ARM9.stalled || NDS_ARM7.stalled) && execute)
 				{
 					driver->EMU_DebugIdleUpdate();
@@ -1988,6 +2039,7 @@ void execHardware_interrupts()
 {
 	if((MMU.reg_IF[0]&MMU.reg_IE[0]) && (MMU.reg_IME[0]))
 	{
+		//TODO - remove GDB specific code
 //#ifdef GDB_STUB
 //		if ( armcpu_flagIrq( &NDS_ARM9)) 
 //#else
@@ -1998,7 +2050,7 @@ void execHardware_interrupts()
 			//nds.ARM9Cycle = nds.cycles;
 		}
 	}
-
+//TODO - remove GDB specific code
 	if((MMU.reg_IF[1]&MMU.reg_IE[1]) && (MMU.reg_IME[1]))
 	{
 //#ifdef GDB_STUB
@@ -2031,6 +2083,7 @@ void NDS_Reset()
 
 	nds.sleeping = FALSE;
 	nds.cardEjected = FALSE;
+	nds.freezeBus = FALSE;
 	nds.power1.lcd = nds.power1.gpuMain = nds.power1.gfx3d_render = nds.power1.gfx3d_geometry = nds.power1.gpuSub = nds.power1.dispswap = 1;
 	nds.power2.speakers = 1;
 	nds.power2.wifi = 0;
@@ -2127,25 +2180,67 @@ void NDS_Reset()
 	{
 		NDS_ARM9.swi_tab = ARM9_swi_tab;
 
-		T1WriteLong(MMU.ARM9_BIOS, 0x0000, 0xEAFFFFFE);		// loop for Reset !!!
-		T1WriteLong(MMU.ARM9_BIOS, 0x0004, 0xEAFFFFFE);		// loop for Undef instr expection
-		T1WriteLong(MMU.ARM9_BIOS, 0x0008, 0xEA00009C);		// SWI
-		T1WriteLong(MMU.ARM9_BIOS, 0x000C, 0xEAFFFFFE);		// loop for Prefetch Abort
-		T1WriteLong(MMU.ARM9_BIOS, 0x0010, 0xEAFFFFFE);		// loop for Data Abort
+		//bios chains data abort to fast irq
+
+		//exception vectors:
+		T1WriteLong(MMU.ARM9_BIOS, 0x0000, 0xEAFFFFFE);		// (infinite loop for) Reset !!!
+		//T1WriteLong(MMU.ARM9_BIOS, 0x0004, 0xEAFFFFFE);		// (infinite loop for) Undefined instruction
+		T1WriteLong(MMU.ARM9_BIOS, 0x0004, 0xEA000004);		// Undefined instruction -> Fast IRQ (just guessing)
+		T1WriteLong(MMU.ARM9_BIOS, 0x0008, 0xEA00009C);		// SWI -> ?????
+		T1WriteLong(MMU.ARM9_BIOS, 0x000C, 0xEAFFFFFE);		// (infinite loop for) Prefetch Abort
+		T1WriteLong(MMU.ARM9_BIOS, 0x0010, 0xEA000001);		// Data Abort -> Fast IRQ
 		T1WriteLong(MMU.ARM9_BIOS, 0x0014, 0x00000000);		// Reserved
-		T1WriteLong(MMU.ARM9_BIOS, 0x0018, 0xEA000095);		// Normal IRQ
-		T1WriteLong(MMU.ARM9_BIOS, 0x001C, 0x00000000);		// Fast IRQ
-		for (int t = 0; t < 156; t++)						// logo
+		T1WriteLong(MMU.ARM9_BIOS, 0x0018, 0xEA000095);		// Normal IRQ -> 0x0274
+		T1WriteLong(MMU.ARM9_BIOS, 0x001C, 0xEA00009D);		// Fast IRQ -> 0x0298
+		
+		// logo (do some games fail to boot without this? example?)
+		for (int t = 0; t < 0x9C; t++)
 			MMU.ARM9_BIOS[t + 0x20] = logo_data[t];
-		T1WriteLong(MMU.ARM9_BIOS, 0x0274, 0xE92D500F);
-		T1WriteLong(MMU.ARM9_BIOS, 0x0278, 0xEE190F11);
-		T1WriteLong(MMU.ARM9_BIOS, 0x027C, 0xE1A00620);
-		T1WriteLong(MMU.ARM9_BIOS, 0x0280, 0xE1A00600);
-		T1WriteLong(MMU.ARM9_BIOS, 0x0284, 0xE2800C40);
-		T1WriteLong(MMU.ARM9_BIOS, 0x0288, 0xE28FE000);
-		T1WriteLong(MMU.ARM9_BIOS, 0x028C, 0xE510F004);
-		T1WriteLong(MMU.ARM9_BIOS, 0x0290, 0xE8BD500F);
-		T1WriteLong(MMU.ARM9_BIOS, 0x0294, 0xE25EF004);
+
+		//...0xBC:
+
+		//(now what goes in this gap??)
+
+		//IRQ handler: get dtcm address and jump to a vector in it
+		T1WriteLong(MMU.ARM9_BIOS, 0x0274, 0xE92D500F); //STMDB SP!, {R0-R3,R12,LR} 
+		T1WriteLong(MMU.ARM9_BIOS, 0x0278, 0xEE190F11); //MRC CP15, 0, R0, CR9, CR1, 0
+		T1WriteLong(MMU.ARM9_BIOS, 0x027C, 0xE1A00620); //MOV R0, R0, LSR #C
+		T1WriteLong(MMU.ARM9_BIOS, 0x0280, 0xE1A00600); //MOV R0, R0, LSL #C 
+		T1WriteLong(MMU.ARM9_BIOS, 0x0284, 0xE2800C40); //ADD R0, R0, #4000
+		T1WriteLong(MMU.ARM9_BIOS, 0x0288, 0xE28FE000); //ADD LR, PC, #0   
+		T1WriteLong(MMU.ARM9_BIOS, 0x028C, 0xE510F004); //LDR PC, [R0, -#4] 
+
+		//????
+		T1WriteLong(MMU.ARM9_BIOS, 0x0290, 0xE8BD500F); //LDMIA SP!, {R0-R3,R12,LR}
+		T1WriteLong(MMU.ARM9_BIOS, 0x0294, 0xE25EF004); //SUBS PC, LR, #4
+
+		//-------
+		//FIQ and abort exception handler
+		//TODO - this code is copied from the bios. refactor it
+		//friendly reminder: to calculate an immediate offset: encoded = (desired_address-cur_address-8)
+
+		T1WriteLong(MMU.ARM9_BIOS, 0x0298, 0xE10FD000); //MRS SP, CPSR  
+		T1WriteLong(MMU.ARM9_BIOS, 0x029C, 0xE38DD0C0); //ORR SP, SP, #C0
+		
+		T1WriteLong(MMU.ARM9_BIOS, 0x02A0, 0xE12FF00D); //MSR CPSR_fsxc, SP
+		T1WriteLong(MMU.ARM9_BIOS, 0x02A4, 0xE59FD000 | (0x2D4-0x2A4-8)); //LDR SP, [FFFF02D4]
+		T1WriteLong(MMU.ARM9_BIOS, 0x02A8, 0xE28DD001); //ADD SP, SP, #1   
+		T1WriteLong(MMU.ARM9_BIOS, 0x02AC, 0xE92D5000); //STMDB SP!, {R12,LR}
+		
+		T1WriteLong(MMU.ARM9_BIOS, 0x02B0, 0xE14FE000); //MRS LR, SPSR
+		T1WriteLong(MMU.ARM9_BIOS, 0x02B4, 0xEE11CF10); //MRC CP15, 0, R12, CR1, CR0, 0
+		T1WriteLong(MMU.ARM9_BIOS, 0x02B8, 0xE92D5000); //STMDB SP!, {R12,LR}
+		T1WriteLong(MMU.ARM9_BIOS, 0x02BC, 0xE3CCC001); //BIC R12, R12, #1
+
+		T1WriteLong(MMU.ARM9_BIOS, 0x02C0, 0xEE01CF10); //MCR CP15, 0, R12, CR1, CR0, 0
+		T1WriteLong(MMU.ARM9_BIOS, 0x02C4, 0xE3CDC001); //BIC R12, SP, #1    
+		T1WriteLong(MMU.ARM9_BIOS, 0x02C8, 0xE59CC010); //LDR R12, [R12, #10] 
+		T1WriteLong(MMU.ARM9_BIOS, 0x02CC, 0xE35C0000); //CMP R12, #0  
+
+		T1WriteLong(MMU.ARM9_BIOS, 0x02D0, 0x112FFF3C); //BLXNE R12    
+		T1WriteLong(MMU.ARM9_BIOS, 0x02D4, 0x027FFD9C); //0x027FFD9C  
+		//---------
+
 	}
 
 #ifdef LOG_ARM7
@@ -2247,6 +2342,9 @@ void NDS_Reset()
 	NDS_ARM9.R13_svc = 0x00803FC0;
 	NDS_ARM9.R13_irq = 0x00803FA0;
 	NDS_ARM9.R13_usr = 0x00803EC0;
+	NDS_ARM9.R13_abt = NDS_ARM9.R13_usr; //????? 
+	//I think it is wrong to take gbatek's "SYS" and put it in USR--maybe USR doesnt matter. 
+	//i think SYS is all the misc modes. please verify by setting nonsensical stack values for USR here
 	NDS_ARM9.R[13] = NDS_ARM9.R13_usr;
 	//n.b.: im not sure about all these, I dont know enough about arm9 svc/irq/etc modes
 	//and how theyre named in desmume to match them up correctly. i just guessed.

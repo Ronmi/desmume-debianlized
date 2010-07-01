@@ -365,6 +365,7 @@ public:
 	{
 		Sampler() {}
 
+		bool enabled;
 		int width, height;
 		int wmask, hmask;
 		int wrap;
@@ -379,6 +380,7 @@ public:
 			wmask = width-1;
 			hmask = height-1;
 			wrap = (texParam>>16)&0xF;
+			enabled = gfx3d.renderState.enableTexturing && (texFormat!=0);
 		}
 
 		FORCEINLINE void clamp(int &val, const int size, const int sizemask){
@@ -430,6 +432,9 @@ public:
 
 	FORCEINLINE FragmentColor sample(float u, float v)
 	{
+		static FragmentColor white = MakeFragmentColor(63,63,63,31);
+		if(!sampler.enabled) return white;
+
 		//finally, we can use floor here. but, it is slower than we want.
 		//the best solution is probably to wait until the pipeline is full of fixed point
 		s32 iu = s32floor(u);
@@ -491,33 +496,24 @@ public:
 				v = shader.invv*shader.w;
 				texColor = sample(u,v);
 				FragmentColor toonColor = engine->toonTable[shader.materialColor.r>>1];
-				if(sampler.texFormat == 0)
+			
+				if(gfx3d.renderState.shading == GFX3D_State::HIGHLIGHT)
 				{
-					//if no texture is set then we dont need to modulate texture with toon 
-					//but rather just use toon directly
-					dst = toonColor;
-					dst.a = shader.materialColor.a;
+					dst.r = modulate_table[texColor.r][shader.materialColor.r];
+					dst.g = modulate_table[texColor.g][shader.materialColor.r];
+					dst.b = modulate_table[texColor.b][shader.materialColor.r];
+					dst.a = modulate_table[GFX3D_5TO6(texColor.a)][GFX3D_5TO6(shader.materialColor.a)]>>1;
+
+					dst.r = min<u8>(63, (dst.r + toonColor.r));
+					dst.g = min<u8>(63, (dst.g + toonColor.g));
+					dst.b = min<u8>(63, (dst.b + toonColor.b));
 				}
 				else
 				{
-					if(gfx3d.renderState.shading == GFX3D_State::HIGHLIGHT)
-					{
-						dst.r = modulate_table[texColor.r][shader.materialColor.r];
-						dst.g = modulate_table[texColor.g][shader.materialColor.r];
-						dst.b = modulate_table[texColor.b][shader.materialColor.r];
-						dst.a = modulate_table[GFX3D_5TO6(texColor.a)][GFX3D_5TO6(shader.materialColor.a)]>>1;
-
-						dst.r = min<u8>(63, (dst.r + toonColor.r));
-						dst.g = min<u8>(63, (dst.g + toonColor.g));
-						dst.b = min<u8>(63, (dst.b + toonColor.b));
-					}
-					else
-					{
-						dst.r = modulate_table[texColor.r][toonColor.r];
-						dst.g = modulate_table[texColor.g][toonColor.g];
-						dst.b = modulate_table[texColor.b][toonColor.b];
-						dst.a = modulate_table[GFX3D_5TO6(texColor.a)][GFX3D_5TO6(shader.materialColor.a)]>>1;
-					}
+					dst.r = modulate_table[texColor.r][toonColor.r];
+					dst.g = modulate_table[texColor.g][toonColor.g];
+					dst.b = modulate_table[texColor.b][toonColor.b];
+					dst.a = modulate_table[GFX3D_5TO6(texColor.a)][GFX3D_5TO6(shader.materialColor.a)]>>1;
 				}
 
 			}
@@ -526,20 +522,12 @@ public:
 			//is this right? only with the material color?
 			dst = shader.materialColor;
 			break;
-		case 4: //our own special mode which only uses the material color (for when texturing is disabled)
-			dst = shader.materialColor;
-			break;
-
 		}
 	}
 
 	void setupShader(u32 polyattr)
 	{
 		shader.mode = (polyattr>>4)&0x3;
-		//if there is no texture set, then set to the mode which doesnt even use a texture
-		//(no texture makes sense for toon/highlight mode)
-		if(sampler.texFormat == 0 && (shader.mode == 0 || shader.mode == 1))
-			shader.mode = 4;
 	}
 
 	FORCEINLINE void pixel(int adr,float r, float g, float b, float invu, float invv, float w, float z)
@@ -925,6 +913,7 @@ public:
 		u32 lastTextureFormat = 0, lastTexturePalette = 0;
 
 		//iterate over polys
+		bool first=true;
 		for(int i=0;i<engine->clippedPolyCounter;i++)
 		{
 			if(!RENDERER) _debug_thisPoly = (i==engine->_debug_drawClippedUserPoly);
@@ -935,7 +924,7 @@ public:
 			POLY *poly = clippedPoly.poly;
 			int type = clippedPoly.type;
 
-			if(i == 0 || lastPolyAttr != poly->polyAttr)
+			if(first || lastPolyAttr != poly->polyAttr)
 			{
 				polyAttr.setup(poly->polyAttr);
 				polyAttr.translucent = poly->isTranslucent();
@@ -943,12 +932,14 @@ public:
 			}
 
 
-			if(i == 0 || lastTextureFormat != poly->texParam || lastTexturePalette != poly->texPalette)
+			if(first || lastTextureFormat != poly->texParam || lastTexturePalette != poly->texPalette)
 			{
 				sampler.setup(poly->texParam);
 				lastTextureFormat = poly->texParam;
 				lastTexturePalette = poly->texPalette;
 			}
+
+			first = false;
 
 			lastTexKey = engine->polyTexKeys[i];
 
@@ -1151,14 +1142,18 @@ void SoftRasterizerEngine::initFramebuffer(const int width, const int height, co
 
 void SoftRasterizerEngine::updateToonTable()
 {
-	if (!gfx3d.renderState.invalidateToon) return;
 	//convert the toon colors
 	for(int i=0;i<32;i++) {
-		toonTable[i].r = (gfx3d.renderState.rgbToonTable[i] >> 2) & 0x3F;
-		toonTable[i].g = (gfx3d.renderState.rgbToonTable[i] >> 10) & 0x3F;
-		toonTable[i].b = (gfx3d.renderState.rgbToonTable[i] >> 18) & 0x3F;
+		#ifdef WORDS_BIGENDIAN
+			u32 u32temp = RGB15TO32_NOALPHA(gfx3d.renderState.u16ToonTable[i]);
+			toonTable[i].r = (u32temp >> 2) & 0x3F;
+			toonTable[i].g = (u32temp >> 10) & 0x3F;
+			toonTable[i].b = (u32temp >> 18) & 0x3F;
+		#else
+			toonTable[i].color = (RGB15TO32_NOALPHA(gfx3d.renderState.u16ToonTable[i])>>2)&0x3F3F3F3F;
+		#endif
+		//printf("%d %d %d %d\n",toonTable[i].r,toonTable[i].g,toonTable[i].b,toonTable[i].a);
 	}
-	gfx3d.renderState.invalidateToon = false;
 }
 
 void SoftRasterizerEngine::updateFogTable()
@@ -1243,7 +1238,10 @@ void SoftRasterizerEngine::framebufferProcess()
 		for(int i=0;i<8;i++)
 		{
 			u16 col = T1ReadWord(MMU.MMU_MEM[ARMCPU_ARM9][0x40], 0x330+i*2);
-			edgeMarkColors[i].color = RGB15TO5555(col,0x0F);
+			edgeMarkColors[i].color = RGB15TO5555(col,gfx3d.state.enableAntialiasing ? 0x0F : 0x1F);
+			edgeMarkColors[i].r = GFX3D_5TO6(edgeMarkColors[i].r);
+			edgeMarkColors[i].g = GFX3D_5TO6(edgeMarkColors[i].g);
+			edgeMarkColors[i].b = GFX3D_5TO6(edgeMarkColors[i].b);
 
 			// this seems to be the only thing that selectively disables edge marking
 			edgeMarkDisabled[i] = (col == 0x7FFF);

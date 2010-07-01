@@ -34,6 +34,7 @@
 	#ifndef WXPORT
 		#include "windriver.h"
 	#endif
+	#define PCAP_DEVICE_NAME description
 #else
 	#include <unistd.h> 	 
 	#include <stdlib.h> 	 
@@ -43,6 +44,7 @@
 	#define socket_t    int 	 
 	#define sockaddr_t  struct sockaddr
 	#define closesocket close
+	#define PCAP_DEVICE_NAME name
 #endif
 
 #ifndef INVALID_SOCKET 	 
@@ -52,6 +54,8 @@
 #define BASEPORT 7000
 
 const u8 BroadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+bool bWFCUserWarned = false;
 
 #ifdef EXPERIMENTAL_WIFI_COMM
 socket_t wifi_socket = INVALID_SOCKET;
@@ -70,6 +74,17 @@ pcap_t *wifi_bridge = NULL;
 wifimac_t wifiMac;
 Adhoc_t Adhoc;
 SoftAP_t SoftAP;
+
+/*******************************************************************************
+
+	WIFI TODO
+
+	- emulate transmission delays for Beacon and Extra transfers
+	- emulate delays when receiving as well (may need some queuing system)
+	- take transfer rate and preamble into account
+	- figure out RFSTATUS and RFPINS
+
+ *******************************************************************************/
 
 /*******************************************************************************
 
@@ -290,7 +305,7 @@ WifiComInterface* wifiCom;
 // 3: medium logging, for debugging, shows lots of stuff
 // 4: high logging, for debugging, shows almost everything, may slow down
 // 5: highest logging, for debugging, shows everything, may slow down a lot
-#define WIFI_LOGGING_LEVEL 0
+#define WIFI_LOGGING_LEVEL 1
 
 #define WIFI_LOG_USE_LOGC 0
 
@@ -642,6 +657,8 @@ bool WIFI_Init()
 	if(wifiCom)
 		wifiCom->Init();
 
+	bWFCUserWarned = false;
+
 	return true;
 }
 
@@ -668,6 +685,8 @@ void WIFI_Reset()
 	wifiCom = wifiComs[CommonSettings.wifi.mode];
 	if(wifiCom)
 		wifiCom->Reset();
+
+	bWFCUserWarned = false;
 }
 
 
@@ -722,8 +741,8 @@ INLINE void WIFI_MakeRXHeader(u8* buf, u16 flags, u16 xferRate, u16 len, u8 maxR
 
 	*(u16*)&buf[8] = len;
 
-	buf[10] = maxRSSI;
-	buf[11] = minRSSI;
+	buf[10] = 253;//maxRSSI;
+	buf[11] = 255;//minRSSI;
 }
 
 #ifdef EXPERIMENTAL_WIFI_COMM
@@ -732,22 +751,22 @@ static void WIFI_RXPutWord(u16 val)
 	/* abort when RX data queuing is not enabled */
 	if (!(wifiMac.RXCnt & 0x8000)) return;
 	/* abort when ringbuffer is full */
-	//if (wifiMac.RXReadCursor == wifiMac.RXHWWriteCursor) return;
-	/*if(wifiMac.RXHWWriteCursor >= wifiMac.RXReadCursor) 
+	//if (wifiMac.RXReadCursor == wifiMac.RXWriteCursor) return;
+	/*if(wifiMac.RXWriteCursor >= wifiMac.RXReadCursor) 
 	{
 		printf("WIFI: write cursor (%04X) above READCSR (%04X). Cannot write received packet.\n", 
-			wifiMac.RXHWWriteCursor, wifiMac.RXReadCursor);
+			wifiMac.RXWriteCursor, wifiMac.RXReadCursor);
 		return;
 	}*/
 	/* write the data to cursor position */
 	wifiMac.RAM[wifiMac.RXWriteCursor & 0xFFF] = val;
-//	printf("wifi: written word %04X to circbuf addr %04X\n", val, (wifiMac.RXHWWriteCursor << 1));
+//	printf("wifi: written word %04X to circbuf addr %04X\n", val, (wifiMac.RXWriteCursor << 1));
 	/* move cursor by one */
-	//printf("written one word to %04X (start %04X, end %04X), ", wifiMac.RXHWWriteCursor, wifiMac.RXRangeBegin, wifiMac.RXRangeEnd);
+	//printf("written one word to %04X (start %04X, end %04X), ", wifiMac.RXWriteCursor, wifiMac.RXRangeBegin, wifiMac.RXRangeEnd);
 	wifiMac.RXWriteCursor++;
 	/* wrap around */
-//	wifiMac.RXHWWriteCursor %= (wifiMac.RXRangeEnd - wifiMac.RXRangeBegin) >> 1;
-//	printf("new addr=%04X\n", wifiMac.RXHWWriteCursor);
+//	wifiMac.RXWriteCursor %= (wifiMac.RXRangeEnd - wifiMac.RXRangeBegin) >> 1;
+//	printf("new addr=%04X\n", wifiMac.RXWriteCursor);
 	if(wifiMac.RXWriteCursor >= ((wifiMac.RXRangeEnd & 0x1FFE) >> 1))
 		wifiMac.RXWriteCursor = ((wifiMac.RXRangeBegin & 0x1FFE) >> 1);
 }
@@ -1305,7 +1324,7 @@ void WIFI_write16(u32 address, u16 val)
 			wifiMac.aid = val & 0x07FF;
 			break;
 		case 0xD0:
-			//printf("wifi: rxfilter=%04X\n", val);
+		//	printf("wifi: rxfilter=%04X\n", val);
 			break;
 		case 0x0E0:
 		//	printf("wifi: rxfilter2=%04X\n", val);
@@ -1482,31 +1501,15 @@ u16 WIFI_read16(u32 address)
 			return wifiMac.pid;
 		case REG_WIFI_AID_HIGH:
 			return wifiMac.aid;
+
+			// RFSTATUS, RFPINS
+			// TODO: figure out how to emulate those correctly
+			// without breaking Nintendo's games
 		case REG_WIFI_RFSTATUS:
-			//WIFI_LOG(3, "Read RF_STATUS: %04X\n", wifiMac.rfStatus);
-			//printf("-------------------- read RFSTATUS at %08X -----------------------------\n", NDS_ARM7.instruct_adr);
 			return 0x0009;
-			//return wifiMac.rfStatus;
 		case REG_WIFI_RFPINS:
-			//WIFI_LOG(3, "Read RF_PINS: %04X\n", wifiMac.rfPins);
-			//emu_halt();
-		//	printf("-------------------- read RFPINS at %08X -----------------------------\n", NDS_ARM7.instruct_adr);
-			//return wifiMac.rfPins;
-			return 0x0004;
-		case 0x210:
-			//printf("read TX reg %04X\n", address);
-			break;
-		/*case 0x1B6:
-			{
-				u16 val = wifiMac.RXNum << 8;
-				wifiMac.RXNum = 0;
-				return val;
-			}*/
-	/*	case 0x94:
-		case 0x98:
-		case 0x1B6:
-		case 0x1C4:*/
-		//	printf("wifi: Read from port %03X\n", address);
+			return 0x00C6;
+
 		case 0x268:
 			return wifiMac.RXTXAddr;
 
@@ -1786,7 +1789,7 @@ void Adhoc_usTrigger()
 						(u8)fromAddr.sa_data[4], (u8)fromAddr.sa_data[5],
 						ntohs(*(u16*)&fromAddr.sa_data[0]));*/
 					WIFI_LOG(2, "Ad-hoc: received a packet of %i bytes, frame control: %04X\n", packetLen, *(u16*)&ptr[0]);
-					WIFI_LOG(2, "Storing packet at %08X.\n", 0x04804000 + (wifiMac.RXHWWriteCursor<<1));
+					//WIFI_LOG(2, "Storing packet at %08X.\n", 0x04804000 + (wifiMac.RXWriteCursor<<1));
 
 					//if (((*(u16*)&ptr[0]) != 0x0080) && ((*(u16*)&ptr[0]) != 0x0228))
 					//	printf("received packet, framectl=%04X\n", (*(u16*)&ptr[0]));
@@ -1828,24 +1831,28 @@ void Adhoc_usTrigger()
 // so the RX header length field is indeed header+body
 // Hence the CRC32 has been removed from those templates.
 
-const u8 SoftAP_MACAddr[6] = {0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D};
+// If you wanna change SoftAP's MAC address, change this
+// Warning, don't mistake this for an array, it isn't
+#define SOFTAP_MACADDR 0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D
+
+const u8 SoftAP_MACAddr[6] = {SOFTAP_MACADDR};
 
 const u8 SoftAP_Beacon[] = {
 	/* 802.11 header */
 	0x80, 0x00,											// Frame control
 	0x00, 0x00,											// Duration ID
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,					// Receiver
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// Sender
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// BSSID
+	SOFTAP_MACADDR,										// Sender
+	SOFTAP_MACADDR,										// BSSID
 	0x00, 0x00,											// Sequence control
 
 	/* Frame body */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		// Timestamp (modified later)
 	0x80, 0x00,											// Beacon interval
-	0x0F, 0x00,											// Capablilty information
+	0x21, 0x00,											// Capablilty information
 	0x01, 0x02, 0x82, 0x84,								// Supported rates
 	0x03, 0x01, 0x06,									// Current channel
-	0x05, 0x04, 0x00, 0x00, 0x00, 0x00,					// TIM
+	0x05, 0x04, 0x02, 0x01, 0x00, 0x00,					// TIM (no idea what the hell it is)
 	0x00, 0x06, 'S', 'o', 'f', 't', 'A', 'P',			// SSID
 };
 
@@ -1854,14 +1861,14 @@ const u8 SoftAP_ProbeResponse[] = {
 	0x50, 0x00,											// Frame control
 	0x00, 0x00,											// Duration ID
 	0x00, 0x09, 0xBF, 0x12, 0x34, 0x56,					// Receiver
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// Sender
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// BSSID
+	SOFTAP_MACADDR,										// Sender
+	SOFTAP_MACADDR,										// BSSID
 	0x00, 0x00,											// Sequence control
 
 	/* Frame body */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,		// Timestamp (modified later)
 	0x80, 0x00,											// Beacon interval
-	0x0F, 0x00,											// Capablilty information
+	0x21, 0x00,											// Capablilty information
 	0x01, 0x02, 0x82, 0x84,								// Supported rates
 	0x03, 0x01, 0x06,									// Current channel
 	0x00, 0x06, 'S', 'o', 'f', 't', 'A', 'P',			// SSID
@@ -1873,8 +1880,8 @@ const u8 SoftAP_AuthFrame[] = {
 	0xB0, 0x00,											// Frame control
 	0x00, 0x00,											// Duration ID
 	0x00, 0x09, 0xBF, 0x12, 0x34, 0x56,					// Receiver
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// Sender
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// BSSID
+	SOFTAP_MACADDR,										// Sender
+	SOFTAP_MACADDR,										// BSSID
 	0x00, 0x00,											// Sequence control
 
 	/* Frame body */
@@ -1888,15 +1895,29 @@ const u8 SoftAP_AssocResponse[] = {
 	0x10, 0x00,											// Frame control
 	0x00, 0x00,											// Duration ID
 	0x00, 0x09, 0xBF, 0x12, 0x34, 0x56,					// Receiver
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// Sender
-	0x00, 0xF0, 0x1A, 0x2B, 0x3C, 0x4D,					// BSSID
+	SOFTAP_MACADDR,										// Sender
+	SOFTAP_MACADDR,										// BSSID
 	0x00, 0x00,											// Sequence control
 
 	/* Frame body */
-	0x0F, 0x00,											// Capability information
+	0x21, 0x00,											// Capability information
 	0x00, 0x00,											// Status
 	0x01, 0xC0,											// Assocation ID
 	0x01, 0x02, 0x82, 0x84,								// Supported rates
+};
+
+// Deauthentication frame - sent if the user chose not to connect to WFC
+const u8 SoftAP_DeauthFrame[] = {
+	/* 802.11 header */
+	0xC0, 0x00,											// Frame control
+	0x00, 0x00,											// Duration ID
+	0x00, 0x09, 0xBF, 0x12, 0x34, 0x56,					// Receiver
+	SOFTAP_MACADDR,										// Sender
+	SOFTAP_MACADDR,										// BSSID
+	0x00, 0x00,											// Sequence control
+
+	/* Frame body */
+	0x01, 0x00,											// Reason code (is "unspecified" ok?)
 };
 
 //todo - make a class to wrap this
@@ -1907,6 +1928,8 @@ static pcap_if_t * WIFI_index_device(pcap_if_t *alldevs, int index)
 
 	for(int i = 0; i < index; i++)
 		curr = curr->next;
+
+	WIFI_LOG(2, "SoftAP: using %s as device.\n", curr->PCAP_DEVICE_NAME);
 
 	return curr;
 }
@@ -1931,8 +1954,10 @@ bool SoftAP_Init()
 	
 	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_if_t *alldevs;
+	int ret;
 
-	if(driver->PCAP_findalldevs(&alldevs, errbuf) == -1)
+	ret = driver->PCAP_findalldevs(&alldevs, errbuf);
+	if (ret == -1 || alldevs == NULL)
 	{
 		WIFI_LOG(1, "SoftAP: PCap: failed to find any network adapter: %s\n", errbuf);
 		return false;
@@ -1942,7 +1967,7 @@ bool SoftAP_Init()
 	wifi_bridge = driver->PCAP_open(dev->name, PACKET_SIZE, PCAP_OPENFLAG_PROMISCUOUS, 1, errbuf);
 	if(wifi_bridge == NULL)
 	{
-		WIFI_LOG(1, "SoftAP: PCap: failed to open %s: %s\n", (dev->description ? dev->description : "the network adapter"), errbuf);
+		WIFI_LOG(1, "SoftAP: PCap: failed to open %s: %s\n", dev->PCAP_DEVICE_NAME, errbuf);
 		return false;
 	}
 
@@ -1977,62 +2002,110 @@ void SoftAP_Reset()
 	SoftAP.seqNum = 0;
 }
 
+static bool SoftAP_IsDNSRequestToWFC(u16 ethertype, u8* body)
+{
+	// Check the various headers...
+	if (ntohs(ethertype) != 0x0800) return false;		// EtherType: IP
+	if (body[0] != 0x45) return false;					// Version: 4, header len: 5
+	if (body[9] != 0x11) return false;					// Protocol: UDP
+	if (ntohs(*(u16*)&body[22]) != 53) return false;	// Dest. port: 53 (DNS)
+	if (htons(ntohs(*(u16*)&body[28+2])) & 0x8000) return false;	// must be a query
+	
+	// Analyze each question
+	u16 numquestions = ntohs(*(u16*)&body[28+4]);
+	u32 curoffset = 28+12;
+	for (u16 curquestion = 0; curquestion < numquestions; curquestion++)
+	{
+		// Assemble the requested domain name
+		u8 bitlength = 0; char domainname[256] = "";
+		while ((bitlength = body[curoffset++]) != 0)
+		{
+			strncat(domainname, (const char*)&body[curoffset], bitlength);
+			
+			curoffset += bitlength;
+			if (body[curoffset] != 0)
+				strcat(domainname, ".");
+		}
+
+		// if the domain name contains nintendowifi.net
+		// it is most likely a WFC server
+		// (note, conntest.nintendowifi.net just contains a dummy HTML page and
+		// is used for connection tests, I think we can let this one slide)
+		if ((strstr(domainname, "nintendowifi.net") != NULL) && 
+			(strcmp(domainname, "conntest.nintendowifi.net") != 0))
+			return true;
+
+		// Skip the type and class - we don't care about that
+		curoffset += 4;
+	}
+
+	return false;
+}
+
+static void SoftAP_Deauthenticate()
+{
+	u32 packetLen = sizeof(SoftAP_DeauthFrame);
+
+	memcpy(&SoftAP.curPacket[12], SoftAP_DeauthFrame, packetLen);
+
+	memcpy(&SoftAP.curPacket[12 + 4], FW_Mac, 6); // Receiver MAC
+
+	*(u16*)&SoftAP.curPacket[12 + 22] = SoftAP.seqNum << 4;		// Sequence number
+	SoftAP.seqNum++;
+
+	u16 rxflags = 0x0010;
+	if (WIFI_compareMAC(wifiMac.bss.bytes, &SoftAP.curPacket[12 + 16]))
+		rxflags |= 0x8000;
+
+	WIFI_MakeRXHeader(SoftAP.curPacket, rxflags, 20, packetLen, 0, 0);
+
+	// Let's prepare to send
+	SoftAP.curPacketSize = packetLen + 12;
+	SoftAP.curPacketPos = 0;
+	SoftAP.curPacketSending = TRUE;
+
+	SoftAP.status = APStatus_Disconnected;
+}
+
 void SoftAP_SendPacket(u8 *packet, u32 len)
 {
 	u16 frameCtl = *(u16*)&packet[0];
 
-	/*WIFI_LOG(3, */printf("SoftAP: Received a packet of length %i bytes. Frame control = %04X\n",
+	WIFI_LOG(3, "SoftAP: Received a packet of length %i bytes. Frame control = %04X\n",
 		len, frameCtl);
+
+	//use this to log wifi messages easily
+	/*static int ctr=0;
+	char buf[100];
+	sprintf(buf,"wifi%04d.txt",ctr);
+	FILE* outf = fopen(buf,"wb");
+	fwrite(packet,1,len,outf);
+	fclose(outf);
+	ctr++;*/
 
 	switch((frameCtl >> 2) & 0x3)
 	{
 	case 0x0:				// Management frame
 		{
+			u32 packetLen;
+
 			switch((frameCtl >> 4) & 0xF)
 			{
 			case 0x4:		// Probe request (WFC)
 				{
-					u32 packetLen = sizeof(SoftAP_ProbeResponse);
-					u32 totalLen = (packetLen + 12);
-
-					// Make the RX header
-					WIFI_MakeRXHeader(SoftAP.curPacket, 0x0010, 20, packetLen, 0, 0);
-
-					// Copy the probe response template
+					packetLen = sizeof(SoftAP_ProbeResponse);
 					memcpy(&SoftAP.curPacket[12], SoftAP_ProbeResponse, packetLen);
-
-					// Add the MAC address
-					memcpy(&SoftAP.curPacket[12 + 4], FW_Mac, 6);
 
 					// Add the timestamp
 					u64 timestamp = SoftAP.usecCounter;
 					*(u64*)&SoftAP.curPacket[12 + 24] = timestamp;
-
-					// Let's prepare to send
-					SoftAP.curPacketSize = totalLen;
-					SoftAP.curPacketPos = 0;
-					SoftAP.curPacketSending = TRUE;
 				}
 				break;
 
 			case 0xB:		// Authentication
 				{
-					u32 packetLen = sizeof(SoftAP_AuthFrame);
-					u32 totalLen = (packetLen + 12);
-
-					// Make the RX header
-					WIFI_MakeRXHeader(SoftAP.curPacket, 0x0010, 20, packetLen, 0, 0);
-
-					// Copy the authentication frame template
+					packetLen = sizeof(SoftAP_AuthFrame);
 					memcpy(&SoftAP.curPacket[12], SoftAP_AuthFrame, packetLen);
-
-					// Add the MAC address
-					memcpy(&SoftAP.curPacket[12 + 4], FW_Mac, 6);
-
-					// Let's prepare to send
-					SoftAP.curPacketSize = totalLen;
-					SoftAP.curPacketPos = 0;
-					SoftAP.curPacketSending = TRUE;
 
 					SoftAP.status = APStatus_Authenticated;
 				}
@@ -2043,22 +2116,8 @@ void SoftAP_SendPacket(u8 *packet, u32 len)
 					if (SoftAP.status != APStatus_Authenticated)
 						return;
 
-					u32 packetLen = sizeof(SoftAP_AssocResponse);
-					u32 totalLen = (packetLen + 12);
-
-					// Make the RX header
-					WIFI_MakeRXHeader(SoftAP.curPacket, 0x0010, 20, packetLen, 0, 0);
-
-					// Copy the association response template
+					packetLen = sizeof(SoftAP_AssocResponse);
 					memcpy(&SoftAP.curPacket[12], SoftAP_AssocResponse, packetLen);
-
-					// Add the MAC address
-					memcpy(&SoftAP.curPacket[12 + 4], FW_Mac, 6);
-
-					// Let's prepare to send
-					SoftAP.curPacketSize = totalLen;
-					SoftAP.curPacketPos = 0;
-					SoftAP.curPacketSending = TRUE;
 
 					SoftAP.status = APStatus_Associated;
 					WIFI_LOG(1, "SoftAP connected!\n");
@@ -2067,17 +2126,33 @@ void SoftAP_SendPacket(u8 *packet, u32 len)
 
 			case 0xA:		// Disassociation
 				SoftAP.status = APStatus_Authenticated;
-				break;
+				return;
 
 			case 0xC:		// Deauthentication
 				SoftAP.status = APStatus_Disconnected;
 				WIFI_LOG(1, "SoftAP disconnected\n");
-				break;
+				return;
 
 			default:
 				WIFI_LOG(2, "SoftAP: unknown management frame type %04X\n", (frameCtl >> 4) & 0xF);
-				break;
+				return;
 			}
+
+			memcpy(&SoftAP.curPacket[12 + 4], FW_Mac, 6); // Receiver MAC
+
+			*(u16*)&SoftAP.curPacket[12 + 22] = SoftAP.seqNum << 4; // Sequence number
+			SoftAP.seqNum++;
+
+			u16 rxflags = 0x0010;
+			if (WIFI_compareMAC(wifiMac.bss.bytes, &SoftAP.curPacket[12 + 16]))
+				rxflags |= 0x8000;
+
+			WIFI_MakeRXHeader(SoftAP.curPacket, rxflags, 20, packetLen, 0, 0); // make the RX header
+
+			// Let's prepare to send
+			SoftAP.curPacketSize = packetLen + 12;
+			SoftAP.curPacketPos = 0;
+			SoftAP.curPacketSending = TRUE;
 		}
 		break;
 
@@ -2089,11 +2164,17 @@ void SoftAP_SendPacket(u8 *packet, u32 len)
 				if (SoftAP.status != APStatus_Associated)
 					return;
 
+				if (SoftAP_IsDNSRequestToWFC(*(u16*)&packet[30], &packet[32]))
+				{
+					SoftAP_Deauthenticate();
+					return;
+				}
+
 				u32 epacketLen = ((len - 30 - 4) + 14);
 				u8 epacket[2048];
 
-				printf("----- SENDING ETHERNET PACKET: len=%i, ethertype=%04X -----\n",
-					len, *(u16*)&packet[30]);
+				//printf("----- SENDING ETHERNET PACKET: len=%i, ethertype=%04X -----\n",
+				//	len, *(u16*)&packet[30]);
 
 				memcpy(&epacket[0], &packet[16], 6);
 				memcpy(&epacket[6], &packet[10], 6);
@@ -2115,20 +2196,23 @@ void SoftAP_SendPacket(u8 *packet, u32 len)
 INLINE void SoftAP_SendBeacon()
 {
 	u32 packetLen = sizeof(SoftAP_Beacon);
-	u32 totalLen = (packetLen + 12);
 
-	// Make the RX header
-	WIFI_MakeRXHeader(SoftAP.curPacket, 0x0011, 20, packetLen, 0, 0);
+	memcpy(&SoftAP.curPacket[12], SoftAP_Beacon, packetLen);	// Copy the beacon template
 
-	// Copy the beacon template
-	memcpy(&SoftAP.curPacket[12], SoftAP_Beacon, packetLen);
+	*(u16*)&SoftAP.curPacket[12 + 22] = SoftAP.seqNum << 4;		// Sequence number
+	SoftAP.seqNum++;
 
-	// Add the timestamp
 	u64 timestamp = SoftAP.usecCounter;
-	*(u64*)&SoftAP.curPacket[12 + 24] = timestamp;
+	*(u64*)&SoftAP.curPacket[12 + 24] = timestamp;				// Timestamp
+
+	u16 rxflags = 0x0011;
+	if (WIFI_compareMAC(wifiMac.bss.bytes, &SoftAP.curPacket[12 + 16]))
+		rxflags |= 0x8000;
+
+	WIFI_MakeRXHeader(SoftAP.curPacket, rxflags, 20, packetLen, 0, 0);
 
 	// Let's prepare to send
-	SoftAP.curPacketSize = totalLen;
+	SoftAP.curPacketSize = packetLen + 12;
 	SoftAP.curPacketPos = 0;
 	SoftAP.curPacketSending = TRUE;
 }
@@ -2149,6 +2233,11 @@ static void SoftAP_RXHandler(u_char* user, const struct pcap_pkthdr* h, const u_
 	if (WIFI_compareMAC(&data[6], wifiMac.mac.bytes))
 		return;
 
+	if (SoftAP.curPacketSending)
+	{
+		printf("crap we're gonna nuke a packet at %i/%i (%04X) (%04X)\n", SoftAP.curPacketPos, SoftAP.curPacketSize, *(u16*)&SoftAP.curPacket[12], wifiMac.RXWriteCursor<<1);
+	}
+
 	// The packet was for us. Let's process it then.
 	WIFI_triggerIRQ(WIFI_IRQ_RXSTART);
 
@@ -2159,19 +2248,25 @@ static void SoftAP_RXHandler(u_char* user, const struct pcap_pkthdr* h, const u_
 	//	24+ (h->caplen-12), 24 + (h->len-12), data[6], data[7], data[8], data[9], data[10], data[11],
 	//	data[0], data[1], data[2], data[3], data[4], data[5], *(u16*)&data[12]);
 
+	u16 rxflags = 0x0018;
+	if (WIFI_compareMAC(wifiMac.bss.bytes, (u8*)SoftAP_MACAddr))
+		rxflags |= 0x8000;
+
 	// Make a valid 802.11 frame
-	WIFI_MakeRXHeader(wpacket, 0x0018, 20, wpacketLen, 0, 0);
+	WIFI_MakeRXHeader(wpacket, rxflags, 20, wpacketLen, 0, 0);
 	*(u16*)&wpacket[12+0] = 0x0208;
 	*(u16*)&wpacket[12+2] = 0x0000;
 	memcpy(&wpacket[12+4], &data[0], 6);
 	memcpy(&wpacket[12+10], SoftAP_MACAddr, 6);
 	memcpy(&wpacket[12+16], &data[6], 6);
-	*(u16*)&wpacket[12+22] = 0x0000;		// Sequence control. Todo?
+	*(u16*)&wpacket[12+22] = SoftAP.seqNum << 4;
 	*(u16*)&wpacket[12+24] = 0xAAAA;
 	*(u16*)&wpacket[12+26] = 0x0003;
 	*(u16*)&wpacket[12+28] = 0x0000;
 	*(u16*)&wpacket[12+30] = *(u16*)&data[12];
-	memcpy(&wpacket[12+32], &data[14], wpacketLen);
+	memcpy(&wpacket[12+32], &data[14], h->len-14);
+
+	SoftAP.seqNum++;
 
 	// put it in the RX buffer
 	for (int i = 0; i < (12 + wpacketLen); i += 2)
@@ -2183,7 +2278,7 @@ static void SoftAP_RXHandler(u_char* user, const struct pcap_pkthdr* h, const u_
 	// Done!
 	wifiMac.RXWriteCursor = ((wifiMac.RXWriteCursor + 1) & (~1));
 	WIFI_IOREG(REG_WIFI_RXHWWRITECSR) = wifiMac.RXWriteCursor;
-	wifiMac.RXNum++;
+
 	WIFI_triggerIRQ(WIFI_IRQ_RXEND);
 }
 
@@ -2191,7 +2286,10 @@ void SoftAP_usTrigger()
 {
 	SoftAP.usecCounter++;
 
-	if(!SoftAP.curPacketSending)
+	// other packets will have priority over beacons
+	// 'cause they might be only once of them
+	// whereas there will be sooo much beacons
+	if(!SoftAP.curPacketSending) // && SoftAP.status != APStatus_Associated)
 	{
 		//if(wifiMac.ioMem[0xD0 >> 1] & 0x0400)
 		{
@@ -2199,8 +2297,6 @@ void SoftAP_usTrigger()
 			// Okay for 128 ms then
 			if((SoftAP.usecCounter & 131071) == 0)
 			{
-				//printf("send beacon, store to %04X (readcsr=%04X), size=%x\n", 
-				//	wifiMac.RXHWWriteCursor<<1, wifiMac.RXReadCursor<<1, sizeof(SoftAP_Beacon)+12);
 				SoftAP_SendBeacon();
 			}
 		}
@@ -2211,40 +2307,23 @@ void SoftAP_usTrigger()
 	/* ie ~8 microseconds to transfer a word. */
 	if((SoftAP.curPacketSending) && !(SoftAP.usecCounter & 7))
 	{
-		if(SoftAP.curPacketPos >= 0)
-		{
-			if(SoftAP.curPacketPos == 0)
-			{
-				WIFI_triggerIRQ(WIFI_IRQ_RXSTART);
+		if(SoftAP.curPacketPos == 0)
+			WIFI_triggerIRQ(WIFI_IRQ_RXSTART);
 
-				wifiMac.rfStatus = 0x0009;
-				wifiMac.rfPins = 0x0004;
-			}
-			else
-			{
-				wifiMac.rfStatus = 0x0001;
-				wifiMac.rfPins = 0x0084;
-			}
-
-			u16 word = *(u16*)&SoftAP.curPacket[SoftAP.curPacketPos];
-			WIFI_RXPutWord(word);
-		}
+		u16 word = *(u16*)&SoftAP.curPacket[SoftAP.curPacketPos];
+		WIFI_RXPutWord(word);
 
 		SoftAP.curPacketPos += 2;
 		if(SoftAP.curPacketPos >= SoftAP.curPacketSize)
 		{
-			//printf("SoftAP: packet finished sending, size=%i, startaddr=%04X", SoftAP.curPacketSize, WIFI_IOREG(REG_WIFI_RXHWWRITECSR));
 			SoftAP.curPacketSize = 0;
 			SoftAP.curPacketPos = 0;
 			SoftAP.curPacketSending = FALSE;
 
 			wifiMac.RXWriteCursor = ((wifiMac.RXWriteCursor + 1) & (~1));
 			WIFI_IOREG(REG_WIFI_RXHWWRITECSR) = wifiMac.RXWriteCursor;
-			//printf(", end=%04X\n", wifiMac.RXWriteCursor);
 
 			WIFI_triggerIRQ(WIFI_IRQ_RXEND);
-
-			SoftAP.seqNum += 0x10;
 		}
 	}
 

@@ -1,10 +1,3 @@
-#ifdef WIN32
-#pragma comment(lib,"wxmsw28_core.lib")
-#pragma comment(lib,"wxbase28.lib")
-#else
-#define lstrlen(a) strlen((a))
-#endif
-
 #include "NDSSystem.h"
 #include "GPU_osd.h"
 #include <wx/wxprec.h>
@@ -18,6 +11,10 @@
 #include "rasterize.h"
 #include "OGLRender.h"
 #include "firmware.h"
+
+#ifndef WIN32
+#define lstrlen(a) strlen((a))
+#endif
 
 #ifdef WIN32
 #include "snddx.h"
@@ -44,6 +41,7 @@
 #define GAP_MAX	90
 static int nds_gap_size;
 static int nds_screen_rotation_angle;
+static bool Touch = false;
 
 SoundInterface_struct *SNDCoreList[] = {
         &SNDDummy,
@@ -170,6 +168,68 @@ public:
 			NDS_LoadROM(dialog.GetPath().mb_str(), dialog.GetPath().mb_str());
 		}
 	}
+
+	//----------------------------------------------------------------------------
+	//   Touchscreen
+	//----------------------------------------------------------------------------
+
+	// De-transform coordinates.
+	// Returns true if the coordinates are within the touchscreen.
+	bool DetransformTouchCoords(int& X, int& Y)
+	{
+		int dtX, dtY;
+		
+		// TODO: descaling (when scaling is supported)
+
+		// De-rotate coordinates
+		switch (nds_screen_rotation_angle)
+		{
+		case 0: dtX = X; dtY = Y - 191 - nds_gap_size; break;
+		case 90: dtX = Y; dtY = 191 - X; break;
+		case 180: dtX = 255 - X; dtY = 191 - Y; break;
+		case 270: dtX = 255 - Y; dtY = X - 191 - nds_gap_size; break;
+		}
+
+		// Atleast one of the coordinates is out of range
+		if ((dtX < 0) || (dtX > 255) || (dtY < 0) || (dtY > 191))
+		{
+			X = wxClip(dtX, 0, 255);
+			Y = wxClip(dtY, 0, 191);
+			return false;
+		}
+		else
+		{
+			X = dtX;
+			Y = dtY;
+			return true;
+		}
+	}
+
+	void OnTouchEvent(wxMouseEvent& evt)
+	{
+		wxPoint pt = evt.GetPosition();
+		bool inside = DetransformTouchCoords(pt.x, pt.y);
+
+		if (evt.LeftDown() && inside)
+		{
+			Touch = true;
+			NDS_setTouchPos((u16)pt.x, (u16)pt.y);
+		}
+		else if(evt.LeftUp() && Touch)
+		{
+			Touch = false;
+			NDS_releaseTouch();
+		}
+		else if (Touch)
+		{
+			NDS_setTouchPos((u16)pt.x, (u16)pt.y);
+		}
+	}
+
+	//----------------------------------------------------------------------------
+	//   Video
+	//----------------------------------------------------------------------------
+
 	void gpu_screen_to_rgb(u8 *rgb1, u8 *rgb2)
 	{
 		u16 gpu_pixel;
@@ -521,10 +581,16 @@ void DesmumeFrame::onResize(wxSizeEvent &event) {
 }
 
 BEGIN_EVENT_TABLE(DesmumeFrame, wxFrame)
+
 EVT_PAINT(DesmumeFrame::onPaint)
 EVT_IDLE(DesmumeFrame::onIdle)
 EVT_SIZE(DesmumeFrame::onResize)
+EVT_LEFT_DOWN(DesmumeFrame::OnTouchEvent)
+EVT_LEFT_UP(DesmumeFrame::OnTouchEvent)
+EVT_LEFT_DCLICK(DesmumeFrame::OnTouchEvent)
+EVT_MOTION(DesmumeFrame::OnTouchEvent)
 EVT_CLOSE(DesmumeFrame::OnClose)
+
 EVT_MENU(wxID_EXIT, DesmumeFrame::OnQuit)
 EVT_MENU(wxID_OPEN, DesmumeFrame::LoadRom)
 EVT_MENU(wxID_ABOUT,DesmumeFrame::OnAbout)
@@ -625,7 +691,6 @@ bool Desmume::OnInit()
 #endif
 
 	SetAppName(_T("desmume"));
-	//comment for devs: or you may use wxConfig instead of wxFileConfig, so it will be wxRegConfig on MSW and wxFileConfig on other platforms
 	wxConfigBase *pConfig = new wxFileConfig();
 	wxConfigBase::Set(pConfig);
 	wxString emu_version(EMU_DESMUME_NAME_AND_VERSION(), wxConvUTF8);
@@ -795,6 +860,12 @@ void DesmumeFrame::OnClose(wxCloseEvent &event) {
 }
 
 void DesmumeFrame::OnOpenRecent(wxCommandEvent &event) {
-	execute = true;
-	NDS_LoadROM(history->GetHistoryFile(event.GetId()-wxID_FILE1).mb_str(),NULL);
+	int ret;
+	size_t id = event.GetId()-wxID_FILE1;
+
+	ret = NDS_LoadROM(history->GetHistoryFile(id).mb_str(), history->GetHistoryFile(id).mb_str());
+	if (ret > 0)
+		execute = true;
+	else
+		history->RemoveFileFromHistory(id);
 }

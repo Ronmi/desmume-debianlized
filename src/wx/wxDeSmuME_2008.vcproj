@@ -49,6 +49,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				EnableIntrinsicFunctions="false"
@@ -59,6 +60,7 @@
 				PreprocessorDefinitions="DEBUG;_CRT_SECURE_NO_DEPRECATE;GLIB_STATIC_COMPILATION;WIN32;BETA_VERSION;NOMINMAX;HAVE_LIBZ;WXPORT"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
 				BufferSecurityCheck="true"
 				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
@@ -77,7 +79,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx-win32-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-Win32-debug.lib glib-vc8-Win32.lib 7z-vc8-Win32.lib zlib-vc8-Win32.lib agg-2.5.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib"
+				AdditionalDependencies="Rpcrt4.lib directx-win32-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-Win32-debug.lib glib-vc8-Win32.lib 7z-vc8-Win32.lib zlib-vc8-Win32.lib agg-2.5.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib wxbase28d.lib wxmsw28d_core.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_debug.exe"
 				AdditionalLibraryDirectories="..\windows\zlib123;..\windows\agg;.libs"
 				DelayLoadDLLs=""
@@ -138,6 +140,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				EnableIntrinsicFunctions="false"
@@ -148,6 +151,7 @@
 				PreprocessorDefinitions="DEBUG;_CRT_SECURE_NO_DEPRECATE;GLIB_STATIC_COMPILATION;WIN32;BETA_VERSION;NOMINMAX;HAVE_LIBZ;WXPORT"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
 				BufferSecurityCheck="true"
 				EnableEnhancedInstructionSet="0"
 				FloatingPointModel="2"
@@ -166,10 +170,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx-x64-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-x64.lib glib-vc8-x64.lib 7z-vc8-x64.lib zlib-vc8-x64.lib agg-2.5-x64.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib winpcap\x64\wpcap.lib"
+				AdditionalDependencies="Rpcrt4.lib directx-x64-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-x64.lib glib-vc8-x64.lib 7z-vc8-x64.lib zlib-vc8-x64.lib agg-2.5-x64.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib wxbase28d-x64.lib wxmsw28d_core-x64.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_x64_debug.exe"
 				AdditionalLibraryDirectories="..\windows\zlib123;..\windows\agg;.libs"
-				DelayLoadDLLs="wpcap.dll"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				RandomizedBaseAddress="1"
@@ -228,6 +231,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -259,7 +263,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx-win32-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-Win32.lib glib-vc8-Win32.lib 7z-vc8-Win32.lib zlib-vc8-Win32.lib agg-2.5.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib"
+				AdditionalDependencies="Rpcrt4.lib directx-win32-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-Win32.lib glib-vc8-Win32.lib 7z-vc8-Win32.lib zlib-vc8-Win32.lib agg-2.5.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib wxbase28.lib wxmsw28_core.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_release.exe"
 				AdditionalLibraryDirectories="..\windows\zlib123;..\windows\agg;.libs"
 				DelayLoadDLLs=""
@@ -322,6 +326,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -353,10 +358,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx-x64-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-x64.lib glib-vc8-x64.lib 7z-vc8-x64.lib zlib-vc8-x64.lib agg-2.5-x64.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib winpcap\x64\wpcap.lib"
+				AdditionalDependencies="directx-x64-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-x64.lib glib-vc8-x64.lib 7z-vc8-x64.lib zlib-vc8-x64.lib agg-2.5-x64.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib wxbase28-x64.lib wxmsw28_core-x64.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_x64_release.exe"
 				AdditionalLibraryDirectories="..\windows\zlib123;..\windows\agg;.libs"
-				DelayLoadDLLs="wpcap.dll"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				RandomizedBaseAddress="1"
@@ -416,6 +420,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -447,7 +452,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx-win32-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-Win32.lib glib-vc8-Win32.lib 7z-vc8-Win32.lib zlib-vc8-Win32.lib agg-2.5.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib"
+				AdditionalDependencies="Rpcrt4.lib directx-win32-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-Win32.lib glib-vc8-Win32.lib 7z-vc8-Win32.lib zlib-vc8-Win32.lib agg-2.5.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib comctl32.lib wxbase28.lib wxmsw28_core.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_dev+.exe"
 				AdditionalLibraryDirectories="..\windows\zlib123;..\windows\agg;.libs"
 				DelayLoadDLLs=""
@@ -511,6 +516,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -542,10 +548,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="directx-x64-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-x64.lib glib-vc8-x64.lib 7z-vc8-x64.lib zlib-vc8-x64.lib agg-2.5-x64.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib winpcap\x64\wpcap.lib"
+				AdditionalDependencies="directx-x64-ddraw-dinput8-dsound-dxerr8-dxguid.lib lua-vc8-x64.lib glib-vc8-x64.lib 7z-vc8-x64.lib zlib-vc8-x64.lib agg-2.5-x64.lib vfw32.lib winmm.lib opengl32.lib glu32.lib ws2_32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib shlwapi.lib wxbase28-x64.lib wxmsw28_core-x64.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_x64_dev+.exe"
 				AdditionalLibraryDirectories="..\windows\zlib123;..\windows\agg;.libs"
-				DelayLoadDLLs="wpcap.dll"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				LinkTimeCodeGeneration="0"
@@ -992,6 +997,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\addons\piano.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\addons\rumblepak.cpp"
 					>
 				</File>
@@ -1020,6 +1029,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\utils\dlditool.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\utils\guid.cpp"
 					>
 				</File>
@@ -1033,6 +1046,14 @@
 				</File>
 				<File
 					RelativePath="..\utils\md5.h"
+					>
+				</File>
+				<File
+					RelativePath="..\utils\mkgmtime.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\utils\mkgmtime.h"
 					>
 				</File>
 				<File
